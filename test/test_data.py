@@ -28,18 +28,18 @@ class TestLoadData(TestCase):
 class TestTemporalize(TestCase):
 
     def test_temporalize(self):
-        data = np.arange(12).reshape(-1, 2)
+        arr = np.arange(12).reshape(-1, 2)
         expected = np.arange(12).reshape(-1, 2, 2)
 
-        result = data.temporalize(data=data, timesteps=2)
+        result = data.temporalize(data=arr, timesteps=2)
 
         np.testing.assert_array_equal(result, expected)
 
     def test_temporalize_drop_rows(self):
-        data = np.arange(14).reshape(-1, 2)
+        arr = np.arange(14).reshape(-1, 2)
         expected = np.arange(12).reshape(-1, 3, 2)
 
-        result = data.temporalize(data=data, timesteps=3)
+        result = data.temporalize(data=arr, timesteps=3)
 
         np.testing.assert_array_equal(result, expected)
 
@@ -48,8 +48,8 @@ class TestLoadData3D(TestCase):
     def setUp(self):
         self.d = TempDirectory()
 
-        self.data = np.arange(8).reshape(4, 2)
-        self.df = pd.DataFrame(self.data, columns=['a', 'b'])
+        self.arr = np.arange(8).reshape(4, 2)
+        self.df = pd.DataFrame(self.arr, columns=['a', 'b'])
         self.df_path = os.path.join(self.d.path, 'data.csv')
         self.df.to_csv(self.df_path, index=False)
 
@@ -58,7 +58,7 @@ class TestLoadData3D(TestCase):
 
     def test_load_data_3d(self):
         result = data.load_data_3d(path=self.df_path, timesteps=2)
-        expected = self.data.reshape(2, 2, 2)
+        expected = self.arr.reshape(2, 2, 2)
 
         np.testing.assert_array_equal(result, expected)
 
