@@ -1,0 +1,7 @@
+numpy==1.19.5
+pandas==1.2.3
+pydantic==1.8.1
+PyYAML==5.4.1
+scikit_learn==0.24.1
+scipy==1.4.1
+testfixtures==6.17.1
