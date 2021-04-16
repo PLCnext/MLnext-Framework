@@ -11,7 +11,7 @@ test-package:
   script:
     - python3 -m unittest -v
   only:
-    - master
+    - main
 
 build-package:
   stage: deploy
