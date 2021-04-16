@@ -1,0 +1,32 @@
+stages:
+  - test
+  - deploy
+
+test-package:
+  stage: test
+  image: python:3.8
+  before_script:
+    - pip install .
+    - pip install testfixtures
+  script:
+    - python3 -m unittest -v
+  only:
+    - dev
+
+build-package:
+  stage: deploy
+  image: python:3.8
+  script:
+    - cat ${CA_CERT} > /tmp/certs.pem
+    - pip install twine poetry
+    - poetry build
+    - >
+      python -m twine upload
+      --repository-url ${PYPI_REGISTRY}
+      --username ${TWINE_USERNAME}
+      --password ${TWINE_PASSWORD}
+      --cert /tmp/certs.pem
+      --verbose
+      dist/*
+  only:
+    - tags
