@@ -126,8 +126,7 @@ dmypy.json
 
 *.lock
 scratch/
-.vscode/settings.json
-
+.vscode/
 
 logs/
 cov.xml
