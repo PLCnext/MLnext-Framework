@@ -66,10 +66,6 @@ def temporalize(*,
     """
     data = np.array(data)
 
-    # data is not 2d
-    if len(data.shape) > 2:
-        return data
-
     rows = data.shape[0] // timesteps
     features = data.shape[-1]
 
