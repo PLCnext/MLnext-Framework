@@ -133,4 +133,4 @@ class TestYaml(TestCase):
     def test_load_yaml_invalid_path(self):
 
         with self.assertRaises(FileNotFoundError):
-            io.load_json(os.path.join(self.d.path))
+            io.load_yaml(os.path.join(self.d.path))
