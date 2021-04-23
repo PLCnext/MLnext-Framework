@@ -6,7 +6,6 @@ from typing import Dict
 from typing import List
 from typing import Optional
 from typing import Set
-from typing import Tuple
 from typing import Union
 
 import numpy as np
@@ -17,6 +16,9 @@ from sklearn.utils.validation import check_is_fitted
 
 
 class ColumnSelector(BaseEstimator, TransformerMixin):
+    """Transformer to select a list of columns by their name.
+    """
+
     def __init__(self, keys: List[str]):
         """Creates ColumnSelector.
         Transformer to select a list of columns for further processing.
@@ -43,6 +45,9 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
 
 
 class ColumnDropper(BaseEstimator, TransformerMixin):
+    """Transformer to drop a list of columns by their name.
+    """
+
     def __init__(self,
                  *,
                  columns: Union[List[str], Set[str]],
@@ -81,6 +86,9 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
 
 
 class ColumnRename(BaseEstimator, TransformerMixin):
+    """Transformer to rename column with a function.
+    """
+
     def __init__(self, mapper: Callable[[str], str]):
         """Create ColumnRename.
         Transformer to rename columns by a mapper function.
@@ -127,6 +135,9 @@ class NaDropper(BaseEstimator, TransformerMixin):
 
 
 class Clip(BaseEstimator, TransformerMixin):
+    """Transformer that clips values by a lower and upper bound.
+    """
+
     def __init__(self, lower: float = 0.0, upper: float = 1.0):
         """Creates Clip.
         Transformer that clips a numeric column to the treshold if the
@@ -254,6 +265,9 @@ class ColumnTSMapper(BaseEstimator, TransformerMixin):
 
 
 class DatetimeTransformer(BaseEstimator, TransformerMixin):
+    """Transforms a list of columns to datetime.
+    """
+
     def __init__(self, *, columns: List[str], dt_format: str = None):
         """Creates DatetimeTransformer.
         Parses a list of column to pd.Timestamp.
@@ -281,10 +295,11 @@ class DatetimeTransformer(BaseEstimator, TransformerMixin):
         Returns:
             pd.DataFrame: Returns the dataframe with datetime columns.
         """
+        X = X.copy()
         # check if columns in dataframe
-        if not all([item in X.columns for item in self._columns]):
+        if len(diff := set(self._columns) - set(X.columns)):
             raise ValueError(
-                f'Columns {self._columns} not found in DataFrame '
+                f'Columns {diff} not found in DataFrame with columns'
                 f'{X.columns.to_list()}.')
 
         # parse to pd.Timestamp
@@ -296,6 +311,9 @@ class DatetimeTransformer(BaseEstimator, TransformerMixin):
 
 
 class NumericTransformer(BaseEstimator, TransformerMixin):
+    """Transforms a list of columns to numeric datatype.
+    """
+
     def __init__(self, *, columns: Optional[List[str]] = None):
         """Creates NumericTransformer.
         Parses a list of column to numeric datatype. If None, all are
@@ -309,6 +327,7 @@ class NumericTransformer(BaseEstimator, TransformerMixin):
         self._columns = columns
 
     def fit(self, X, y=None):
+
         return self
 
     def transform(self, X):
@@ -323,6 +342,7 @@ class NumericTransformer(BaseEstimator, TransformerMixin):
         Returns:
             pd.DataFrame: Returns the dataframe with datetime columns.
         """
+        X = X.copy()
         # transform all columns
         if self._columns is None:
             columns = X.columns
@@ -330,12 +350,8 @@ class NumericTransformer(BaseEstimator, TransformerMixin):
             columns = self._columns
 
         if len((diff := list(set(columns) - set(X.columns)))):
-            raise ValueError(f'Columns: {columns}. '
+            raise ValueError(f'Columns found: {X.columns}. '
                              f'Columns missing: {diff}.')
-
-        if len((diff := list(set(X.columns) - set(columns)))):
-            raise ValueError(f'Columns: {self._columns}. '
-                             f'Found additional columns: {diff}.')
 
         # parse to numeric
         # column wise
@@ -345,13 +361,15 @@ class NumericTransformer(BaseEstimator, TransformerMixin):
 
 class TimeframeExtractor(BaseEstimator, TransformerMixin):
     """Drops sampes that are not between a given start and end time.
+    Limits are inclusive.
     """
 
     def __init__(self,
+                 *,
                  time_column: str,
                  start_time: datetime.time,
                  end_time: datetime.time,
-                 negate: bool = False,
+                 invert: bool = False,
                  verbose: bool = False):
         """Creates TimeframeExtractor.
         Drops samples that are not in between `start_time` and  `end_time` in
@@ -361,13 +379,14 @@ class TimeframeExtractor(BaseEstimator, TransformerMixin):
             time_column (str): Column name of the timestamp column.
             start_time (datetime.time): Start time.
             end_time (datetime.time): End time.
+            invert(bool): Whether to invert the range.
             verbose (bool, optional): Whether to allow prints.
         """
         super().__init__()
         self._start = start_time
         self._end = end_time
         self._column = time_column
-        self._negate = negate
+        self._negate = invert
         self._verbose = verbose
 
     def fit(self, X, y=None):
@@ -384,6 +403,7 @@ class TimeframeExtractor(BaseEstimator, TransformerMixin):
         Returns:
             pd.DataFrame: Returns the new dataframe.
         """
+        X = X.copy()
         rows_before = X.shape[0]
 
         dates = pd.to_datetime(X[self._column])
@@ -409,28 +429,30 @@ class TimeframeExtractor(BaseEstimator, TransformerMixin):
 
 class DateExtractor(BaseEstimator, TransformerMixin):
     """ Drops rows that are not between a start and end date.
+    Limits are inclusive.
     """
 
     def __init__(self,
-                 time_column: str,
-                 start: datetime.date,
-                 end: datetime.date,
-                 negate: bool = False,
+                 *,
+                 date_column: str,
+                 start_date: datetime.date,
+                 end_date: datetime.date,
+                 invert: bool = False,
                  verbose: bool = False):
         """Initializes `DateExtractor`.
 
         Args:
-            time_column (str): Name of timestamp column.
-            start (datetime.date): Start date.
-            end (datetime.date): End date.
-            negate (bool): Negate condition.
+            date_column (str): Name of timestamp column.
+            start_date (datetime.date): Start date.
+            end_date (datetime.date): End date.
+            invert (bool): Whether to invert the range.
             verbose (bool, optional): Whether to allow prints.
         """
         super().__init__()
-        self._start = start
-        self._end = end
-        self._column = time_column
-        self._negate = negate
+        self._start = start_date
+        self._end = end_date
+        self._column = date_column
+        self._negate = invert
         self._verbose = verbose
 
     def fit(self, X, y=None):
@@ -446,6 +468,7 @@ class DateExtractor(BaseEstimator, TransformerMixin):
         Returns:
             pd.Dataframe: Returns the new dataframe.
         """
+        X = X.copy()
         rows_before = X.shape[0]
 
         dates = pd.to_datetime(X[self._column])
@@ -470,22 +493,24 @@ class DateExtractor(BaseEstimator, TransformerMixin):
 
 
 class ValueMapper(BaseEstimator, TransformerMixin):
-    """Maps values in `column` according to `classes`.
+    """Maps values in `column` according to `classes`. Wrapper for
+    pd.DataFrame.replace.
     """
 
     def __init__(self,
-                 column: List[str],
+                 *,
+                 columns: List[str],
                  classes: Dict,
                  verbose: bool = False):
         """Initialize `ValueMapper`.
 
         Args:
-            column (str): Name of columns to remap.
+            columns (List[str]): Names of columns to remap.
             classes (Dict): Dictionary of old and new value.
             verbose (bool, optional): Whether to allow prints.
         """
         super().__init__()
-        self._columns = column
+        self._columns = columns
         self._classes = classes
         self._verbose = verbose
 
@@ -507,18 +532,19 @@ class ValueMapper(BaseEstimator, TransformerMixin):
         values = pd.unique(X[self._columns].values.ravel('K'))
         if not set(self._classes.keys()).issuperset(values):
             warnings.warn(
-                f'{set(values).symmetric_difference(self._classes.keys())} '
-                'ignored.')
+                f'Classes {set(self._classes.keys()) - set(values)} ignored.')
 
         X[self._columns] = X[self._columns].replace(self._classes)
         return X
 
 
 class Sorter(BaseEstimator, TransformerMixin):
-    """Sorts the dataframe by a List of columns.
+    """Sorts the dataframe by a list of columns. Wrapper for
+    pd.DataFrame.sort_values.
     """
 
     def __init__(self,
+                 *,
                  columns: List[str],
                  ascending: bool = True,
                  axis: int = 0):
@@ -546,158 +572,10 @@ class Sorter(BaseEstimator, TransformerMixin):
         Returns:
             pd.DataFrame: Returns the sorted Dataframe.
         """
+        X = X.copy()
         return X.sort_values(by=self._columns,
                              ascending=self._ascending,
                              axis=self._axis)
-
-
-class Resampler(BaseEstimator, TransformerMixin):
-    """Resamples a dataframe to to `timedelta` interval with optionally
-    extended range defined by `timeframe`.
-    """
-
-    def __init__(self,
-                 time_column: str,
-                 timedelta: pd.Timedelta,
-                 timeframe: Optional[Tuple[pd.Timestamp, pd.Timestamp]] = None,
-                 verbose: bool = False):
-        """Initialize `Resampler`.
-
-        Args:
-            time_column (str): Name of column with timestamps.
-            timedelta (pd.Timedelta): Resample interval.
-            timeframe (Optional[Tuple[pd.Timestamp, pd.Timestamp]], optional):
-            List of timestamps defining the new start and end times.
-            verbose (bool, optional): Whether to print status.
-        """
-        super().__init__()
-        self._column = time_column
-        self._timedelta = timedelta
-        self._timeframe = timeframe
-        self._verbose = verbose
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        """Resamples `X` with `timdelta` as interval. Optionally `timeframe`
-        can be used to  extend the to a new start and end date.
-
-        Args:
-            X (pd.DataFrame): Dataframe.
-
-        Raises:
-            ValueError: Raised if `timeframe` lies in between the dates present
-            in `X`.
-
-        Returns:
-            pd.DataFrame: Returns the resampled dataframe.
-        """
-
-        # use original timeseries as index
-        index = pd.to_datetime(X[self._column])
-        data = X.copy()
-        data[self._column] = 0.0
-
-        # use a new dataframe for the correct timeframe
-        samples = data.set_index(index)
-        # make sure everything is numeric, otherwise resample takes ages
-        samples = samples.apply(pd.to_numeric, axis=1)
-
-        if self._timeframe is not None:
-            # check range
-            if ((index.iloc[0] < self._timeframe[0]) |
-                    (index.iloc[-1] > self._timeframe[1])):
-                raise ValueError('Invalid range.')
-
-            # insert new start and end
-            for time in self._timeframe:
-                samples.loc[time] = 0.0
-
-        # resample with resample_interval
-        samples = samples.resample(self._timedelta).max()
-
-        # move index to column and use rangeindex
-        samples[self._column] = samples.index
-        samples.index = pd.RangeIndex(stop=samples.shape[0])
-
-        return samples
-
-
-class TimeValueExpander(BaseEstimator, TransformerMixin):
-    """Expands `trigger` in `value_columns` by `timedelta`.
-    Dates are given in `time_column`. Mode is either 'f' for forwards or
-    'b' for backwards.
-    """
-
-    def __init__(self,
-                 time_column: str,
-                 value_columns: List[str],
-                 timedelta: pd.Timedelta,
-                 trigger: Any,
-                 mode: str = 'b',
-                 verbose: bool = False):
-        """Initialize `TimeValueExpander`.
-
-        Args:
-            time_column (str): Name of column with timestamp.
-            value_columns (List[str]): List of columns to expand,
-            timedelta (pd.Timedelta): Timedelta to expand to.
-            trigger (Any): Trigger value.
-            mode (str, optional): Mode. Either 'b' or 'f'.
-            verbose (bool, optional): Whether to print status.
-
-        Raises:
-            ValueError: Raised if illegal mode is passed.
-        """
-        super().__init__()
-        self._time_column = time_column
-        self._value_columns = value_columns
-        self._timedelta = timedelta
-        self._trigger = trigger
-        self._verbose = verbose
-
-        allowed_modes = ['b', 'f']
-        if mode not in allowed_modes:
-            raise ValueError(
-                f'Invalid mode: {mode}. Allowed modes: {allowed_modes}.')
-
-        self._mode = mode
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X):
-        """Expand `trigger` in `value_column` by time given by `timedelta` and
-        `time_column`.
-
-        Args:
-            X (pd.DataFrame): Dataframe.
-
-        Returns:
-            pd.DataFrame: Returns the dataframe.
-        """
-        X[self._time_column] = pd.to_datetime(X[self._time_column])
-        for col in self._value_columns:
-            # find positions of 1s
-            pos = X[X[col] == self._trigger]
-
-            # get time
-            times = pos[self._time_column]
-
-            #
-            if self._mode == 'b':
-                off_times = times - self._timedelta
-                zipped = zip(off_times, times)
-            else:
-                off_times = times + self._timedelta
-                zipped = zip(times, off_times)
-
-            for s, e in zipped:
-                X.loc[(X[self._time_column] >= s) &
-                      (X[self._time_column] <= e), col] = self._trigger
-
-        return X
 
 
 class Fill(BaseEstimator, TransformerMixin):
@@ -706,21 +584,18 @@ class Fill(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self,
-                 value: Optional[Any],
-                 columns: Optional[List[str]] = None,
+                 *,
+                 value: Any,
                  method: str = None):
         """Initialize `Fill`.
 
         Args:
-            value (Optional[Any]): Constant to fill NAs.
-            columns (Optional[List[str]], optional): Columns to fill. If None
-            all columns are filled.
-            method (str, optional): Optional method: 'ffill' or 'bfill'.
+            value (Any): Constant to fill NAs.
+            method (str): method: 'ffill' or 'bfill'.
         """
         super().__init__()
         self._value = value
         self._method = method
-        self._columns = columns
 
     def fit(self, X, y=None):
         return self
@@ -734,11 +609,12 @@ class Fill(BaseEstimator, TransformerMixin):
         Returns:
             pd.DataFrame: Returns the filled dataframe.
         """
+        X = X.copy()
         return X.fillna(self._value, method=self._method)
 
 
 class TimeOffsetTransformer(BaseEstimator, TransformerMixin):
-    def __init__(self, time_columns: List[str], timedelta: pd.Timedelta):
+    def __init__(self, *, time_columns: List[str], timedelta: pd.Timedelta):
         """
         Initialize `TimeOffsetTransformer`.
 
@@ -763,47 +639,23 @@ class TimeOffsetTransformer(BaseEstimator, TransformerMixin):
         Returns:
             pd.DataFrame: Returns the dataframe.
         """
+        X = X.copy()
         for column in self._time_columns:
             X[column] = pd.to_datetime(X[column]) + self._timedelta
         return X
 
 
-# TODO: finish or remove
-class LabelFilter(BaseEstimator, TransformerMixin):
-    def __init__(self, time_column: str, timedelta: pd.Timedelta):
-        super().__init__()
-        self._time_column = time_column
-        self._timedelta = timedelta
-
-    def fit(self, X, y=None):
-        if y is None:
-            raise ValueError('Expected y.')
-
-        # find timedeltas in y, sparse labels
-        # expects the timestamps in the first column
-        y = pd.to_datetime(y.iloc[:, 0])
-        self._deltas = pd.DataFrame(y[1:].to_numpy() - y[:-1].to_numpy())
-
-        # check where deltas exceed timedelta
-        exceeded = self._deltas > self._timedelta
-
-        # index  and index + 1 to get timeframes, where timedelta is exceeded
-
-        print(self._deltas)
-        print(exceeded)
-
-        return self
-
-    def transform(self, X):
-        pass
-
-
 class ConditionedDropper(BaseEstimator, TransformerMixin):
-    """Module to drop rows in `column` that contain numeric values and are above
-    `threshold`. If `inverted` is true, values below `threshold` are dropped.
+    """Module to drop rows in `column` that contain numeric values and are
+    above `threshold`. If `inverted` is true, values below `threshold` are
+    dropped.
     """
 
-    def __init__(self, column: str, threshold: float, inverted: bool = False):
+    def __init__(self,
+                 *,
+                 column: str,
+                 threshold: float,
+                 invert: bool = False):
         """Initializes `ConditionedDropper`.
 
         Args:
@@ -815,12 +667,21 @@ class ConditionedDropper(BaseEstimator, TransformerMixin):
         super().__init__()
         self.column = column
         self.threshold = threshold
-        self.inverted = inverted
+        self.inverted = invert
 
     def fit(self, X, y=None):
         return self
 
     def transform(self, X):
+        """Drops rows if below or above a threshold.
+
+        Args:
+            X (pd.DataFrame): Dataframe.
+
+        Returns:
+            pd.DataFrame: Returns the dataframe.
+        """
+        X = X.copy()
 
         if not self.inverted:
             X = X.drop(X[X[self.column] > self.threshold].index)
@@ -887,6 +748,7 @@ class ZeroVarianceDropper(BaseEstimator, TransformerMixin):
             pd.DataFrame: Returns the new dataframe.
         """
         check_is_fitted(self, 'columns_')
+        X = X.copy()
 
         # check if columns match
         columns = self._get_zero_variance_columns(X)
@@ -904,19 +766,18 @@ class ZeroVarianceDropper(BaseEstimator, TransformerMixin):
 
 
 class SignalSorter(BaseEstimator, TransformerMixin):
-    """Sorts the signals into continuous and binary signals.
+    """Sorts the signals into continuous and binary signals. First the
+    continuous, then the binary signals.
     """
 
-    def __init__(self, continuous_first: bool = True, verbose: bool = False):
+    def __init__(self, verbose: bool = False):
         """Initialize `SignalSorter`.
 
         Args:
-            continuous_first (bool, optional): True: [continuous, binary],
             False: [binary, continuous]
             verbose (bool, optional): Whether to print status.
         """
         super().__init__()
-        self.continuous_first = continuous_first
         self.verbose = verbose
 
     def fit(self, X, y=None):
@@ -942,7 +803,6 @@ class SignalSorter(BaseEstimator, TransformerMixin):
         if len(unique) > 2:
             return False
 
-        # FIXME: might be dangerous
         if len(unique) == 1:
             return True
 
@@ -964,6 +824,7 @@ class SignalSorter(BaseEstimator, TransformerMixin):
             pd.DataFrame: Returns the sorted dataframe.
         """
         check_is_fitted(self, [])
+        X = X.copy()
         return X[[c[0] for c in self.order_]]
 
 
@@ -975,8 +836,9 @@ class ColumnSorter(BaseEstimator, TransformerMixin):
         """Initialize `ColumnSorter`.
 
         Attributes:
-            raise_on_error (bool): Whether to raise an exception if
-            differences between the fitted and transforming dataset.
+            raise_on_error (bool): Whether to raise an exception if additional
+            columns that were not fitted are found.
+            verbose (bool): Whether to print the status.
         """
         super().__init__()
         self.raise_on_error = raise_on_error
@@ -1001,10 +863,7 @@ class ColumnSorter(BaseEstimator, TransformerMixin):
         check_is_fitted(self)
 
         if len((diff := list(set(self.columns_) - set(X.columns)))):
-            if self.raise_on_error:
-                raise ValueError(f'Columns missing: {diff}.')
-            else:
-                warnings.warn(f'Columns missing: {diff}.')
+            raise ValueError(f'Columns missing: {diff}.')
 
         if len((diff := list(set(X.columns) - set(self.columns_)))):
             if self.raise_on_error:
