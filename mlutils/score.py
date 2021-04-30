@@ -21,7 +21,7 @@ def l2_norm(x: np.array, x_hat: np.array) -> np.array:
     return r.reshape(-1, 1)
 
 
-def get_threshold(*, x: np.array, p: float = 100) -> float:
+def get_threshold(x: np.array, p: float = 100) -> float:
     """Returns the `perc`% max.
 
     Arguments:
@@ -34,7 +34,7 @@ def get_threshold(*, x: np.array, p: float = 100) -> float:
     return stats.scoreatpercentile(x, p)
 
 
-def apply_threshold(*, x, t) -> np.array:
+def apply_threshold(x: np.array, *, threshold: float) -> np.array:
     """Applies `threshold t` to `x`. Values greater than the `threshold`
     are 1 and below or equal are 0.
 
@@ -45,7 +45,7 @@ def apply_threshold(*, x, t) -> np.array:
     Returns:
         np.array: Returns the result of the threshold operation.
     """
-    return np.where(x > t, 1, 0)
+    return np.where(x > threshold, 1, 0)
 
 
 def eval_softmax(y: np.array) -> np.array:
