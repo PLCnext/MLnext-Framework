@@ -52,7 +52,7 @@ class TestThreshold(TestCase):
         data = np.array([0, 0.4, 0.6, 1.])
         expected = np.array([0, 0, 1, 1])
 
-        result = score.apply_threshold(x=data, t=0.5)
+        result = score.apply_threshold(data, threshold=0.5)
 
         np.testing.assert_array_equal(result, expected)
 
