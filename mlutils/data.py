@@ -108,3 +108,28 @@ def detemporalize(data: np.array, *, verbose: bool = True) -> np.array:
         print(f'Old shape: {shape}. New shape: ({rows}, {features}).')
 
     return np.reshape(data, (rows, features))
+
+
+def sample_normal(*, mean: np.array, std: np.array) -> np.array:
+    """Samples from a normal gaussian with mu=`mean` and sigma=`std`.
+
+    Args:
+        mean (np.array): Mean of the normal distribution.
+        std (np.array): Standard deviation of the normal distribution.
+
+    Returns:
+        np.array: Returns the drawn samples.
+    """
+    return np.random.normal(loc=mean, scale=std)
+
+
+def sample_bernoulli(mean: np.array) -> np.array:
+    """Samples from a bernoulli distribution with `mean`.
+
+    Args:
+        mean (np.array): Mean of the bernoulli distribution.
+
+    Returns:
+        np.array: Returns the drawn samples.
+    """
+    return np.random.binomial(n=1, p=mean)
