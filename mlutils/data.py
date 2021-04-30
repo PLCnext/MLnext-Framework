@@ -28,7 +28,7 @@ def load_data_3d(*,
     return temporalize(data=df, timesteps=timesteps, verbose=verbose)
 
 
-def load_data(*, path: str, verbose: bool = True, **kwargs) -> pd.DataFrame:
+def load_data(path: str, *, verbose: bool = True, **kwargs) -> pd.DataFrame:
     """Loads data from `path`.
 
     Args:
@@ -82,7 +82,7 @@ def temporalize(*,
     return data
 
 
-def detemporalize(*, data: np.array, verbose: bool = True) -> np.array:
+def detemporalize(data: np.array, *, verbose: bool = True) -> np.array:
     """
     Transforms data from shape rows x timesteps x features to
     (rows * timesteps) x features.
