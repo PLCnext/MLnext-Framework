@@ -9,9 +9,13 @@ It provides machine learning utilities for Tensorflow and Keras.
 Install this package using `pip`:
 
 ```bash
-pip install mlnext
---index-url https://pypi:ZS2HLWUqbgmjfURn6U_7@gitlab.phoenixcontact.com/api/v4/groups/309/packages/pypi/simple
---trusted-host gitlab.phoenixcontact.com
+pip install mlnext --index-url https://pypi:ZS2HLWUqbgmjfURn6U_7@gitlab.phoenixcontact.com/api/v4/projects/771/packages/pypi/simple --trusted-host gitlab.phoenixcontact.com
 ```
 
-Alternatively, build the `Docker` container:
+Alternatively, build the `Docker` image:
+
+```bash
+docker build -t mlnext:latest .
+```
+
+TODO: build from image
