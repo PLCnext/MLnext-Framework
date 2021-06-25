@@ -2,7 +2,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from mlutils import score
+from mlnext import score
 
 
 class TestL2Norm(TestCase):

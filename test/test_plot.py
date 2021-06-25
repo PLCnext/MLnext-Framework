@@ -3,7 +3,7 @@ from unittest import TestCase
 import numpy as np
 import pandas as pd
 
-from mlutils import plot
+from mlnext import plot
 
 
 class TestHelper(TestCase):
