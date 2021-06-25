@@ -6,6 +6,10 @@ with open('requirements.txt') as f:
 
 setup(name='mlutils',
       version='1.0',
+      author='Gorden Platz',
+      author_email='gplatz@phoenixcontact.com',
+      description='Machine learning utilities for Tensorflow/Keras.',
       install_requires=requirements,
-      packages=find_packages(include='mlutils')
+      packages=find_packages(include='mlutils'),
+      python_requires='>=3.8',
       )

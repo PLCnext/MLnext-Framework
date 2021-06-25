@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mlutils"
-version = "0.1.0"
+version = "1.0.0"
 description = "Machine learning utilities for Tensorflow/Keras."
 authors = ["Gorden Platz <gplatz@phoenixcontact.com>"]
 
