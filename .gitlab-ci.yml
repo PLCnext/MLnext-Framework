@@ -11,6 +11,7 @@ test-package:
   script:
     - python3 -m unittest -v
   only:
+    - dev
     - main
 
 build-package:
@@ -29,5 +30,4 @@ build-package:
       --verbose
       dist/*
   only:
-    - main
     - tags
