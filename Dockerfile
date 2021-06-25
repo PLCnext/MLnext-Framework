@@ -8,5 +8,5 @@ ENV HTTPS_PROXY=$ARG_HTTPS_PROXY
 
 COPY pip.conf /etc/pip.conf
 
-RUN pip3 install pip install mlnext \
-    --index-url https://pypi:ZS2HLWUqbgmjfURn6U_7@gitlab.phoenixcontact.com/api/v4/groups/309/packages/pypi/simple
+RUN pip3 install mlnext \
+    --index-url https://pypi:ZS2HLWUqbgmjfURn6U_7@gitlab.phoenixcontact.com/api/v4/projects/771/packages/pypi/simple
