@@ -29,4 +29,5 @@ build-package:
       --verbose
       dist/*
   only:
+    - dev
     - tags
