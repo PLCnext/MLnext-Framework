@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from testfixtures import TempDirectory
 
-from mlutils import data
+from mlnext import data
 
 
 class TestLoadData(TestCase):

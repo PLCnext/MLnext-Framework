@@ -4,7 +4,7 @@ from unittest import TestCase
 from pydantic import BaseModel
 from testfixtures import TempDirectory
 
-from mlutils import io
+from mlnext import io
 
 
 class Config(BaseModel):

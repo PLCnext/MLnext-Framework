@@ -4,7 +4,7 @@ from unittest import TestCase
 import numpy as np
 import pandas as pd
 
-from mlutils import pipeline
+from mlnext import pipeline
 
 
 class TestColumnSelector(TestCase):
