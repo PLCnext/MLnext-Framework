@@ -22,6 +22,12 @@ def load_data_3d(*,
 
     Returns:
         np.array: Returns the data.
+
+    Example:
+        # Loading 2d data and reshaping it to 3d
+        >>> X_train = load_data_3d(path='./data/train.csv', timesteps=10)
+        >>> X_train.shape
+        (100, 10, 18)
     """
 
     df = load_data(path=path, verbose=verbose, **format)
@@ -37,6 +43,11 @@ def load_data(path: str, *, verbose: bool = True, **kwargs) -> pd.DataFrame:
 
     Returns:
         pd.DataFrame: Returns the loaded data.
+
+    Example:
+        # Loading data from a csv file with custom seperator
+        >>> data = load_data('./data/train.csv', sep=',')
+        Loaded train.csv with 1000 rows and 18 columns.
     """
     df = pd.read_csv(path, **kwargs)
 
@@ -63,6 +74,12 @@ def temporalize(*,
 
     Returns:
         np.array: Returns an array of shape rows x timesteps x features.
+
+    Example:
+        # Transform 2d data into 3d
+        >>> data = np.zeros((6, 2))
+        >>> temporalize(data=data, timesteps=2)
+        Dropped 0 rows. New shape: (3, 2, 2).
     """
     data = np.array(data)
 
@@ -94,6 +111,11 @@ def detemporalize(data: np.array, *, verbose: bool = True) -> np.array:
     Returns:
         np.array: Returns an array of shape (rows * timesteps) x features.
 
+    Example:
+        # Transform 3d data into 2d
+        >>> data = np.zeros((3, 2, 2))
+        >>> detemporalize(data)
+        Old shape: (3, 2, 2). New shape: (6, 2).
     """
     data = np.array(data)
     shape = np.shape(data)
@@ -119,6 +141,11 @@ def sample_normal(*, mean: np.array, std: np.array) -> np.array:
 
     Returns:
         np.array: Returns the drawn samples.
+
+    Example:
+        # Sample from a normal distribution with mean and standard deviation
+        >>> sample_normal(mean=[0.1], std=[1])
+        array([-0.77506174])
     """
     return np.random.normal(loc=mean, scale=std)
 
@@ -131,5 +158,10 @@ def sample_bernoulli(mean: np.array) -> np.array:
 
     Returns:
         np.array: Returns the drawn samples.
+
+    Example:
+        # Sample from a bernoulli distribution with mean
+        >>> sample_bernoulli(mean=0.2)
+        0
     """
     return np.random.binomial(n=1, p=mean)
