@@ -41,6 +41,11 @@ def plot_error(X: np.array,
         threshold (float): Threshold
         title (str): Title of the plot
         save (str): Path to save figure to
+
+    Example:
+        # Plots the predictions X in the color of label with a threshold
+        >>> plot_error(X=np.array([0.2, 0.9, 0.4]), y=np.array([0, 1, 0]),
+                       threshold=0.5, title='Prediction', path='pred.png')
     """
     plt.title(title)
 
@@ -75,6 +80,11 @@ def plot_history(history: Dict[str, Any],
         history (Dict[str, Any]): Training history of a model.
         keywords (List[str]): Filters the history by a keyword.
         path (str): Path to save figure to.
+
+    Example:
+        # Plots the training history for entries that match filter
+        >>> history = model.fit(...)
+        >>> plot_history(history.history, filter=['loss'], path='history.png')
     """
     legend = []
     for key in history.keys():
@@ -102,6 +112,7 @@ def _check_inputs(
 
     Returns:
         pd.DataFrame: Returns a pd.DataFrame.
+
     """
     if x is None:
         return x
@@ -141,7 +152,7 @@ def _get_segments(x: pd.DataFrame, y: pd.DataFrame) -> List[int]:
 
     # start and end indexes, last index - 1 because
     # we add +1 when iterating to connect segments
-    segments = [0, *segments, x.shape[0]]
+    segments = [0, *segments, x.shape[0] - 1]
 
     return segments
 
@@ -159,6 +170,12 @@ def plot_signals(*,
         y (Union[np.array, pd.DataFrame]): Labels.
         x (Union[np.array, pd.DataFrame], optional): Ground truth.
         path (str, optional): Path to save fig to.
+
+    Example:
+        >>> plot_signals(x_pred=np.zeros((10, 2)),
+                         y=np.array([0] * 5 + [1] * 5),
+                         x=np.ones((10, 2)),
+                         path='signals.png')
     """
 
     x_pred = _check_inputs(x_pred)
@@ -181,22 +198,24 @@ def plot_signals(*,
     axes = axes.flatten() if columns > 1 else [axes]
     plt.subplots_adjust(hspace=0.5)
 
+    print(segments)
+
     # iterate over segments
     for s1, s2 in zip(segments[:-1], segments[1:]):
         # draw in color of label for each col
         for idx, (ax, col) in enumerate(zip(axes, x_pred)):
             ax.set_title(col)
 
-            idx_x = np.array(range(int(s1), int(s2)))
+            idx_x = np.array(range(int(s1), int(s2 + 1)))
 
             # draw x_pred
             ax.plot(idx_x,
-                    x_pred.loc[s1:(s2-1), col],
+                    x_pred.loc[s1:s2, col],
                     c='C1' if y.iloc[s1, 0] > 0. else 'C0')
 
             # draw x
             if x is not None:
-                ax.plot(idx_x, x.iloc[s1:s2, idx],
+                ax.plot(idx_x, x.iloc[s1:(s2 + 1), idx],
                         c='C1' if y.iloc[s1, 0] > 0. else 'C2',
                         alpha=0.5, zorder=10)
 
@@ -227,6 +246,14 @@ def plot_signals_norm(*,
         norm_std (np.array, optional): Standard deviation of the underlying
         normal distribution.
         path (str, optional): Path to save figure to.
+
+    Example:
+        >>> plot_signals_norm(x_pred=np.zeros((10, 2)),
+                              y=np.array([0] * 5 + [1] * 5),
+                              x=np.ones((10, 2)),
+                              norm_mean=np.array(np.ones((10, 2))),
+                              norm_std=np.array(np.ones((10, 2)) * 0.2),
+                              path='signals.png')
     """
     x_pred = _check_inputs(x_pred)
     x = _check_inputs(x)
@@ -258,28 +285,28 @@ def plot_signals_norm(*,
         for idx, (ax, col) in enumerate(zip(axes, x_pred)):
             ax.set_title(col)
 
-            idx_x = np.array(range(int(s1), int(s2)))
+            idx_x = np.array(range(int(s1), int(s2 + 1)))
 
             # draw x_pred
             ax.plot(idx_x,
-                    x_pred.loc[s1:(s2 - 1), col],
+                    x_pred.loc[s1:s2, col],
                     c='C1' if y.iloc[s1, 0] > 0. else 'C0')
 
             # draw x
             if x is not None:
                 ax.plot(idx_x,
-                        x.iloc[s1:s2, idx],
+                        x.iloc[s1:(s2 + 1), idx],
                         c='C1' if y.iloc[s1, 0] > 0. else 'C2',
                         alpha=0.5,
                         zorder=10)
 
             # plot normal mean and std
             if (mean is not None) & (std is not None):
-                ax.plot(idx_x, mean[s1:s2, idx],
+                ax.plot(idx_x, mean[s1:(s2 + 1), idx],
                         color='C5', lw=.8, zorder=3, alpha=0.5)
                 ax.fill_between(idx_x,
-                                mean[s1:s2, idx] - std[s1:s2, idx],
-                                mean[s1:s2, idx] + std[s1:s2, idx],
+                                mean[s1:(s2 + 1), idx] - std[s1:(s2 + 1), idx],
+                                mean[s1:(s2 + 1), idx] + std[s1:(s2 + 1), idx],
                                 alpha=0.5, color='C5', zorder=3)
     plt.tight_layout()
     if path is not None:
@@ -305,6 +332,13 @@ def plot_signals_binary(*,
         bern_mean (np.array, optional): Mean of the underlying bernoulli
         distribution.
         path (str, optional): Path to save figure to.
+
+    Example:
+        >>> plot_signals_binary(x_pred=np.zeros((10, 2)),
+                              y=np.array([0] * 5 + [1] * 5),
+                              x=np.ones((10, 2)),
+                              bern_mean=np.array(np.ones((10, 2))) * 0.5,
+                              path='signals.png')
     """
 
     x_pred = _check_inputs(x_pred)
@@ -336,22 +370,22 @@ def plot_signals_binary(*,
         for idx, (ax, col) in enumerate(zip(axes, x_pred)):
             ax.set_title(col)
 
-            idx_x = np.array(range(int(s1), int(s2)))
+            idx_x = np.array(range(int(s1), int(s2 + 1)))
 
             # draw x_pred
             ax.plot(idx_x,
-                    x_pred.loc[s1:(s2 - 1), col],
+                    x_pred.loc[s1:s2, col],
                     c='C1' if y.iloc[s1, 0] > 0. else 'C0')
 
             # draw x
             if x is not None:
-                ax.plot(idx_x, x.iloc[s1:s2, idx],
+                ax.plot(idx_x, x.iloc[s1:(s2 + 1), idx],
                         c='C1' if y.iloc[s1, 0] > 0. else 'C2',
                         alpha=0.5, zorder=10)
 
             # plot bern mean
             if bern_mean is not None:
-                ax.plot(idx_x, bern_mean[s1:s2, idx], color='C5',
+                ax.plot(idx_x, bern_mean[s1:(s2 + 1), idx], color='C5',
                         lw=.8, zorder=3, alpha=0.5)
 
     plt.tight_layout()

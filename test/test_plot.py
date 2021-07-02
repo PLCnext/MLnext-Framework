@@ -13,7 +13,7 @@ class TestHelper(TestCase):
         x = pd.DataFrame(np.ones((10, 1)))
         y = pd.DataFrame([0, 1, 1, 1, 0, 0, 1, 1, 0, 0])
 
-        expected = [0, 1, 4, 6, 8, 10]
+        expected = [0, 1, 4, 6, 8, 9]
 
         result = plot._get_segments(x, y)
 

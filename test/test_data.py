@@ -67,8 +67,8 @@ class TestDetemporalize(TestCase):
 
     def test_detemporalize(self):
 
-        arr = np.arange(8).reshape(2, 2, 2)
-        expected = np.arange(8).reshape(4, 2)
+        arr = np.arange(12).reshape(3, 2, 2)
+        expected = np.arange(12).reshape(6, 2)
 
         result = data.detemporalize(data=arr)
 

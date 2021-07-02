@@ -17,6 +17,11 @@ from sklearn.utils.validation import check_is_fitted
 
 class ColumnSelector(BaseEstimator, TransformerMixin):
     """Transformer to select a list of columns by their name.
+
+    Example:
+        >>> data = pd.DataFrame({'a': [0], 'b': [0]})
+        >>> ColumnSelector(keys=['a']).transform(data)
+        pd.DataFrame({'a': [0]})
     """
 
     def __init__(self, keys: List[str]):
@@ -46,6 +51,11 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
 
 class ColumnDropper(BaseEstimator, TransformerMixin):
     """Transformer to drop a list of columns by their name.
+
+    Example:
+        >>> data = pd.DataFrame({'a': [0], 'b': [0]})
+        >>> ColumnDropper(columns=['b']).transform(data)
+        pd.DataFrame({'a': [0]})
     """
 
     def __init__(self,
@@ -87,6 +97,11 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
 
 class ColumnRename(BaseEstimator, TransformerMixin):
     """Transformer to rename column with a function.
+
+    Example:
+        >>> data = pd.DataFrame({'a.b.c': [0], 'd.e.f': [0]})
+        >>> ColumnRename(lambda x: x.split('.')[-1]).transform(data)
+        pd.DataFrame({'c': [0], 'f': [0]})
     """
 
     def __init__(self, mapper: Callable[[str], str]):
@@ -122,6 +137,11 @@ class ColumnRename(BaseEstimator, TransformerMixin):
 
 class NaDropper(BaseEstimator, TransformerMixin):
     """Transformer that drops rows with na values.
+
+    Example:
+        >>> data = pd.DataFrame({'a': [0, 1], 'b': [0, np.nan]})
+        >>> NaDropper().transform(data)
+        pd.DataFrame({'a': [0], 'b': [0]})
     """
 
     def __init__(self):
@@ -136,6 +156,11 @@ class NaDropper(BaseEstimator, TransformerMixin):
 
 class Clip(BaseEstimator, TransformerMixin):
     """Transformer that clips values by a lower and upper bound.
+
+    Example:
+        >>> data = pd.DataFrame({'a': [-0.1, 1.2], 'b': [0.5, 0.6]})
+        >>> Clip().transform(data)
+        pd.DataFrame({'a': [0, 1], 'b': [0.5, 0.6]})
     """
 
     def __init__(self, lower: float = 0.0, upper: float = 1.0):
@@ -266,6 +291,12 @@ class ColumnTSMapper(BaseEstimator, TransformerMixin):
 
 class DatetimeTransformer(BaseEstimator, TransformerMixin):
     """Transforms a list of columns to datetime.
+
+    Example:
+        >>> data = pd.DataFrame({'dt': ['2021-07-02 16:30:00']})
+        >>> data = DatetimeTransformer(columns=['dt']).transform(data)
+        >>> data.dtypes
+        dt    datetime64[ns]
     """
 
     def __init__(self, *, columns: List[str], dt_format: str = None):
@@ -312,6 +343,16 @@ class DatetimeTransformer(BaseEstimator, TransformerMixin):
 
 class NumericTransformer(BaseEstimator, TransformerMixin):
     """Transforms a list of columns to numeric datatype.
+
+    Example:
+        >>> data = pd.DataFrame({'a': [0], 'b': ['1']})
+        >>> data.dtypes
+        a     int64
+        b    object
+        >>> data = NumericTransformer().transform(data)
+        >>> data.dtypes
+        a    int64
+        b    int64
     """
 
     def __init__(self, *, columns: Optional[List[str]] = None):
@@ -362,6 +403,19 @@ class NumericTransformer(BaseEstimator, TransformerMixin):
 class TimeframeExtractor(BaseEstimator, TransformerMixin):
     """Drops sampes that are not between a given start and end time.
     Limits are inclusive.
+
+    Example:
+        >>> data = pd.DataFrame(
+            {'dates': [datetime.datetime(2021, 7, 2, 9, 50, 0),
+                       datetime.datetime(2021, 7, 2, 11, 0, 0),
+                       datetime.datetime(2021, 7, 2, 12, 10, 0)],
+             'values': [0, 1, 2]})
+        >>> TimeframeExtractor(time_column='dates',
+                               start_time= datetime.time(10, 0, 0),
+                               end_time=datetime.time(12, 0, 0)
+                               ).transform(data)
+        pd.DataFrame({'dates': datetime.datetime(2021, 7, 2, 11, 0, 0),
+                      'values': [1]})
     """
 
     def __init__(self,
@@ -430,6 +484,18 @@ class TimeframeExtractor(BaseEstimator, TransformerMixin):
 class DateExtractor(BaseEstimator, TransformerMixin):
     """ Drops rows that are not between a start and end date.
     Limits are inclusive.
+
+    Example:
+        >>> data = pd.DataFrame(
+                {'dates': [datetime.datetime(2021, 7, 1, 9, 50, 0),
+                        datetime.datetime(2021, 7, 2, 11, 0, 0),
+                        datetime.datetime(2021, 7, 3, 12, 10, 0)],
+                'values': [0, 1, 2]})
+        >>> DateExtractor(date_column='dates',
+                          start_date=datetime.date(2021, 7, 2),
+                          end_date=datetime.date(2021, 7, 2)).transform(data)
+        pd.DataFrame({'dates': datetime.datetime(2021, 07, 2, 11, 0, 0),
+                        'values': [1]})
     """
 
     def __init__(self,
@@ -495,6 +561,11 @@ class DateExtractor(BaseEstimator, TransformerMixin):
 class ValueMapper(BaseEstimator, TransformerMixin):
     """Maps values in `column` according to `classes`. Wrapper for
     pd.DataFrame.replace.
+
+    Example:
+        >>> data = pd.DataFrame({'a': [0.0, 1.0, 2.0]})
+        >>> ValueMapper(columns=['a'], classes={2.0: 1.0}).transform(data)
+        pd.DataFrame({'a': [0.0, 1.0, 1.0]})
     """
 
     def __init__(self,
@@ -541,6 +612,11 @@ class ValueMapper(BaseEstimator, TransformerMixin):
 class Sorter(BaseEstimator, TransformerMixin):
     """Sorts the dataframe by a list of columns. Wrapper for
     pd.DataFrame.sort_values.
+
+    Example:
+        >>> data = pd.DataFrame({'a': [0, 1], 'b': [1, 0]})
+        >>> Sorter(columns=['b'], ascending=True).transform(data)
+        pd.DataFrame({'a': [1, 0], 'b': [0, 1]})
     """
 
     def __init__(self,
@@ -581,6 +657,11 @@ class Sorter(BaseEstimator, TransformerMixin):
 class Fill(BaseEstimator, TransformerMixin):
     """Fills NA values with a constant or 'bfill' / 'ffill'.
     Wrapper for df.fillna.
+
+    Example:
+        >>> data = pd.DataFrame({'a': [0.0, np.nan]})
+        >>> Fill(value=1.0).transform(data)
+        pd.DataFrame({'a': [0.0, 1.0]})
     """
 
     def __init__(self,
@@ -614,6 +695,17 @@ class Fill(BaseEstimator, TransformerMixin):
 
 
 class TimeOffsetTransformer(BaseEstimator, TransformerMixin):
+    """`TimeOffsetTransformer` offsets a datetime by `timedelta`.
+
+    Example:
+        >>> data = pd.DataFrame(
+                {'dates': [datetime.datetime(2021, 7, 1, 16, 0, 0)]})
+        >>> TimeOffsetTransformer(time_columns=['dates'],
+                                  timedelta=pd.Timedelta(1, 'h')
+                                  ).transform(data)
+        pd.DataFrame({'dates': datetime.datetime(2021, 07, 2, 17, 0, 0)})
+    """
+
     def __init__(self, *, time_columns: List[str], timedelta: pd.Timedelta):
         """
         Initialize `TimeOffsetTransformer`.
@@ -649,6 +741,11 @@ class ConditionedDropper(BaseEstimator, TransformerMixin):
     """Module to drop rows in `column` that contain numeric values and are
     above `threshold`. If `inverted` is true, values below `threshold` are
     dropped.
+
+    Example:
+        >>> data = pd.DataFrame({'a': [0.0, 1.2, 0.5]})
+        >>> ConditionedDropper(column='a', threshold=0.5).transform(data)
+        pd.DataFrame({'a': [0.0, 0.5]})
     """
 
     def __init__(self,
@@ -697,6 +794,11 @@ class ZeroVarianceDropper(BaseEstimator, TransformerMixin):
     """Removes all columns that are numeric and have zero variance.
        Needs to be fitted first. Gives a warning if a column that was
        registered as zero variance deviates.
+
+       Example:
+            >>> data = pd.DataFrame({'a': [0.0, 0.0], 'b': [1.0, 0.0]})
+            >>> ZeroVarianceDropper().fit_transform(data)
+            pd.DataFrame({'b': [1.0, 0.0]})
     """
 
     def __init__(self, verbose: bool = False):
@@ -768,6 +870,11 @@ class ZeroVarianceDropper(BaseEstimator, TransformerMixin):
 class SignalSorter(BaseEstimator, TransformerMixin):
     """Sorts the signals into continuous and binary signals. First the
     continuous, then the binary signals.
+
+    Example:
+        >>> data = pd.DataFrame({'a': [0.0, 1.0], 'b': [0.0, 0.2]})
+        >>> SignalSorter().fit_transform(data)
+        pd.DataFrame({'b': [1.0, 0.0], 'a': [0.0, 1.0]})
     """
 
     def __init__(self, verbose: bool = False):
@@ -830,6 +937,12 @@ class SignalSorter(BaseEstimator, TransformerMixin):
 
 class ColumnSorter(BaseEstimator, TransformerMixin):
     """Sorts the dataframe in the same order as the fitted dataframe.
+
+    Example:
+        >>> data = pd.DataFrame({'a': [0.0, 1.0], 'b': [0.0, 0.2]})
+        >>> (sorter := ColumnSorter()).fit(data)
+        >>> sorter.transform(pd.DataFrame({'b': [0.2, 1.0], 'a': [0.0, 0.1]}))
+        pd.DataFrame({'a': [0.0, 0.1], 'b': [0.2, 1.0]})
     """
 
     def __init__(self, *, raise_on_error: bool = True, verbose: bool = False):

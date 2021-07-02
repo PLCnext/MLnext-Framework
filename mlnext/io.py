@@ -8,13 +8,17 @@ import yaml
 from pydantic import BaseModel
 
 
-def save_json(*, data: Dict[str, Any], folder: str, name: str):
+def save_json(*, data: Dict[str, Any], name: str, folder: str = '.'):
     """Saves `data` to a name.json in `folder`.
 
     Args:
         data (Dict[str, Any]): Data to save.
         folder (str): Path to folder.
         name (str): Name of file.
+
+    Example:
+        # Save a dictionary to disk
+        >>> save_json(data={'name': 'mlnext'}, name='mlnext.json')
     """
 
     if not os.path.isdir(folder):
@@ -35,6 +39,11 @@ def load_json(path: str) -> Dict[str, Any]:
 
     Returns:
         Dict[str, Any]: Returns the loaded json.
+
+    Example:
+        # Load a json file
+        >>> load_json('mlnext.json')
+        {'name': 'mlnext'}
     """
 
     if not os.path.isfile(path):
@@ -46,13 +55,17 @@ def load_json(path: str) -> Dict[str, Any]:
     return data
 
 
-def save_yaml(*, data: Dict[str, Any], folder: str, name: str):
+def save_yaml(*, data: Dict[str, Any], name: str, folder: str = '.'):
     """Saves `data` to a name.yaml in `folder`.
 
     Args:
         data (Dict[str, Any]): Data to save.
         folder (str): Path to folder.
         name (str): Name of file.
+
+    Example:
+        # Save dictionary to yaml
+        >>> save_yaml(data={'name': 'mlnext'}, name='mlnext.yaml')
     """
 
     if not os.path.isdir(folder):
@@ -73,6 +86,11 @@ def load_yaml(path: str) -> Dict[str, Any]:
 
     Returns:
         Dict[str, Any]: Returns the loaded yaml file.
+
+    Example:
+        # Load a yaml file
+        >>> load_yaml('mlnext.yaml')
+        {'name': 'mlnext'}
     """
 
     if not os.path.isfile(path):
@@ -84,7 +102,7 @@ def load_yaml(path: str) -> Dict[str, Any]:
     return data
 
 
-def save_config(*, config: BaseModel, folder: str, name: str):
+def save_config(*, config: BaseModel, name: str, folder: str = '.'):
     """Saves a `pydantic.BaseModel` to `yaml`.
 
     Args:
@@ -94,6 +112,12 @@ def save_config(*, config: BaseModel, folder: str, name: str):
 
     Raises:
         ValueError: Raised if folder is invalid.
+
+    Example:
+        # Save a pydantic model to yaml
+        >>> class User(pydantic.BaseModel): id: int
+        >>> user = User(id=1)
+        >>> save_config(config=user)
     """
     if not os.path.isdir(folder):
         raise ValueError(f'{folder} is not a valid directory.')
@@ -112,6 +136,10 @@ def load_model(path: str):
 
     Args:
         path (str): Path to model.
+
+    Example:
+        # Load keras.Model from disk
+        >>> model = load_model('./models/dnn')
     """
 
     if not os.path.isdir(path):
