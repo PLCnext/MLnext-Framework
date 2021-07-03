@@ -43,6 +43,7 @@ X_train, X_test = random((100, 2)), random((100, 2))
 y_train, y_test = random((100, 1)) > 0.5, random((100, 1)) > 0.2
 
 # Plot signals
+mlnext.setup_plot()
 mlnext.plot_signals(x_pred=X_train, y=y_train)
 mlnext.plot_signals(x_pred=X_test, y=y_test)
 
@@ -52,7 +53,6 @@ model.compile(optimizer='adam', loss='sparse_categorical_crossentropy',
 history = model.fit(X_train, y_train, epochs=10)
 
 # Visualize training
-mlnext.setup_plot()
 mlnext.plot_history(history.history)
 
 # Predict labels
