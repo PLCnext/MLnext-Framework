@@ -24,8 +24,11 @@ def save_json(*, data: Dict[str, Any], name: str, folder: str = '.'):
     if not os.path.isdir(folder):
         raise ValueError(f'{folder} is not a valid directory.')
 
-    if '.json' not in name:
-        name += '.json'
+    filename, ext = os.path.splitext(name)
+    if not ext:
+        name = f'{filename}.json'
+    elif ext not in {'.json'}:
+        raise ValueError(f'Invalid extension "{ext}".')
 
     with open(os.path.join(folder, name), mode='w') as file:
         json.dump(data, file, indent=2)
@@ -71,8 +74,11 @@ def save_yaml(*, data: Dict[str, Any], name: str, folder: str = '.'):
     if not os.path.isdir(folder):
         raise ValueError(f'{folder} is not a valid directory.')
 
-    if '.yaml' not in name:
-        name += '.yaml'
+    filename, ext = os.path.splitext(name)
+    if not ext:
+        name = f'{filename}.yaml'
+    elif ext not in {'.yaml', '.yml'}:
+        raise ValueError(f'Invalid extension "{ext}".')
 
     with open(os.path.join(folder, name), mode='w') as file:
         yaml.dump(data, file, indent=2, sort_keys=False)
@@ -146,3 +152,30 @@ def load_model(path: str):
         raise ValueError(f'Path "{path}" not found or not a directory.')
 
     return keras.models.load_model(path)
+
+
+def load(path: str) -> Dict[str, Any]:
+    """Loads a file from `path` with the supported python parser.
+
+    Args:
+        path (str): Path to file.
+
+    Raises:
+        ValueError: Raised if
+
+    Returns:
+        Dict[str, Any]: Returns the content.
+    """
+    _, ext = os.path.splitext(path)
+
+    exts = {
+        '.json': load_json,
+        '.yaml': load_yaml,
+        '.yml': load_yaml
+    }
+
+    if ext not in exts:
+        raise ValueError(f'Incompatible extension "{ext}".'
+                         f'Supported extensions: {exts.keys()}.')
+
+    return exts[ext](path)

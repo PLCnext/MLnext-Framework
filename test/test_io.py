@@ -60,6 +60,13 @@ class TestJson(TestCase):
 
         self.assertTrue(os.path.isfile(os.path.join(self.d.path, name)))
 
+    def test_save_invalid_ext(self):
+        data = {'test': [0, 1, 2]}
+        name = 'test.txt'
+
+        with self.assertRaises(ValueError):
+            io.save_json(data=data, folder=self.d.path, name=name)
+
     def test_save_json_no_ext(self):
 
         data = {'test': [0, 1, 2]}
@@ -105,6 +112,21 @@ class TestYaml(TestCase):
         io.save_yaml(data=data, folder=self.d.path, name=name)
 
         self.assertTrue(os.path.isfile(os.path.join(self.d.path, name)))
+
+    def test_save_yml(self):
+        data = {'test': [0, 1, 2]}
+        name = 'test.yml'
+
+        io.save_yaml(data=data, folder=self.d.path, name=name)
+
+        self.assertTrue(os.path.isfile(os.path.join(self.d.path, name)))
+
+    def test_save_invalid_ext(self):
+        data = {'test': [0, 1, 2]}
+        name = 'test.txt'
+
+        with self.assertRaises(ValueError):
+            io.save_yaml(data=data, folder=self.d.path, name=name)
 
     def test_save_yaml_no_ext(self):
 
@@ -155,3 +177,43 @@ class TestLoadModel(TestCase):
         result = io.load_model(path)
 
         self.assertIsInstance(result, keras.Model)
+
+
+class TestLoad(TestCase):
+
+    def setUp(self):
+        self.d = TempDirectory()
+        self.data = {'test': [0, 1, 2]}
+
+    def tearDown(self):
+        self.d.cleanup()
+
+    def test_yaml(self):
+        name = 'test.yaml'
+        io.save_yaml(data=self.data, name=name, folder=self.d.path)
+
+        result = io.load(path=os.path.join(self.d.path, name))
+
+        self.assertDictEqual(result, self.data)
+
+    def test_yml(self):
+        name = 'test.yml'
+        io.save_yaml(data=self.data, name=name, folder=self.d.path)
+
+        result = io.load(path=os.path.join(self.d.path, name))
+
+        self.assertDictEqual(result, self.data)
+
+    def test_json(self):
+        name = 'test.json'
+        io.save_json(data=self.data, name=name, folder=self.d.path)
+
+        result = io.load(path=os.path.join(self.d.path, name))
+
+        self.assertDictEqual(result, self.data)
+
+    def test_invalid_ext(self):
+        name = 'test.abc'
+
+        with self.assertRaises(ValueError):
+            io.load(name)
