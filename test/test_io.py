@@ -60,6 +60,13 @@ class TestJson(TestCase):
 
         self.assertTrue(os.path.isfile(os.path.join(self.d.path, name)))
 
+    def test_save_invalid_ext(self):
+        data = {'test': [0, 1, 2]}
+        name = 'test.txt'
+
+        with self.assertRaises(ValueError):
+            io.save_json(data=data, folder=self.d.path, name=name)
+
     def test_save_json_no_ext(self):
 
         data = {'test': [0, 1, 2]}
@@ -105,6 +112,21 @@ class TestYaml(TestCase):
         io.save_yaml(data=data, folder=self.d.path, name=name)
 
         self.assertTrue(os.path.isfile(os.path.join(self.d.path, name)))
+
+    def test_save_yml(self):
+        data = {'test': [0, 1, 2]}
+        name = 'test.yml'
+
+        io.save_yaml(data=data, folder=self.d.path, name=name)
+
+        self.assertTrue(os.path.isfile(os.path.join(self.d.path, name)))
+
+    def test_save_invalid_ext(self):
+        data = {'test': [0, 1, 2]}
+        name = 'test.txt'
+
+        with self.assertRaises(ValueError):
+            io.save_yaml(data=data, folder=self.d.path, name=name)
 
     def test_save_yaml_no_ext(self):
 
@@ -155,3 +177,96 @@ class TestLoadModel(TestCase):
         result = io.load_model(path)
 
         self.assertIsInstance(result, keras.Model)
+
+
+class TestLoad(TestCase):
+
+    def setUp(self):
+        self.d = TempDirectory()
+        self.data = {'test': [0, 1, 2]}
+
+    def tearDown(self):
+        self.d.cleanup()
+
+    def test_yaml(self):
+        name = 'test.yaml'
+        io.save_yaml(data=self.data, name=name, folder=self.d.path)
+
+        result = io.load(path=os.path.join(self.d.path, name))
+
+        self.assertDictEqual(result, self.data)
+
+    def test_yml(self):
+        name = 'test.yml'
+        io.save_yaml(data=self.data, name=name, folder=self.d.path)
+
+        result = io.load(path=os.path.join(self.d.path, name))
+
+        self.assertDictEqual(result, self.data)
+
+    def test_json(self):
+        name = 'test.json'
+        io.save_json(data=self.data, name=name, folder=self.d.path)
+
+        result = io.load(path=os.path.join(self.d.path, name))
+
+        self.assertDictEqual(result, self.data)
+
+    def test_invalid_ext(self):
+        name = 'test.abc'
+
+        with self.assertRaises(ValueError):
+            io.load(name)
+
+
+class TestList(TestCase):
+
+    def setUp(self):
+        self.d = TempDirectory()
+        self.d.makedir('tasks')
+        self.d.makedir('models')
+
+        self.data = {'test': [1, 2, 3]}
+        self.tasks = os.path.join(self.d.path, 'tasks')
+        io.save_json(data=self.data, name='test.json', folder=self.tasks)
+
+    def tearDown(self):
+        self.d.cleanup()
+
+    def test_get_folders(self):
+        expected = ['models', 'tasks']
+
+        result = io.get_folders(self.d.path)
+
+        self.assertCountEqual(result, expected)
+
+    def test_get_folders_full_path(self):
+        expected = [os.path.join(self.d.path, p) for p in ['models', 'tasks']]
+
+        result = io.get_folders(self.d.path, full_path=True)
+
+        self.assertCountEqual(result, expected)
+
+    def test_get_folders_invalid_path(self):
+        with self.assertRaises(ValueError):
+            io.get_folders(os.path.join(self.tasks, 'test.json'))
+
+    def test_get_files(self):
+        expected = ['test.json']
+
+        result = io.get_files(path=self.tasks, extension='json')
+
+        self.assertCountEqual(result, expected)
+
+    def test_get_files_full_path(self):
+        expected = [os.path.join(self.tasks, p) for p in ['test.json']]
+
+        result = io.get_files(path=self.tasks, extension='json',
+                              full_path=True)
+
+        self.assertCountEqual(result, expected)
+
+    def test_get_files_invalid_path(self):
+        with self.assertRaises(ValueError):
+            io.get_files(path=os.path.join(self.tasks, 'test.json'),
+                         extension='json')
