@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "mlnext"
-version = "1.1.0"
+version = "1.0.0"
 description = "Machine learning utilities for Tensorflow/Keras."
-authors = ["Gorden Platz <gplatz@phoenixcontact.com>", "Tom Hammerbacher <thammerbacher@phoenixcontact.com"]
+authors = ["Phoenix Contact Electronics GmbH <digitalfactorynow@phoenixcontact.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
