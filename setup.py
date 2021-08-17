@@ -5,7 +5,7 @@ with open('requirements.txt') as f:
     requirements = f.read().splitlines()
 
 setup(name='mlnext',
-      version='1.1.0',
+      version='1.0.0',
       author='Phoenix Contact Electronics GmbH',
       author_email='digitalfactorynow@phoenixcontact.com',
       description='Machine learning utilities for Tensorflow/Keras.',

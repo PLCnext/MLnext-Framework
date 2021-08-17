@@ -198,8 +198,6 @@ def plot_signals(*,
     axes = axes.flatten() if columns > 1 else [axes]
     plt.subplots_adjust(hspace=0.5)
 
-    print(segments)
-
     # iterate over segments
     for s1, s2 in zip(segments[:-1], segments[1:]):
         # draw in color of label for each col
