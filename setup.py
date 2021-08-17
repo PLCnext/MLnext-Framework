@@ -6,8 +6,8 @@ with open('requirements.txt') as f:
 
 setup(name='mlnext',
       version='1.1.0',
-      author='Gorden Platz',
-      author_email='gplatz@phoenixcontact.com',
+      author='Phoenix Contact Electronics GmbH',
+      author_email='digitalfactorynow@phoenixcontact.com',
       description='Machine learning utilities for Tensorflow/Keras.',
       install_requires=requirements,
       packages=find_packages(include='mlnext'),
