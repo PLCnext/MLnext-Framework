@@ -3,7 +3,6 @@ from typing import Dict
 from typing import List
 
 import numpy as np
-from scipy import stats
 from sklearn import metrics
 
 
@@ -39,7 +38,7 @@ def get_threshold(x: np.array, p: float = 100) -> float:
         >>> get_threshold(np.array([0.0, 1.0]), p=99)
         0.99
     """
-    return stats.scoreatpercentile(x, p)
+    return np.percentile(x, p)
 
 
 def apply_threshold(x: np.array, *, threshold: float) -> np.array:
