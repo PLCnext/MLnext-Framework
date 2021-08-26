@@ -13,7 +13,7 @@ PyYAML= "^5.4.1"
 scikit_learn= "^0.24.1"
 matplotlib="^3.3.4"
 pydot="^1.4.2"
-tensorflow="^2.4.1"
+tensorflow-cpu="^2.4.1"
 
 [tool.poetry.dev-dependencies]
 testfixtures= "^6.17.1"
