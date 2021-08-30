@@ -130,3 +130,5 @@ scratch/
 
 logs/
 cov.xml
+
+_autosummary/
