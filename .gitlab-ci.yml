@@ -10,13 +10,8 @@ before_script:
 
 lint:
   stage: quality
-  variables:
-    PRE_COMMIT_HOME: ${CI_PROJECT_DIR}/.cache/pre-commit
   script:
     - tox -e lint
-  cache:
-    paths:
-      - ${PRE_COMMIT_HOME}
 
 pytest:
   stage: test
