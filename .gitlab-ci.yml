@@ -11,6 +11,7 @@ before_script:
 lint:
   stage: quality
   script:
+    - ls -al
     - pip install pre-commit
     - pre-commit run --all-files
 
