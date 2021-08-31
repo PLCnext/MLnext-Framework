@@ -9,11 +9,10 @@ before_script:
   - pip install tox
 
 lint:
+  image: python:3.8
   stage: quality
   script:
-    - ls -al
-    - pip install pre-commit
-    - pre-commit run --all-files
+    - tox -e lint
 
 pytest:
   stage: test
