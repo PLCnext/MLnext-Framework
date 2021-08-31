@@ -12,10 +12,9 @@ import os
 import sys
 from datetime import date
 
-import mlnext
-
 sys.path.insert(0, os.path.abspath('../..'))
 
+import mlnext  # noqa
 
 # -- Project information -----------------------------------------------------
 
