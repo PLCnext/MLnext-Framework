@@ -4,23 +4,22 @@ stages:
   - documentation
   - deploy
 
-image: python:3.8-alpine
+image: python:3.8
 before_script:
   - pip install tox
 
 lint:
-  image: python:3.8
   stage: quality
   script:
     - tox -e lint
 
-pytest:
+unittest:
   stage: test
   script:
     - tox -e py38
 
 docs:
-  stage: test
+  stage: documentation
   script:
     - tox -e docs
 
