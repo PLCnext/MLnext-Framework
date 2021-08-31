@@ -10,19 +10,24 @@
 #
 import os
 import sys
+from datetime import date
+
+import mlnext
 
 sys.path.insert(0, os.path.abspath('../..'))
 
 
 # -- Project information -----------------------------------------------------
 
-project = 'MLnext Framework'
-copyright = '2021, Phoenix Contact Electronics GmbH'
-author = 'Phoenix Contact Electronics GmbH'
+
+project = mlnext.__title__
+author = mlnext.__author__
+copyright = f'{date.today().year}, {author}'
+
 
 # The full version, including alpha/beta/rc tags
-release = '1.0.0'
-
+version = mlnext.__version__
+release = version
 
 # -- General configuration ---------------------------------------------------
 
@@ -35,7 +40,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.viewcode',
-    'sphinx_autodoc_typehints'
+    'sphinx.ext.napoleon'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -59,12 +64,18 @@ html_theme = 'furo'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+html_theme_options = {
+    'light_logo': 'logos/digital-factory-logo.png',
+    'dark_logo': 'logos/digital-factory-dark-logo.png',
+}
+html_favicon = '_static/logos/favicon.ico'
+
+html_show_sourcelink = False
 
 # -- Extensions --------------------------------------------------------------
 
 autosectionlabel_prefix_document = True
-autosectionlabel_maxdepth = 4
-html_show_sourcelink = False
+autosectionlabel_maxdepth = 3
 autosummary_generate = True
 autodoc_inherit_docstrings = False
 set_type_checking_flag = True

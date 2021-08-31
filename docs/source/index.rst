@@ -10,8 +10,17 @@ Welcome to MLnext Execution's documentation!
    :maxdepth: 2
    :caption: Contents
 
-   pages/modules.rst
+   pages/readme.rst
+   pages/changelog.rst
 
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree: _autosummary
+   :template: custom-module-template.rst
+   :recursive:
+
+   mlnext
 
 Indices and tables
 ==================

@@ -2,32 +2,51 @@ stages:
   - test
   - deploy
 
-test-package:
+image: python:3.8-slim
+before_script:
+  - pip install tox
+
+lint:
   stage: test
-  image: python:3.8
-  before_script:
-    - pip install .
-    - pip install testfixtures
   script:
-    - python3 -m unittest -v
+    - tox -e lint
+
+pytest:
+  stage: test
+  script:
+    - tox -e py38
+
+changelog:
+  stage: test
+  script:
+    - tox -e changelog
+
+docs:
+  stage: test
+  script:
+    - tox -e docs
+
+coverage:
+  stage: test
+  script:
+    - tox -e coverage-report
+  artifacts:
+    reports:
+      cobertura: coverage.xml
+
+description:
+  stage: test
+  script:
+    - tox -e pypi-description
+
+release:
+  stage: deploy
+  before_script:
+    - pip install twine
+  script:
+    - python -m build
+    - python -m twine upload --verbose --skip-existing dist/*
   only:
     - dev
-    - main
-
-build-package:
-  stage: deploy
-  image: python:3.8
-  script:
-    - cat ${CA_CERT} > /tmp/certs.pem
-    - pip install twine poetry
-    - poetry build
-    - >
-      python -m twine upload
-      --repository-url ${PYPI_REGISTRY}
-      --username ${TWINE_USERNAME}
-      --password ${TWINE_PASSWORD}
-      --cert /tmp/certs.pem
-      --verbose
-      dist/*
-  only:
+    - master
     - tags
