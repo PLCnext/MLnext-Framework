@@ -4,7 +4,7 @@ stages:
   - documentation
   - deploy
 
-image: python:3.8-slim
+image: python:3.8-alpine
 before_script:
   - pip install tox
 
@@ -13,7 +13,6 @@ lint:
   variables:
     PRE_COMMIT_HOME: ${CI_PROJECT_DIR}/.cache/pre-commit
   script:
-    - git init
     - tox -e lint
   cache:
     paths:
