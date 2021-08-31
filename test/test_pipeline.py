@@ -215,7 +215,7 @@ class TestDateExtractor(TestCase):
                       datetime.datetime(2021, 10, 3, 11, 0, 0),
                       datetime.datetime(2021, 10, 4, 12, 0, 0),
                       datetime.datetime(2021, 10, 5, 12, 10, 0)]
-        self.values = np.arange(len(self.dates), dtype=np.int32)
+        self.values = np.arange(len(self.dates))
         self.df = pd.DataFrame(zip(self.dates, self.values),
                                columns=['date', 'value'])
 
