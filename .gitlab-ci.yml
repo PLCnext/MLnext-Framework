@@ -11,7 +11,8 @@ before_script:
 lint:
   stage: quality
   script:
-    - tox -e lint
+    - pip install pre-commit
+    - pre-commit run --all-files
 
 pytest:
   stage: test
