@@ -1,5 +1,7 @@
 stages:
+  - quality
   - test
+  - documentation
   - deploy
 
 image: python:3.8-slim
@@ -7,7 +9,7 @@ before_script:
   - pip install tox
 
 lint:
-  stage: test
+  stage: quality
   script:
     - tox -e lint
 
@@ -16,26 +18,26 @@ pytest:
   script:
     - tox -e py38
 
-changelog:
-  stage: test
-  script:
-    - tox -e changelog
-
 docs:
   stage: test
   script:
     - tox -e docs
 
 coverage:
-  stage: test
+  stage: documentation
   script:
     - tox -e coverage-report
   artifacts:
     reports:
       cobertura: coverage.xml
 
+changelog:
+  stage: documentation
+  script:
+    - tox -e changelog
+
 description:
-  stage: test
+  stage: documentation
   script:
     - tox -e pypi-description
 
