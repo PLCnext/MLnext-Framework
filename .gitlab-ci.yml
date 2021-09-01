@@ -44,7 +44,7 @@ release:
   before_script:
     - pip install twine
   script:
-    - python -m build
+    - python setup.py sdist bdist_wheel
     - python -m twine upload --verbose --skip-existing dist/*
   only:
     - dev
