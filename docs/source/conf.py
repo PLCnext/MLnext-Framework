@@ -48,6 +48,7 @@ release = version
 # ones.
 extensions = [
     'myst_parser',
+    'sphinx_copybutton',
     'sphinx.ext.autosectionlabel',
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
