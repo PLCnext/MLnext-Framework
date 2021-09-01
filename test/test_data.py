@@ -81,3 +81,30 @@ class TestDetemporalize(TestCase):
         result = data.detemporalize(data=arr)
 
         np.testing.assert_array_equal(result, arr)
+
+
+class TestSample(TestCase):
+
+    def test_sample_normal(self):
+
+        mean = 0
+        std = 1
+
+        np.random.seed(0)
+        expected = np.random.normal(loc=mean, scale=std)
+
+        np.random.seed(0)
+        result = data.sample_normal(mean=mean, std=std)
+
+        np.testing.assert_array_equal(result, expected)
+
+    def test_sample_bernoulli(self):
+
+        mean = 0.2
+        np.random.seed(0)
+        expected = np.random.binomial(n=1, p=mean)
+
+        np.random.seed(0)
+        result = data.sample_bernoulli(mean=mean)
+
+        self.assertEqual(result, expected)

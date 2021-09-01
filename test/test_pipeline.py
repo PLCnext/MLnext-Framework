@@ -1,5 +1,4 @@
 import datetime
-from unittest import skip
 from unittest import TestCase
 
 import numpy as np
@@ -97,7 +96,6 @@ class TestClip(TestCase):
         pd.testing.assert_frame_equal(result, expected)
 
 
-@skip
 class TestDatetimeTransformer(TestCase):
     # FIXME: fails in gitlab pipeline but succeeds locally
     def test_datetime(self):
@@ -120,7 +118,6 @@ class TestDatetimeTransformer(TestCase):
             t.fit_transform(df)
 
 
-@skip
 class TestNumericTransformer(TestCase):
     # FIXME: fails in gitlab pipeline but succeeds locally
     def test_numeric(self):
@@ -146,8 +143,16 @@ class TestNumericTransformer(TestCase):
         t = pipeline.NumericTransformer(columns=['2'])
         df = pd.DataFrame([[0, 1]], columns=['1', '2'], dtype=object)
         expected = pd.DataFrame([[0, 1]], columns=['1', '2'], dtype=object)
-        expected.loc[:, ['2']] = expected.loc[:, ['2']].apply(pd.to_numeric,
-                                                              axis=0)
+        expected['2'] = expected['2'].apply(pd.to_numeric)
+        result = t.fit_transform(df)
+
+        pd.testing.assert_frame_equal(result, expected)
+
+    def test_numeric_multiple_column(self):
+
+        t = pipeline.NumericTransformer(columns=['1', '2'])
+        df = pd.DataFrame([[0, 1]], columns=['1', '2'], dtype=object)
+        expected = pd.DataFrame([[0, 1]], columns=['1', '2'])
 
         result = t.fit_transform(df)
 
@@ -194,7 +199,7 @@ class TestTimeframeExtractor(TestCase):
             time_column='time', start_time=datetime.time(10, 0, 0),
             end_time=datetime.time(12, 0, 0), invert=True)
         expected = pd.DataFrame(zip([self.dates[0], self.dates[-1]],
-                                    [0, 4]),
+                                    np.array([0, 4])),
                                 columns=['time', 'value'])
 
         result = t.fit_transform(self.df)
@@ -231,7 +236,8 @@ class TestDateExtractor(TestCase):
         t = pipeline.DateExtractor(
             date_column='date', start_date=datetime.date(2021, 10, 2),
             end_date=datetime.date(2021, 10, 4), invert=True)
-        expected = pd.DataFrame(zip([self.dates[0], self.dates[-1]], [0, 4]),
+        expected = pd.DataFrame(zip([self.dates[0], self.dates[-1]],
+                                    np.array([0, 4])),
                                 columns=['date', 'value'])
 
         result = t.fit_transform(self.df)

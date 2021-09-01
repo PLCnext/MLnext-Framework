@@ -1,3 +1,5 @@
+""" Module for data preprocessing.
+"""
 import datetime
 import warnings
 from typing import Any
@@ -334,7 +336,7 @@ class DatetimeTransformer(BaseEstimator, TransformerMixin):
                 f'{X.columns.to_list()}.')
 
         # parse to pd.Timestamp
-        X.loc[:, self._columns] = X.loc[:, self._columns].apply(
+        X[self._columns] = X[self._columns].apply(
             lambda x: pd.to_datetime(x, format=self._format), axis=0)
         # column wise
 
@@ -368,7 +370,6 @@ class NumericTransformer(BaseEstimator, TransformerMixin):
         self._columns = columns
 
     def fit(self, X, y=None):
-
         return self
 
     def transform(self, X):
@@ -386,17 +387,17 @@ class NumericTransformer(BaseEstimator, TransformerMixin):
         X = X.copy()
         # transform all columns
         if self._columns is None:
-            columns = X.columns
+            columns = X.columns.to_list()
         else:
             columns = self._columns
 
-        if len((diff := list(set(columns) - set(X.columns)))):
-            raise ValueError(f'Columns found: {X.columns}. '
+        if len((diff := list(set(columns) - set(cols := X.columns)))):
+            raise ValueError(f'Columns found: {cols.to_list()}. '
                              f'Columns missing: {diff}.')
 
         # parse to numeric
         # column wise
-        X.loc[:, columns] = X.loc[:, columns].apply(pd.to_numeric, axis=0)
+        X[columns] = X[columns].apply(pd.to_numeric, axis=0)
         return X
 
 
@@ -534,7 +535,6 @@ class DateExtractor(BaseEstimator, TransformerMixin):
         Returns:
             pd.Dataframe: Returns the new dataframe.
         """
-        X = X.copy()
         rows_before = X.shape[0]
 
         dates = pd.to_datetime(X[self._column])
