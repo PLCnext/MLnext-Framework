@@ -1,3 +1,5 @@
+""" Module for data visualization.
+"""
 from typing import Any
 from typing import Dict
 from typing import List
@@ -43,7 +45,7 @@ def plot_error(X: np.array,
         save (str): Path to save figure to
 
     Example:
-        # Plots the predictions X in the color of label with a threshold
+        >>> # Plots the predictions X in the color of label with a threshold
         >>> plot_error(X=np.array([0.2, 0.9, 0.4]), y=np.array([0, 1, 0]),
                        threshold=0.5, title='Prediction', path='pred.png')
     """
@@ -82,7 +84,7 @@ def plot_history(history: Dict[str, Any],
         path (str): Path to save figure to.
 
     Example:
-        # Plots the training history for entries that match filter
+        >>> # Plots the training history for entries that match filter
         >>> history = model.fit(...)
         >>> plot_history(history.history, filter=['loss'], path='history.png')
     """

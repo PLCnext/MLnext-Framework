@@ -1,3 +1,5 @@
+""" Module for loading and saving files.
+"""
 import glob
 import json
 import os
@@ -19,7 +21,7 @@ def save_json(*, data: Dict[str, Any], name: str, folder: str = '.'):
         name (str): Name of file.
 
     Example:
-        # Save a dictionary to disk
+        >>> # Save a dictionary to disk
         >>> save_json(data={'name': 'mlnext'}, name='mlnext.json')
     """
 
@@ -46,7 +48,7 @@ def load_json(path: str) -> Dict[str, Any]:
         Dict[str, Any]: Returns the loaded json.
 
     Example:
-        # Load a json file
+        >>> # Load a json file
         >>> load_json('mlnext.json')
         {'name': 'mlnext'}
     """
@@ -69,7 +71,7 @@ def save_yaml(*, data: Dict[str, Any], name: str, folder: str = '.'):
         name (str): Name of file.
 
     Example:
-        # Save dictionary to yaml
+        >>> # Save dictionary to yaml
         >>> save_yaml(data={'name': 'mlnext'}, name='mlnext.yaml')
     """
 
@@ -96,7 +98,7 @@ def load_yaml(path: str) -> Dict[str, Any]:
         Dict[str, Any]: Returns the loaded yaml file.
 
     Example:
-        # Load a yaml file
+        >>> # Load a yaml file
         >>> load_yaml('mlnext.yaml')
         {'name': 'mlnext'}
     """
@@ -122,7 +124,7 @@ def save_config(*, config: BaseModel, name: str, folder: str = '.'):
         ValueError: Raised if folder is invalid.
 
     Example:
-        # Save a pydantic model to yaml
+        >>> # Save a pydantic model to yaml
         >>> class User(pydantic.BaseModel): id: int
         >>> user = User(id=1)
         >>> save_config(config=user)
@@ -146,7 +148,7 @@ def load_model(path: str):
         path (str): Path to model.
 
     Example:
-        # Load keras.Model from disk
+        >>> # Load keras.Model from disk
         >>> model = load_model('./models/dnn')
     """
 
@@ -169,7 +171,7 @@ def load(path: str) -> Dict[str, Any]:
         Dict[str, Any]: Returns the content.
 
     Example:
-        # Loads file from path
+        >>> # Loads file from path
         >>> load('./resources/task.json')
         {
             "name": "task",
@@ -210,7 +212,7 @@ def get_files(*,
         List[str]: Returns a list of files of `extension` in `path`.
 
     Example:
-        # lists all files in dir
+        >>> # lists all files in dir
         >>> get_files(path='./resources/tasks', extension='json')
         ['task.json']
 
@@ -244,7 +246,7 @@ def get_folders(path: str, *, full_path: bool = False) -> List[str]:
         List[str]: Returns a list of the names of the folders.
 
     Example:
-        # list all folder in a directory
+        >>> # list all folder in a directory
         >>> get_folders('./resources')
         ['tasks', 'models']
 
