@@ -17,19 +17,17 @@ unittest:
   stage: test
   script:
     - tox -e py38
-
-docs:
-  stage: documentation
-  script:
-    - tox -e docs
-
-coverage:
-  stage: documentation
-  script:
     - tox -e coverage-report
   artifacts:
     reports:
       cobertura: coverage.xml
+
+docs:
+  stage: documentation
+  variables:
+    GITLABPAGES: 1
+  script:
+    - tox -e docs
 
 changelog:
   stage: documentation
