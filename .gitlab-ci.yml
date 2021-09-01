@@ -24,8 +24,6 @@ unittest:
 
 docs:
   stage: documentation
-  variables:
-    GITLABPAGES: 1
   script:
     - tox -e docs
 
@@ -47,6 +45,5 @@ release:
     - python setup.py sdist bdist_wheel
     - python -m twine upload --verbose --skip-existing dist/*
   only:
-    - dev
-    - master
+    - main
     - tags
