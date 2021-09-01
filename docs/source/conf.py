@@ -14,6 +14,19 @@ from datetime import date
 
 sys.path.insert(0, os.path.abspath('../..'))
 
+
+if 'GITLABPAGES' in os.environ:
+    import glob
+
+    if glob.glob('../changelog/*.*.rst'):
+        print('-- Found changes; running towncrier --', flush=True)
+        import subprocess
+
+        subprocess.run(
+            ['towncrier', '--yes', '--date', 'not released yet'], cwd='..',
+            check=True
+        )
+
 import mlnext  # noqa
 
 # -- Project information -----------------------------------------------------
