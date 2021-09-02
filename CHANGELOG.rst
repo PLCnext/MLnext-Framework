@@ -23,9 +23,3 @@ Changes
   `#1 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/1>`__
 - Updated ``README.rst``.
   `#2 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/2>`__
-
-
-----
-
-
-.
