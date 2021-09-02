@@ -8,7 +8,7 @@ from setuptools import setup
 ###############################################################################
 
 NAME = 'mlnext'
-PACKAGES = find_packages(where='mlnext')
+PACKAGES = find_packages(where='.')
 HERE = os.path.abspath(os.path.dirname(__file__))
 META_PATH = os.path.join('mlnext', '__init__.py')
 KEYWORDS = ['mlnext', 'machine', 'learning', 'utilities']
@@ -33,7 +33,6 @@ with open(os.path.join(HERE, 'requirements.txt')) as f:
 
 EXTRAS_REQUIRE = {
     'tests': [
-        *INSTALL_REQUIRES,
         'testfixtures',
         'coverage'
     ],
@@ -86,14 +85,16 @@ LONG = (
     + 'Release Information\n'
     + '===================\n\n'
     +
-    changes.group(0)
-    if (changes :=
-        re.search(
-            r'(\d+.\d.\d \(.*?\)\r?\n.*?)\r?\n\r?\n\r?\n----\r?\n\r?\n\r?\n',
-            read('CHANGELOG.rst'),
-            re.S,
-        )) is not None
-    else 'No Information'
+    (changes.group(0)
+     if (changes :=
+         re.search(
+             r'(\d+.\d.\d \(.*?\)\r?\n.*?)\r?\n\r?\n\r?\n----\r?\n\r?\n\r?\n',
+             read('CHANGELOG.rst'),
+             re.S,
+         )) is not None
+     else 'No Information')
+    + '\n\n'
+    + find_meta('copyright')
 )
 
 
