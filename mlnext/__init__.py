@@ -1,7 +1,5 @@
 """Machine learning utilities for Tensorflow/Keras.
 """
-from datetime import date
-
 from .data import *  # noqa
 from .io import *  # noqa
 from .pipeline import *  # noqa
@@ -16,4 +14,4 @@ __description__ = 'Machine learning utilities for Tensorflow/Keras.'
 __author__ = 'Phoenix Contact Electronics GmbH'
 __email__ = 'digitalfactorynow@phoenixcontact.com'
 
-__copyright__ = f'Copyright (c) {date.today().year} {__author__}'
+__copyright__ = 'Copyright (c) 2021 Phoenix Contact Electronics GmbH'
