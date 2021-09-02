@@ -8,7 +8,7 @@ from setuptools import setup
 ###############################################################################
 
 NAME = 'mlnext'
-PACKAGES = find_packages(where='mlnext')
+PACKAGES = find_packages(where='.')
 HERE = os.path.abspath(os.path.dirname(__file__))
 META_PATH = os.path.join('mlnext', '__init__.py')
 KEYWORDS = ['mlnext', 'machine', 'learning', 'utilities']
@@ -33,7 +33,6 @@ with open(os.path.join(HERE, 'requirements.txt')) as f:
 
 EXTRAS_REQUIRE = {
     'tests': [
-        *INSTALL_REQUIRES,
         'testfixtures',
         'coverage'
     ],
