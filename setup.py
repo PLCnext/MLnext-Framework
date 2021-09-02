@@ -78,10 +78,10 @@ def find_meta(meta):
 VERSION = find_meta('version')
 
 LONG = (
-    '======================================\n'
+    '=======================================\n'
     '``MLnext``: Machine learning utilities.\n'
-    '======================================\n'
-    + read('README.rst').split('Installation')[0]
+    '=======================================\n'
+    + read('README.rst')
     + '\n\n'
     + 'Release Information\n'
     + '===================\n\n'
