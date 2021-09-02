@@ -11,3 +11,8 @@ Changes for the upcoming release can be found in the `"changelog" directory <htt
    See https://www.attrs.org/en/latest/contributing.html#changelog for details.
 
 .. towncrier release notes start
+
+0.1.0 (2021-09-02)
+------------------
+
+Initial Release.
