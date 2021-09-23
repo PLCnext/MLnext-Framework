@@ -12,6 +12,7 @@ Welcome to MLnext Execution's documentation!
 
    pages/readme.rst
    pages/changelog.rst
+   pages/notice.rst
 
 .. rubric:: Modules
 
