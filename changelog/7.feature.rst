@@ -1,0 +1,1 @@
+Added Digital Factory now introduction and legal notice to documentation.
