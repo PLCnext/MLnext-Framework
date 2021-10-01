@@ -477,3 +477,18 @@ class TestColumnSorter(TestCase):
             result = t.transform(df)
 
         pd.testing.assert_frame_equal(result, self.df)
+
+
+class TestDifferentialCreator(TestCase):
+
+    def setUp(self):
+        self.df = pd.DataFrame({'test': [0.0, 1.0, 0.2, 0.3, 0.5]})
+
+    def test_creator(self):
+        t = pipeline.DifferentialCreator(verbose=True)
+
+        expected = pd.DataFrame({'test': [0.0, 1.0, 0.2, 0.3, 0.5],
+                                 'test_dif': [0.0, 1.0, -0.8, 0.1, 0.2]})
+
+        result = t.fit_transform(self.df)
+        pd.testing.assert_frame_equal(result, expected)
