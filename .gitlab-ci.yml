@@ -60,3 +60,6 @@ publish_docs:
     paths:
       - html
       - pdf/mlnext.pdf
+  only:
+    - main
+    - tags
