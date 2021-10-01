@@ -993,18 +993,19 @@ class DifferentialCreator(BaseEstimator, TransformerMixin):
 
     Example:
         >>> data = pd.DataFrame({'a': [1.0, 2.0, 1.0]})
+        >>> dcreator = DifferentialCreator(keys=['a'])
         >>> dcreator.transform(pd.DataFrame(data)
         pd.DataFrame({'a': [1.0, 2.0, 1.0], 'a_dif': [1.0, -1.0, 0.0]})
     """
 
-    def __init__(self, *, verbose: bool = False):
+    def __init__(self, keys: List[str]):
         """Initialize `DifferentialCreator`.
 
         Attributes:
-            verbose (bool): Whether to print the status.
+            keys: List[str]: Columns to create derivatives
         """
         super().__init__()
-        self.verbose = verbose
+        self._keys = keys
 
     def fit(self, X, y=None):
         return self
@@ -1018,8 +1019,5 @@ class DifferentialCreator(BaseEstimator, TransformerMixin):
         Returns:
             pd.DataFrame: Returns the concatenated DataFrame.
         """
-        X_dif = X.diff(axis=0).fillna(0).add_suffix('_dif')
+        X_dif = X.loc[:, self._keys].diff(axis=0).fillna(0).add_suffix('_dif')
         return pd.concat([X, X_dif], axis=1)
-
-    def fit_transform(self, X, y=None):
-        return self.fit(X, y).transform(X)
