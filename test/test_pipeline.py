@@ -488,7 +488,7 @@ class TestDifferentialCreator(TestCase):
                                     'test2': [0.0, 1.0, 0.2, 0.3, 0.5]})
 
     def test_creator(self):
-        t = pipeline.DifferentialCreator(keys=['test'])
+        t = pipeline.DifferentialCreator(columns=['test'])
 
         expected = pd.DataFrame({'test': [0.0, 1.0, 0.2, 0.3, 0.5],
                                  'test_dif': [0.0, 1.0, -0.8, 0.1, 0.2]})
@@ -497,7 +497,7 @@ class TestDifferentialCreator(TestCase):
         pd.testing.assert_frame_equal(result, expected)
 
     def test_creator_selection(self):
-        t = pipeline.DifferentialCreator(keys=['test'])
+        t = pipeline.DifferentialCreator(columns=['test'])
 
         expected = pd.DataFrame({'test': [0.0, 1.0, 0.2, 0.3, 0.5],
                                  'test2': [0.0, 1.0, 0.2, 0.3, 0.5],

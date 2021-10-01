@@ -16,8 +16,8 @@ Changes for the upcoming release can be found in the `"changelog" directory <htt
 ------------------
 
 
-Changes
-^^^^^^^
+Features
+^^^^^^^^
 
 - Added difference based feature augmentation.
   `#8 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/8>`__
