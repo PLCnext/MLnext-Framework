@@ -52,7 +52,6 @@ publish_docs:
   stage: deploy
   script:
     - tox -e docs
-    - tox -e docs-pdf
     - mv docs/_build/html html
     - mv docs/_build/rinoh pdf
   artifacts:
