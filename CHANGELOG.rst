@@ -19,12 +19,13 @@ Changes for the upcoming release can be found in the `"changelog" directory <htt
 Features
 ^^^^^^^^
 
-- Added difference based feature augmentation.
+- Added Digital Factory now introduction and legal notice to documentation.
+  `#7 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/7>`__
+- Added gradient based feature augmentation.
   `#8 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/8>`__
 
 
 ----
-
 
 0.1.1 (2021-09-02)
 ------------------
