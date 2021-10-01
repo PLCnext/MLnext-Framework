@@ -12,6 +12,20 @@ Changes for the upcoming release can be found in the `"changelog" directory <htt
 
 .. towncrier release notes start
 
+0.1.2 (2021-10-01)
+------------------
+
+
+Changes
+^^^^^^^
+
+- Added difference based feature augmentation.
+  `#8 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/8>`__
+
+
+----
+
+
 0.1.1 (2021-09-02)
 ------------------
 
