@@ -989,23 +989,23 @@ class ColumnSorter(BaseEstimator, TransformerMixin):
 
 class DifferentialCreator(BaseEstimator, TransformerMixin):
     """Calculates signal differences between subsequent time points.
-    Concatenates the new information with the Dataframe.
+    Concatenates the new information with the dataframe.
 
     Example:
         >>> data = pd.DataFrame({'a': [1.0, 2.0, 1.0]})
-        >>> dcreator = DifferentialCreator(keys=['a'])
+        >>> dcreator = DifferentialCreator(columns=['a'])
         >>> dcreator.transform(pd.DataFrame(data)
         pd.DataFrame({'a': [1.0, 2.0, 1.0], 'a_dif': [1.0, -1.0, 0.0]})
     """
 
-    def __init__(self, keys: List[str]):
+    def __init__(self, *, columns: List[str]):
         """Initialize `DifferentialCreator`.
 
         Attributes:
             keys: List[str]: Columns to create derivatives
         """
         super().__init__()
-        self._keys = keys
+        self._columns = columns
 
     def fit(self, X, y=None):
         return self
@@ -1019,5 +1019,8 @@ class DifferentialCreator(BaseEstimator, TransformerMixin):
         Returns:
             pd.DataFrame: Returns the concatenated DataFrame.
         """
-        X_dif = X.loc[:, self._keys].diff(axis=0).fillna(0).add_suffix('_dif')
+        X_dif = (X.loc[:, self._columns]
+                 .diff(axis=0)
+                 .fillna(0)
+                 .add_suffix('_dif'))
         return pd.concat([X, X_dif], axis=1)
