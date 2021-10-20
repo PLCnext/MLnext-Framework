@@ -1,0 +1,1 @@
+Added legend to ``plot_signal``.
