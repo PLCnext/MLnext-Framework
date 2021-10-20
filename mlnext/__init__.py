@@ -1,4 +1,4 @@
-"""Machine learning utilities for Tensorflow/Keras.
+"""Machine learning utilities.
 """
 from .data import *  # noqa
 from .io import *  # noqa
@@ -9,7 +9,7 @@ from .score import *  # noqa
 __version__ = '0.2.0.dev0'
 
 __title__ = 'MLnext'
-__description__ = 'Machine learning utilities for Tensorflow/Keras.'
+__description__ = 'Machine learning utilities.'
 
 __author__ = 'Phoenix Contact Electronics GmbH'
 __email__ = 'digitalfactorynow@phoenixcontact.com'
