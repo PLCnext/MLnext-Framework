@@ -7,7 +7,6 @@ from typing import Any
 from typing import Dict
 from typing import List
 
-import tensorflow.keras as keras
 import yaml
 from pydantic import BaseModel
 
@@ -139,23 +138,6 @@ def save_config(*, config: BaseModel, name: str, folder: str = '.'):
 
     data = yaml.safe_load(config.json(**settings))
     save_yaml(data=data, folder=folder, name=name)
-
-
-def load_model(path: str):
-    """Loads a `tf.keras.Model` from `path`.
-
-    Args:
-        path (str): Path to model.
-
-    Example:
-        >>> # Load keras.Model from disk
-        >>> model = load_model('./models/dnn')
-    """
-
-    if not os.path.isdir(path):
-        raise ValueError(f'Path "{path}" not found or not a directory.')
-
-    return keras.models.load_model(path)
 
 
 def load(path: str) -> Dict[str, Any]:
