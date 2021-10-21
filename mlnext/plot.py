@@ -220,7 +220,9 @@ def plot_signals(*,
                         alpha=0.5, zorder=10, label='x')
 
     handles, labels = ax.get_legend_handles_labels()
-    fig.legend(handles, labels, loc='upper center', ncol=2)
+    by_label = dict(zip(labels, handles))
+    fig.legend(by_label.values(), by_label.keys,
+               loc='upper center', ncol=len(by_label))
 
     plt.tight_layout()
     if path is not None:
@@ -312,7 +314,9 @@ def plot_signals_norm(*,
                                 alpha=0.5, color='C5', zorder=3, label='std')
 
     handles, labels = ax.get_legend_handles_labels()
-    fig.legend(handles, labels, loc='upper center', ncol=4)
+    by_label = dict(zip(labels, handles))
+    fig.legend(by_label.values(), by_label.keys(),
+               loc='upper center', ncol=len(by_label))
 
     plt.tight_layout()
     if path is not None:
@@ -396,7 +400,9 @@ def plot_signals_binary(*,
                         lw=.8, zorder=3, alpha=0.5, label='bern_mean')
 
     handles, labels = ax.get_legend_handles_labels()
-    fig.legend(handles, labels, loc='upper center', ncol=3)
+    by_label = dict(zip(labels, handles))
+    fig.legend(by_label.values(), by_label.keys(),
+               loc='upper center', ncol=len(by_label))
 
     plt.tight_layout()
     if path is not None:
