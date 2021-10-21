@@ -4,7 +4,7 @@ MLNext Framework
 
 *MLNext Framework* is an open source framework for hardware independent execution of
 machine learning using *Python* and *Docker*.
-It provides machine learning utilities for Tensorflow and Keras.
+It provides machine learning utilities.
 The corresponding *Python* package is called *mlnext*.
 MLNext Framework belongs to a solution portfolio for the Digital Factory now to realize Data collection, storage, and evaluation.
 

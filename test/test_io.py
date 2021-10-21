@@ -1,7 +1,6 @@
 import os
 from unittest import TestCase
 
-import tensorflow.keras as keras
 from pydantic import BaseModel
 from testfixtures import TempDirectory
 
@@ -157,26 +156,6 @@ class TestYaml(TestCase):
 
         with self.assertRaises(FileNotFoundError):
             io.load_yaml(os.path.join(self.d.path))
-
-
-class TestLoadModel(TestCase):
-    def setUp(self):
-        self.d = TempDirectory()
-
-    def tearDown(self):
-        self.d.cleanup()
-
-    def test_load_model_invalid_dir(self):
-        with self.assertRaises(ValueError):
-            io.load_model('./abc')
-
-    def test_load_model(self):
-        m = keras.Sequential([keras.layers.Input(10), keras.layers.Dense(1)])
-        m.save(path := os.path.join(self.d.path, 'model'))
-
-        result = io.load_model(path)
-
-        self.assertIsInstance(result, keras.Model)
 
 
 class TestLoad(TestCase):
