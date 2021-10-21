@@ -211,13 +211,16 @@ def plot_signals(*,
             # draw x_pred
             ax.plot(idx_x,
                     x_pred.loc[s1:s2, col],
-                    c='C1' if y.iloc[s1, 0] > 0. else 'C0')
+                    c='C1' if y.iloc[s1, 0] > 0. else 'C0', label='x_pred')
 
             # draw x
             if x is not None:
                 ax.plot(idx_x, x.iloc[s1:(s2 + 1), idx],
                         c='C1' if y.iloc[s1, 0] > 0. else 'C2',
-                        alpha=0.5, zorder=10)
+                        alpha=0.5, zorder=10, label='x')
+
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper center', ncol=2)
 
     plt.tight_layout()
     if path is not None:
@@ -290,24 +293,27 @@ def plot_signals_norm(*,
             # draw x_pred
             ax.plot(idx_x,
                     x_pred.loc[s1:s2, col],
-                    c='C1' if y.iloc[s1, 0] > 0. else 'C0')
+                    c='C1' if y.iloc[s1, 0] > 0. else 'C0', label='x_pred')
 
             # draw x
             if x is not None:
                 ax.plot(idx_x,
                         x.iloc[s1:(s2 + 1), idx],
                         c='C1' if y.iloc[s1, 0] > 0. else 'C2',
-                        alpha=0.5,
-                        zorder=10)
+                        alpha=0.5, zorder=10, label='x')
 
             # plot normal mean and std
             if (mean is not None) & (std is not None):
                 ax.plot(idx_x, mean[s1:(s2 + 1), idx],
-                        color='C5', lw=.8, zorder=3, alpha=0.5)
+                        color='C5', lw=.8, zorder=3, alpha=0.5, label='mean')
                 ax.fill_between(idx_x,
                                 mean[s1:(s2 + 1), idx] - std[s1:(s2 + 1), idx],
                                 mean[s1:(s2 + 1), idx] + std[s1:(s2 + 1), idx],
-                                alpha=0.5, color='C5', zorder=3)
+                                alpha=0.5, color='C5', zorder=3, label='std')
+
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper center', ncol=4)
+
     plt.tight_layout()
     if path is not None:
         plt.savefig(path, dpi=300, bbox_inches='tight')
@@ -375,18 +381,22 @@ def plot_signals_binary(*,
             # draw x_pred
             ax.plot(idx_x,
                     x_pred.loc[s1:s2, col],
-                    c='C1' if y.iloc[s1, 0] > 0. else 'C0')
+                    c='C1' if y.iloc[s1, 0] > 0. else 'C0',
+                    label='x_pred')
 
             # draw x
             if x is not None:
                 ax.plot(idx_x, x.iloc[s1:(s2 + 1), idx],
                         c='C1' if y.iloc[s1, 0] > 0. else 'C2',
-                        alpha=0.5, zorder=10)
+                        alpha=0.5, zorder=10, label='x')
 
             # plot bern mean
             if bern_mean is not None:
                 ax.plot(idx_x, bern_mean[s1:(s2 + 1), idx], color='C5',
-                        lw=.8, zorder=3, alpha=0.5)
+                        lw=.8, zorder=3, alpha=0.5, label='bern_mean')
+
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper center', ncol=3)
 
     plt.tight_layout()
     if path is not None:
