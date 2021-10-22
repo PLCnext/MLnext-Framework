@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 import numpy as np
+import scipy.stats
 
 from mlnext import score
 
@@ -168,3 +169,29 @@ class TestMetrics(TestCase):
         result = score.eval_metrics_all(y, y_hat)
 
         self.assertDictEqual(result, expected)
+
+
+class TestNLL(TestCase):
+
+    def test_norm_log_likelihood(self):
+
+        mu = np.array([[1.0, 2.0, 3.0]]).reshape(-1, 1)
+        var = np.array([[0.1, 0.5, 0.8]]).reshape(-1, 1)
+        x = np.array([[1.0, 1.4, 3.2]]).reshape(-1, 1)
+
+        expected = -scipy.stats.norm.logpdf(x, mu, np.sqrt(var))
+
+        result = score.norm_log_likelihood(x, mu, np.log(var))
+
+        np.testing.assert_allclose(result, expected, atol=1e-7)
+
+    def test_bern_log_likelihood(self):
+
+        mu = np.array([[0.2, 0.34, 0.89, 0.0]],
+                      dtype=np.float32).reshape(-1, 1)
+        x = np.array([[1.0, 0.0, 1.0, 0.0]], dtype=np.float32).reshape(-1, 1)
+        expected = -scipy.stats.bernoulli.logpmf(x, mu)
+
+        result = score.bern_log_likelihood(x, mu)
+
+        np.testing.assert_allclose(result, expected)

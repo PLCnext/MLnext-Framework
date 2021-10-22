@@ -26,6 +26,62 @@ def l2_norm(x: np.array, x_hat: np.array) -> np.array:
     return r.reshape(-1, 1)
 
 
+def norm_log_likelihood(
+        x: np.array,
+        mean: np.array,
+        log_var: np.array
+) -> np.array:
+    """Calculates the negative log likelihood that `x` was drawn from
+        a normal gaussian distribution defined by `mean` and `log_var`.
+
+    see for reference:
+    https://web.stanford.edu/class/archive/cs/cs109/cs109.1192/reader/11%20Parameter%20Estimation.pdf
+
+    ..math::
+
+        Gaussian normal distribution with mean \\mu and variance \\sigma:
+        f(x) = \\frac{1}{\\sqrt{2\\pi\\sigma^2}}\\exp{-\\frac{1}{2}
+        (\\frac{x-\\mu}{\\sigma})^2}
+
+        Log likelihood:
+        log(p(x | \\mu, \\sigma)) = -0.5 (\\log(2\\pi) + (x-mu)^2/\\sigma^2 +
+        \\log(\\sigma^2))
+
+    Args:
+        x (np.array): Sample.
+        mean (np.array): Mean of the gaussian normal distribution.
+        log_var (np.array): Log variance of the gaussian normal distribution.
+
+    Returns:
+        np.array: Returns the negative log likelihood.
+    """
+    a = np.log(2. * np.pi) * np.ones(np.shape(x)) + log_var
+    b = (x - mean)**2 / (np.exp(log_var) + 1e-10)
+
+    return 0.5 * (a + b)
+
+
+def bern_log_likelihood(x: np.array, mean: np.array) -> np.array:
+    """Calculates the log likelihood of x being produced by a
+        bernoulli distribution parameterized by `mean`.
+
+    see for reference:
+    https://web.stanford.edu/class/archive/cs/cs109/cs109.1192/reader/11%20Parameter%20Estimation.pdf
+
+    Args:
+        x (np.array): Samples.
+        mean (np.array): Mean of the bernoulli distribution.
+
+    Returns:
+        np.array: Returns the negative log likelihood.
+    """
+
+    a = x * np.log(mean + 1e-10)
+    b = (1 - x) * np.log(1 - mean + 1e-10)
+
+    return -(a + b)
+
+
 def get_threshold(x: np.array, p: float = 100) -> float:
     """Returns the `perc`-th quantile of x.
 
