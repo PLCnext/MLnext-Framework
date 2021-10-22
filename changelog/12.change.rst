@@ -1,0 +1,1 @@
+Changed the roles of ``x`` and ``x_pred`` in ``plot_signals``.
