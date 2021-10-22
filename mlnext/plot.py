@@ -160,17 +160,17 @@ def _get_segments(x: pd.DataFrame, y: pd.DataFrame) -> List[int]:
 
 
 def plot_signals(*,
-                 x_pred: Union[np.array, pd.DataFrame],
+                 x: Union[np.array, pd.DataFrame],
                  y: Union[np.array, pd.DataFrame],
-                 x: Union[np.array, pd.DataFrame] = None,
+                 x_pred: Union[np.array, pd.DataFrame] = None,
                  path: str = None):
     """Plots the signal prediction `x_pred` in color of the label `y`.
     Optionally, `x` is the ground truth.
 
     Args:
-        x_pred (Union[np.array, pd.DataFrame]): Prediction.
         y (Union[np.array, pd.DataFrame]): Labels.
-        x (Union[np.array, pd.DataFrame], optional): Ground truth.
+        x (Union[np.array, pd.DataFrame]): Ground truth.
+        x_pred (Union[np.array, pd.DataFrame], optional): Prediction.
         path (str, optional): Path to save fig to.
 
     Example:
@@ -185,14 +185,14 @@ def plot_signals(*,
     y = _check_inputs(y)
 
     if y is None:
-        y = pd.DataFrame(np.zeros((*x_pred.shape[:-1], 1,)))
+        y = pd.DataFrame(np.zeros((*x.shape[:-1], 1,)))
 
     x_pred, x, y = _truncate_length(x_pred, x, y)
-    segments = _get_segments(x_pred, y)
+    segments = _get_segments(x, y)
 
     # plot grid n x 2 if more than plot
-    columns = 2 if np.shape(x_pred)[-1] > 1 else 1
-    rows = -(-np.shape(x_pred)[-1] // columns)
+    columns = 2 if np.shape(x)[-1] > 1 else 1
+    rows = -(-np.shape(x)[-1] // columns)
 
     # prepare subplots
     figsize = (7.5 * columns, 2 * rows)
@@ -203,27 +203,27 @@ def plot_signals(*,
     # iterate over segments
     for s1, s2 in zip(segments[:-1], segments[1:]):
         # draw in color of label for each col
-        for idx, (ax, col) in enumerate(zip(axes, x_pred)):
+        for idx, (ax, col) in enumerate(zip(axes, x)):
             ax.set_title(col)
 
             idx_x = np.array(range(int(s1), int(s2 + 1)))
 
-            # draw x_pred
-            ax.plot(idx_x,
-                    x_pred.loc[s1:s2, col],
-                    c='C1' if y.iloc[s1, 0] > 0. else 'C0', label='x_pred')
-
             # draw x
-            if x is not None:
-                ax.plot(idx_x, x.iloc[s1:(s2 + 1), idx],
+            ax.plot(idx_x,
+                    x.loc[s1:s2, col],
+                    c='C1' if y.iloc[s1, 0] > 0. else 'C0',
+                    label='x')
+
+            # draw x_pred
+            if x_pred is not None:
+                ax.plot(idx_x, x_pred.iloc[s1:(s2 + 1), idx],
                         c='C1' if y.iloc[s1, 0] > 0. else 'C2',
-                        alpha=0.5, zorder=10, label='x')
+                        alpha=0.8, zorder=10, label='x_pred')
 
     handles, labels = ax.get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
-    fig.legend(by_label.values(), by_label.keys,
+    fig.legend(by_label.values(), by_label.keys(),
                loc='upper center', ncol=len(by_label))
-
     plt.tight_layout()
     if path is not None:
         plt.savefig(path, dpi=300, bbox_inches='tight')
@@ -232,9 +232,9 @@ def plot_signals(*,
 
 
 def plot_signals_norm(*,
-                      x_pred: Union[np.array, pd.DataFrame],
+                      x: Union[np.array, pd.DataFrame],
                       y: Union[np.array, pd.DataFrame],
-                      x: Union[np.array, pd.DataFrame] = None,
+                      x_pred: Union[np.array, pd.DataFrame] = None,
                       norm_mean: np.array = None,
                       norm_std: np.array = None,
                       path: str = None):
@@ -265,18 +265,18 @@ def plot_signals_norm(*,
     y = _check_inputs(y)
 
     if y is None:
-        y = pd.DataFrame(np.zeros((*x_pred.shape[:-1], 1,)))
+        y = pd.DataFrame(np.zeros((*x.shape[:-1], 1,)))
 
     if (norm_mean is not None) & (norm_std is not None):
         mean = detemporalize(norm_mean, verbose=False)
         std = detemporalize(norm_std, verbose=False)
 
     x_pred, x, y = _truncate_length(x_pred, x, y)
-    segments = _get_segments(x_pred, y)
+    segments = _get_segments(x, y)
 
     # plot grid n x 2 if more than plot
-    columns = 2 if np.shape(x_pred)[-1] > 1 else 1
-    rows = -(-np.shape(x_pred)[-1] // columns)
+    columns = 2 if np.shape(x)[-1] > 1 else 1
+    rows = -(-np.shape(x)[-1] // columns)
 
     # prepare subplots
     figsize = (7.5 * columns, 2 * rows)
@@ -287,27 +287,28 @@ def plot_signals_norm(*,
     # iterate over segments
     for s1, s2 in zip(segments[:-1], segments[1:]):
         # draw in color of label for each col
-        for idx, (ax, col) in enumerate(zip(axes, x_pred)):
+        for idx, (ax, col) in enumerate(zip(axes, x)):
             ax.set_title(col)
 
             idx_x = np.array(range(int(s1), int(s2 + 1)))
 
-            # draw x_pred
-            ax.plot(idx_x,
-                    x_pred.loc[s1:s2, col],
-                    c='C1' if y.iloc[s1, 0] > 0. else 'C0', label='x_pred')
-
             # draw x
-            if x is not None:
+            ax.plot(idx_x,
+                    x.loc[s1:s2, col],
+                    c='C1' if y.iloc[s1, 0] > 0. else 'C2',
+                    label='x')
+
+            # draw x_pred
+            if x_pred is not None:
                 ax.plot(idx_x,
-                        x.iloc[s1:(s2 + 1), idx],
-                        c='C1' if y.iloc[s1, 0] > 0. else 'C2',
-                        alpha=0.5, zorder=10, label='x')
+                        x_pred.iloc[s1:(s2 + 1), idx],
+                        c='C1' if y.iloc[s1, 0] > 0. else 'C0',
+                        label='x_pred')
 
             # plot normal mean and std
             if (mean is not None) & (std is not None):
                 ax.plot(idx_x, mean[s1:(s2 + 1), idx],
-                        color='C5', lw=.8, zorder=3, alpha=0.5, label='mean')
+                        color='C5', lw=.8, zorder=3, alpha=0.8, label='mean')
                 ax.fill_between(idx_x,
                                 mean[s1:(s2 + 1), idx] - std[s1:(s2 + 1), idx],
                                 mean[s1:(s2 + 1), idx] + std[s1:(s2 + 1), idx],
@@ -326,9 +327,9 @@ def plot_signals_norm(*,
 
 
 def plot_signals_binary(*,
-                        x_pred: Union[np.array, pd.DataFrame],
+                        x: Union[np.array, pd.DataFrame],
                         y: Union[np.array, pd.DataFrame],
-                        x: Union[np.array, pd.DataFrame] = None,
+                        x_pred: Union[np.array, pd.DataFrame] = None,
                         bern_mean: np.array = None,
                         path: str = None):
     """Plots signal prediction `x_pred` in color of the labels `y`.
@@ -356,17 +357,17 @@ def plot_signals_binary(*,
     y = _check_inputs(y)
 
     if y is None:
-        y = pd.DataFrame(np.zeros((*x_pred.shape[:-1], 1,)))
+        y = pd.DataFrame(np.zeros((*x.shape[:-1], 1,)))
 
     if bern_mean is not None:
         bern_mean = detemporalize(bern_mean, verbose=False)
 
     x_pred, x, y = _truncate_length(x_pred, x, y)
-    segments = _get_segments(x_pred, y)
+    segments = _get_segments(x, y)
 
     # plot grid n x 2 if more than plot
-    columns = 2 if np.shape(x_pred)[-1] > 1 else 1
-    rows = -(-np.shape(x_pred)[-1] // columns)
+    columns = 2 if np.shape(x)[-1] > 1 else 1
+    rows = -(-np.shape(x)[-1] // columns)
 
     # prepare subplots
     figsize = (7.5 * columns, 2 * rows)
@@ -377,27 +378,27 @@ def plot_signals_binary(*,
     # iterate over segments
     for s1, s2 in zip(segments[:-1], segments[1:]):
         # draw in color of label for each col
-        for idx, (ax, col) in enumerate(zip(axes, x_pred)):
+        for idx, (ax, col) in enumerate(zip(axes, x)):
             ax.set_title(col)
 
             idx_x = np.array(range(int(s1), int(s2 + 1)))
 
-            # draw x_pred
-            ax.plot(idx_x,
-                    x_pred.loc[s1:s2, col],
-                    c='C1' if y.iloc[s1, 0] > 0. else 'C0',
-                    label='x_pred')
-
             # draw x
-            if x is not None:
-                ax.plot(idx_x, x.iloc[s1:(s2 + 1), idx],
-                        c='C1' if y.iloc[s1, 0] > 0. else 'C2',
-                        alpha=0.5, zorder=10, label='x')
+            ax.plot(idx_x,
+                    x.loc[s1:s2, col],
+                    c='C1' if y.iloc[s1, 0] > 0. else 'C2',
+                    label='x')
+
+            # draw x_pred
+            if x_pred is not None:
+                ax.plot(idx_x, x_pred.iloc[s1:(s2 + 1), idx],
+                        c='C1' if y.iloc[s1, 0] > 0. else 'C0',
+                        label='x_pred')
 
             # plot bern mean
             if bern_mean is not None:
                 ax.plot(idx_x, bern_mean[s1:(s2 + 1), idx], color='C5',
-                        lw=.8, zorder=3, alpha=0.5, label='bern_mean')
+                        lw=.8, zorder=3, alpha=0.8, label='bern_mean')
 
     handles, labels = ax.get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
