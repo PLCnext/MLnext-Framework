@@ -1,0 +1,1 @@
+Added ``norm_log_likelihood`` and ``bern_log_likelihood``.
