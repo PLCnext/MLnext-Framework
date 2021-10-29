@@ -38,20 +38,16 @@ def norm_log_likelihood(
         mean: np.array,
         log_var: np.array
 ) -> np.array:
-    """Calculates the negative log likelihood that `x` was drawn from
-        a normal gaussian distribution defined by `mean` and `log_var`.
+    """Calculates the negative log likelihood that `x` was drawn from a normal
+    gaussian distribution defined by `mean` and `log_var`.
 
-    see for reference:
-    https://web.stanford.edu/class/archive/cs/cs109/cs109.1192/reader/11%20Parameter%20Estimation.pdf
+    .. math::
 
-    ..math::
+        f(x|\\mu, \\sigma) = \\frac{1}{\\sqrt{2\\pi\\sigma^2}}\\exp{-\\frac{1}
+        {2}(\\frac{x-\\mu}{\\sigma})^2}
 
-        Gaussian normal distribution with mean \\mu and variance \\sigma:
-        f(x) = \\frac{1}{\\sqrt{2\\pi\\sigma^2}}\\exp{-\\frac{1}{2}
-        (\\frac{x-\\mu}{\\sigma})^2}
-
-        Log likelihood:
-        log(p(x | \\mu, \\sigma)) = -0.5 (\\log(2\\pi) + (x-mu)^2/\\sigma^2 +
+        \\text{Log likelihood}:
+        log(f(x | \\mu, \\sigma)) = -0.5 (\\log(2\\pi) + (x-\\mu)^2/\\sigma^2 +
         \\log(\\sigma^2))
 
     Args:
@@ -69,11 +65,13 @@ def norm_log_likelihood(
 
 
 def bern_log_likelihood(x: np.array, mean: np.array) -> np.array:
-    """Calculates the log likelihood of x being produced by a
-        bernoulli distribution parameterized by `mean`.
+    """Calculates the log likelihood of x being produced by a bernoulli
+    distribution parameterized by `mean`.
 
-    see for reference:
-    https://web.stanford.edu/class/archive/cs/cs109/cs109.1192/reader/11%20Parameter%20Estimation.pdf
+    .. math::
+
+        LL(x|\\text{mean}) = x \\cdot \\log(\\text{mean}) +
+        (1 - x) \\cdot \\log(\\text{mean})
 
     Args:
         x (np.array): Samples.
