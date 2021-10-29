@@ -40,7 +40,7 @@ Install this package using ``pip``\ :
 Modules
 -------
 
-The *MLnext Framework* consists of 5 modules:
+The *MLnext Framework* consists of 6 modules:
 
 .. code-block:: python
 
@@ -49,3 +49,7 @@ The *MLnext Framework* consists of 5 modules:
    import mlnext.pipeline as pipeline  # for data preprocessing
    import mlnext.plot as plot          # for data visualization
    import mlnext.score as score        # for model evaluation
+   import mlnext.anomaly as anomaly    # for anomaly interpretation
+
+   # hint: all functions can also be accessed from the root module
+   import mlnext
