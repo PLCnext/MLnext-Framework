@@ -34,6 +34,7 @@ with open(os.path.join(HERE, 'requirements.txt')) as f:
 EXTRAS_REQUIRE = {
     'tests': [
         'testfixtures',
+        'pytest',
         'coverage',
         'scipy'
     ],
