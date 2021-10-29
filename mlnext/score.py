@@ -1,5 +1,6 @@
 """ Module for model evaluation.
 """
+import warnings
 from typing import Any
 from typing import Dict
 from typing import List
@@ -8,8 +9,9 @@ import numpy as np
 from sklearn import metrics
 
 
-def l2_norm(x: np.array, x_hat: np.array) -> np.array:
+def l2_norm(x: np.array, x_hat: np.array, *, reduce: bool = True) -> np.array:
     """Calculates the l2-norm (euclidean distance) for x and x_hat.
+    If reduce is False, then the l2_norm is calculated feature-wise.
 
     Arguments:
         x (np.array): ground truth.
@@ -21,9 +23,14 @@ def l2_norm(x: np.array, x_hat: np.array) -> np.array:
     Example:
         >>> l2_norm(np.array([0.1, 0.2]), np.array([0.14, 0.2]))
         np.array([[0.04]])
+        >>> l2_norm(np.array([0.1, 0.2]), np.array([0.14, 0.2]), reduce=False)
+        np.array([0.04, 0.0])
     """
-    r = np.sqrt(np.sum((np.array(x) - np.array(x_hat))**2, axis=-1))
-    return r.reshape(-1, 1)
+    if reduce:
+        r = np.sqrt(np.sum((np.array(x) - np.array(x_hat))**2, axis=-1))
+        return r.reshape(-1, 1)
+    else:
+        return np.sqrt((np.array(x) - np.array(x_hat))**2)
 
 
 def norm_log_likelihood(
@@ -195,8 +202,11 @@ def eval_metrics(y: np.array, y_hat: np.array) -> Dict[str, Any]:
         'AUC': metrics.roc_auc_score
     }
 
+    if y.shape != y_hat.shape:
+        warnings.warn(f'Shapes unaligned {y.shape} and {y_hat.shape}.')
+
+    length = min(y.shape[0], y_hat.shape[0])
     results = {}
-    length = min(len(y), len(y_hat))
     try:
         for key in scores:
             results[key] = scores[key](y[:length], y_hat[:length])
@@ -215,7 +225,7 @@ def eval_metrics_all(y: List[np.array],
 
     Arguments:
         y (np.array): Ground truth.
-        y_hat {array-like} -- Prediction
+        y_hat (np.array): Prediction.
 
     Returns:
         Dict[str, Any]: Returns a dict with all scores.
@@ -228,9 +238,11 @@ def eval_metrics_all(y: List[np.array],
     """
     y_ = []
     y_hat_ = []
-
     for (x, xx) in zip(y, y_hat):
-        length = min(len(x), len(xx))
+        if x.shape != xx.shape:
+            warnings.warn(f'Shapes unaligned {x.shape} and {xx.shape}.')
+
+        length = min(x.shape[0], xx.shape[0])
         y_.append(x[:length])
         y_hat_.append(xx[:length])
 
