@@ -62,12 +62,11 @@ def rank_features(
         ValueError: Raised if length do not align for `error` and `y`.
 
     Returns:
-        T.Tuple[T.List[T.Tuple[int, int]], np.array]: Returns a tuple of:
-            1. List of tuple where a tuple contains the start and end index of
-            an anomaly.
-            2. A 2d array where each rows contains the ranked feature indexes.
-            3. A 2d array where each rows contains the mean error for the
-            features in order of 2.
+        T.Tuple[T.List[T.Tuple[int, int]], np.array]: Returns a tuple of 1.
+        List of tuple where a tuple contains the start and end index of
+        an anomaly. 2. A 2d array where each rows contains the ranked feature
+        indexes. 3. A 2d array where each rows contains the mean error for the
+        features in order of 2.
 
     Example:
         >>> errors = np.array([[0.1, 0.8, 0.3, 0.25], [0.2, 0.4, 0.2, 0.6]]).T
