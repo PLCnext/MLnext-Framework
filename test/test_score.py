@@ -18,6 +18,16 @@ class TestL2Norm(TestCase):
 
         np.testing.assert_array_almost_equal(result, expected)
 
+    def test_l2_norm_feature_wise(self):
+
+        x = np.arange(10).reshape(-1, 2)
+        x_hat = np.arange(10).reshape(-1, 2) + 1
+
+        expected = np.ones((5, 2))
+        result = score.l2_norm(x, x_hat, reduce=False)
+
+        np.testing.assert_array_almost_equal(result, expected)
+
 
 class TestThreshold(TestCase):
 

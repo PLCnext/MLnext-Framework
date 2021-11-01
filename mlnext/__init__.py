@@ -1,5 +1,6 @@
 """Machine learning utilities.
 """
+from .anomaly import *  # noqa
 from .data import *  # noqa
 from .io import *  # noqa
 from .pipeline import *  # noqa
