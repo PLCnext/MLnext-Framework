@@ -1,7 +1,9 @@
 """ Module for data visualization.
 """
+from itertools import product
 from typing import Any
 from typing import Dict
+from typing import Iterable
 from typing import List
 from typing import Optional
 from typing import Union
@@ -11,7 +13,12 @@ import numpy as np
 import pandas as pd
 from matplotlib import cycler
 from matplotlib import rcParams
+from matplotlib.collections import LineCollection
+from matplotlib.colors import LinearSegmentedColormap as LSC
+from matplotlib.patches import Patch
+from sklearn.preprocessing import minmax_scale
 
+from .anomaly import rank_features
 from .data import detemporalize
 
 
@@ -410,3 +417,147 @@ def plot_signals_binary(*,
         plt.savefig(path, dpi=300, bbox_inches='tight')
 
     plt.show()
+
+
+def plot_rankings(
+    *,
+    error: np.array,
+    y: np.array,
+    x: np.array,
+    x_pred: np.array,
+    k=3,
+    context=10
+):
+    """Plots the top k features (predictions `x_pred` and ground truth `x`)
+    with the biggest error for each anomaly found in `y`. With context
+    additional data points to the left and right of the anomaly will be shown.
+
+    Args:
+        error (np.array): Feature-wise error (e.g. l2_norm or log_likelihood).
+        y (np.array): Labels (1d array).
+        x (np.array): Input data (ground truth).
+        x_pred (np.array): Predictions of `x`.
+        k (int, optional): How many features should be plotted. Defaults to 3.
+        context (int, optional): Additional datapoints that should be plotted
+        to the left and right of the anomaly. Defaults to 10.
+
+    Example:
+        >>> x, x_pred = np.ones((7, 4)), np.random.random((7, 4))
+        >>> y = np.array([0, 0, 1, 1, 1, 0, 0])
+        >>> error = mlnext.l2_norm(x, x_pred, reduce=False)
+        >>> mlnext.plot_rankings(
+            error = error,
+            y=y,
+            x=x,
+            x_pred=x_pred,
+            k=2
+        )
+    """
+    error = detemporalize(error, verbose=False)
+    x = detemporalize(x, verbose=False)
+    x_pred = detemporalize(x_pred, verbose=False)
+    y = detemporalize(y, verbose=False).squeeze()
+
+    anm, rks, merr = rank_features(error=error, y=y)
+
+    columns = min(2, k)
+    rows = -(-k // columns) + 1
+
+    for (s, e), ranks, mean_error in zip(anm, rks, merr):
+        # prepare subplots
+        figsize = (7.5 * columns, rows * 2)
+        fig = plt.figure(figsize=figsize, constrained_layout=False)
+        plt.subplots_adjust(hspace=0.5)
+
+        gs = fig.add_gridspec(rows, columns)
+        axes = [fig.add_subplot(gs[y, x])
+                for (x, y) in product(range(columns), range(rows - 1))]
+
+        fig.suptitle(f'Anomaly: {(s, e)}')
+        fig.legend(handles=[Patch(color='C2', label='x'),
+                            Patch(color='C0', label='x_pred')],
+                   ncol=2, loc='upper center',
+                   bbox_to_anchor=(0.5, 0.95))
+
+        s = max(s - context, 0)
+        e = min(e + context + 1, x.shape[0])
+        idx_x = np.array(range(s, e))
+
+        for ax, r in zip(axes, ranks):
+            r = int(r)
+
+            cmap = LSC.from_list('x', [(0, 'C2'), (1, 'C1')])
+            ax.add_collection(_create_lc(idx_x, x[s:e, r], y[s:e], cmap))
+
+            cmap = LSC.from_list('x_pred', [(0, 'C0'), (1, 'C0')])
+            ax.add_collection(_create_lc(idx_x, x_pred[s:e, r], y[s:e], cmap))
+
+            ax.autoscale()
+            ax.set_title(r)
+
+        table_ax = fig.add_subplot(gs[rows - 1, :])
+        table_ax.axis('tight')
+        table_ax.axis('off')
+        error_dist = _share(mean_error)
+
+        data = [ranks[:10], _fmt(mean_error[:10]), _fmt(error_dist[:10])]
+
+        table = table_ax.table(cellText=data,
+                               rowLabels=['Feature', 'Mean Error', 'Share'],
+                               loc='center')
+        table.auto_set_column_width(col=list(range(len(ranks[:10]))))
+
+    plt.tight_layout()
+
+    plt.show()
+
+
+def _create_lc(
+    x: np.array,
+    y: np.array,
+    labels: np.array,
+    cmap,
+    **kwargs
+) -> LineCollection:
+    """Creates a LineCollection.
+
+    Args:
+        x (np.array): Data for x axis.
+        y (np.array): Data for y axis.
+        labels (np.array): Labels to color each point.
+        cmap: Colormap.
+
+    Returns:
+        LineCollection: Returns a LineCollection.
+    """
+
+    points = np.array([x, y]).T.reshape(-1, 1, 2)
+    segments = np.concatenate([points[:-1], points[1:]], axis=1)
+    lc = LineCollection(segments, cmap=cmap, array=labels, **kwargs)
+
+    return lc
+
+
+def _share(a: np.array) -> np.array:
+    """Calculates the share for each element.
+
+    Args:
+        a (np.array): Array.
+
+    Returns:
+        np.array: Returns the share for each element.
+    """
+    a = minmax_scale(a)  # only positive values
+    return a / np.sum(a)
+
+
+def _fmt(a: Iterable) -> List[str]:
+    """Formats each element in `a` into strings.
+
+    Args:
+        a (Iterable): Iterable.
+
+    Returns:
+        List[str]: Returns a list with the formatted elements.
+    """
+    return list(map(lambda a: f'{a:.3f}', a))
