@@ -1019,7 +1019,7 @@ class DifferentialCreator(BaseEstimator, TransformerMixin):
         Returns:
             pd.DataFrame: Returns the concatenated DataFrame.
         """
-        X_dif = (X.loc[:, self._columns]
+        X_dif = (X[self._columns]
                  .diff(axis=0)
                  .fillna(0)
                  .add_suffix('_dif'))
