@@ -87,15 +87,49 @@ def bern_log_likelihood(x: np.array, mean: np.array) -> np.array:
     return -(a + b)
 
 
+def kl_divergence(
+    mean: np.array,
+    log_var: np.array,
+    prior_mean: float = 0.0,
+    prior_std: float = 1.0
+) -> np.array:
+    """Calculates the kl divergence kld(q||p) between a normal gaussian `p`
+    (prior_mean, prior_std) and a normal distribution `q` parameterized
+    by `mean` and `log_var`.
+
+    Args:
+        mean (np.array): Mean of q.
+        log_var (np.array): Log variance of q.
+        prior_mean (float): Mean of the prior p. Defaults to 0.0.
+        prior_std (float): Standard deviation of the prior p. Defaults to 1.0.
+
+    Returns:
+        np.array: Returns the kl divergence between two normal distributions.
+    """
+
+    prior_mean = np.ones(mean.shape) * prior_mean
+    prior_std = np.ones(log_var.shape) * prior_std
+
+    # see https://stats.stackexchange.com/a/7443
+    # log(o_2 / o_1)
+    a = 0.5 * log_var - np.log(prior_std)
+    # o_1^2 + (mu_1 - mu_2)^2
+    b = np.square(prior_std) + np.square(prior_mean - mean)
+    # 2o_2^2
+    c = 2 * np.exp(log_var)
+
+    return a + (b / c) - 0.5
+
+
 def get_threshold(x: np.array, p: float = 100) -> float:
-    """Returns the `perc`-th quantile of x.
+    """Returns the `perc`-th percentile of x.
 
     Arguments:
         x  (np.array): Input
         p (float): Percentage (0-100).
 
     Returns:
-        float: Returns the threshold at the `perc`-th quantile of x.
+        float: Returns the threshold at the `perc`-th percentile of x.
 
     Example:
         >>> get_threshold(np.array([0.0, 1.0]), p=99)

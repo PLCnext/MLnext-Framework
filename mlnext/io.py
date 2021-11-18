@@ -136,7 +136,7 @@ def save_config(*, config: BaseModel, name: str, folder: str = '.'):
         'exclude_none': True
     }
 
-    data = yaml.safe_load(config.json(**settings))
+    data = yaml.safe_load(config.json(**settings))  # type: ignore
     save_yaml(data=data, folder=folder, name=name)
 
 
@@ -210,7 +210,7 @@ def get_files(*,
     if full_path:
         return files
 
-    return list(map(os.path.basename, files))
+    return list(map(os.path.basename, files))  # type: ignore
 
 
 def get_folders(path: str, *, full_path: bool = False) -> List[str]:
