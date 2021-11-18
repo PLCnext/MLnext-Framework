@@ -15,6 +15,7 @@ from matplotlib import cycler
 from matplotlib import rcParams
 from matplotlib.collections import LineCollection
 from matplotlib.colors import LinearSegmentedColormap as LSC
+from matplotlib.figure import Figure
 from matplotlib.patches import Patch
 from sklearn.preprocessing import minmax_scale
 
@@ -36,27 +37,40 @@ def setup_plot():
     ])
 
 
-def plot_error(X: np.array,
-               y: np.array = None,
-               threshold: float = None,
-               title: str = None,
-               path: str = None):
-    """Plots the error given by x. Label determines the color of the
+def plot_error(
+    X: np.array,
+    y: np.array = None,
+    threshold: float = None,
+    title: str = None,
+    yscale: str = 'linear',
+    path: str = None,
+    return_fig: bool = False
+) -> Optional[Figure]:
+    """Plots the error given by `x`. Label determines the color of the
     point. An anomaly threshold can be drawn with threshold.
 
     Arguments:
-        X (np.array): 2D array of error
-        label (np.array): label for data points
-        threshold (float): Threshold
-        title (str): Title of the plot
-        save (str): Path to save figure to
+        X (np.array): 2D array of error.
+        label (np.array): label for data points.
+        threshold (float): Threshold.
+        title (str): Title of the plot.
+        yscale (str): Scaling of y-axis; passed to plt.yscale. Default: linear.
+        save (str): Path to save figure to.
+        return_fig (bool): Whether to return the figure. Otherwise,
+            `plt.show()` is called.
+
+    Returns:
+        Optional[matplotlib.figure.Figure]: Returns the figure if `return_fig`
+            is true.
 
     Example:
         >>> # Plots the predictions X in the color of label with a threshold
         >>> plot_error(X=np.array([0.2, 0.9, 0.4]), y=np.array([0, 1, 0]),
                        threshold=0.5, title='Prediction', path='pred.png')
     """
+    fig = plt.figure()
     plt.title(title)
+    plt.yscale(yscale)
 
     if y is None:
         y = np.zeros((X.shape[0], 1))
@@ -76,10 +90,18 @@ def plot_error(X: np.array,
     if path is not None:
         plt.savefig(path, dpi=300)
 
+    if return_fig:
+        return fig
+    else:
+        plt.show()
 
-def plot_history(history: Dict[str, Any],
-                 filter: List[str] = ['loss'],
-                 path: str = None):
+
+def plot_history(
+    history: Dict[str, Any],
+    filter: List[str] = ['loss'],
+    path: str = None,
+    return_fig: bool = False
+) -> Optional[Figure]:
     """
     Plots the loss in regards to the epoch from the model training history.
     Use filter to plot metrics/losses that contain the filter words.
@@ -89,12 +111,19 @@ def plot_history(history: Dict[str, Any],
         history (Dict[str, Any]): Training history of a model.
         keywords (List[str]): Filters the history by a keyword.
         path (str): Path to save figure to.
+        return_fig (bool): Whether to return the figure. Otherwise,
+            `plt.show()` is called.
+
+    Returns:
+        Optional[matplotlib.figure.Figure]: Returns the figure if `return_fig`
+            is true.
 
     Example:
         >>> # Plots the training history for entries that match filter
         >>> history = model.fit(...)
         >>> plot_history(history.history, filter=['loss'], path='history.png')
     """
+    fig = plt.figure()
     legend = []
     for key in history.keys():
         if any([keyword in key for keyword in filter]):
@@ -109,7 +138,10 @@ def plot_history(history: Dict[str, Any],
     if path is not None:
         plt.savefig(path, dpi=300, bbox_inches='tight')
 
-    plt.show()
+    if return_fig:
+        return fig
+    else:
+        plt.show()
 
 
 def _check_inputs(
@@ -117,7 +149,7 @@ def _check_inputs(
     """Transforms `x` into a dataframe.
 
     Args:
-        x (Union[np.array, pd.DataFrame]): Input array.
+        x (Union[np.array, pd.DataFrame], optional): Input array.
 
     Returns:
         pd.DataFrame: Returns a pd.DataFrame.
@@ -166,11 +198,14 @@ def _get_segments(x: pd.DataFrame, y: pd.DataFrame) -> List[int]:
     return segments
 
 
-def plot_signals(*,
-                 x: Union[np.array, pd.DataFrame],
-                 y: Union[np.array, pd.DataFrame],
-                 x_pred: Union[np.array, pd.DataFrame] = None,
-                 path: str = None):
+def plot_signals(
+    *,
+    x: Union[np.array, pd.DataFrame],
+    y: Union[np.array, pd.DataFrame],
+    x_pred: Optional[Union[np.array, pd.DataFrame]] = None,
+    path: Optional[str] = None,
+    return_fig: bool = False
+) -> Optional[Figure]:
     """Plots the signal prediction `x_pred` in color of the label `y`.
     Optionally, `x` is the ground truth.
 
@@ -178,13 +213,21 @@ def plot_signals(*,
         y (Union[np.array, pd.DataFrame]): Labels.
         x (Union[np.array, pd.DataFrame]): Ground truth.
         x_pred (Union[np.array, pd.DataFrame], optional): Prediction.
-        path (str, optional): Path to save fig to.
+            path (str, optional): Path to save fig to.
+        return_fig (bool): Whether to return the figure. Otherwise,
+            `plt.show()` is called.
+
+    Returns:
+        Optional[matplotlib.figure.Figure]: Returns the figure if `return_fig`
+            is true.
 
     Example:
-        >>> plot_signals(x_pred=np.zeros((10, 2)),
-                         y=np.array([0] * 5 + [1] * 5),
-                         x=np.ones((10, 2)),
-                         path='signals.png')
+        >>> plot_signals(
+                x_pred=np.zeros((10, 2)),
+                y=np.array([0] * 5 + [1] * 5),
+                x=np.ones((10, 2)),
+                path='signals.png'
+            )
     """
 
     x_pred = _check_inputs(x_pred)
@@ -233,39 +276,53 @@ def plot_signals(*,
                loc='upper center', ncol=len(by_label))
     plt.tight_layout()
     if path is not None:
-        plt.savefig(path, dpi=300, bbox_inches='tight')
+        plt.savefig(path, dpi=300, bbox_inches='tight', facecolor='white')
 
-    plt.show()
+    if return_fig:
+        return fig
+    else:
+        plt.show()
 
 
-def plot_signals_norm(*,
-                      x: Union[np.array, pd.DataFrame],
-                      y: Union[np.array, pd.DataFrame],
-                      x_pred: Union[np.array, pd.DataFrame] = None,
-                      norm_mean: np.array = None,
-                      norm_std: np.array = None,
-                      path: str = None):
-    """Plots prediction `x_pred` in color of the labels `y`. `x` are the inputs
-    or ground truth. Additionally, with `norm_mean` and `norm_std` a confidence
-    interval can be plotted.
+def plot_signals_norm(
+    *,
+    x: Union[np.array, pd.DataFrame],
+    y: Union[np.array, pd.DataFrame],
+    x_pred: Union[np.array, pd.DataFrame] = None,
+    norm_mean: np.array = None,
+    norm_std: np.array = None,
+    path: str = None,
+    return_fig: bool = False
+) -> Optional[Figure]:
+    """Plots prediction `x_pred` in color of the labels `y`. `x` are the
+    inputs or ground truth. Additionally, with `norm_mean` and `norm_std`
+    a confidence interval can be plotted.
 
     Args:
         x_pred (Union[np.array, pd.DataFrame]): Prediction.
         y (Union[np.array, pd.DataFrame]): Labels.
         x (Union[np.array, pd.DataFrame], optional): Ground truth.
         norm_mean (np.array, optional): Mean of the underlying normal
-        distribution.
+            distribution.
         norm_std (np.array, optional): Standard deviation of the underlying
-        normal distribution.
+            normal distribution.
         path (str, optional): Path to save figure to.
+        return_fig (bool): Whether to return the figure. Otherwise,
+            `plt.show()` is called.
+
+    Returns:
+        Optional[matplotlib.figure.Figure]: Returns the figure if `return_fig`
+            is true.
 
     Example:
-        >>> plot_signals_norm(x_pred=np.zeros((10, 2)),
-                              y=np.array([0] * 5 + [1] * 5),
-                              x=np.ones((10, 2)),
-                              norm_mean=np.array(np.ones((10, 2))),
-                              norm_std=np.array(np.ones((10, 2)) * 0.2),
-                              path='signals.png')
+        >>> plot_signals_norm(
+                x_pred=np.zeros((10, 2)),
+                y=np.array([0] * 5 + [1] * 5),
+                x=np.ones((10, 2)),
+                norm_mean=np.array(np.ones((10, 2))),
+                norm_std=np.array(np.ones((10, 2)) * 0.2),
+                path='signals.png'
+            )
     """
     x_pred = _check_inputs(x_pred)
     x = _check_inputs(x)
@@ -328,17 +385,23 @@ def plot_signals_norm(*,
 
     plt.tight_layout()
     if path is not None:
-        plt.savefig(path, dpi=300, bbox_inches='tight')
+        plt.savefig(path, dpi=300, bbox_inches='tight', facecolor='white')
 
-    plt.show()
+    if return_fig:
+        return fig
+    else:
+        plt.show()
 
 
-def plot_signals_binary(*,
-                        x: Union[np.array, pd.DataFrame],
-                        y: Union[np.array, pd.DataFrame],
-                        x_pred: Union[np.array, pd.DataFrame] = None,
-                        bern_mean: np.array = None,
-                        path: str = None):
+def plot_signals_binary(
+    *,
+    x: Union[np.array, pd.DataFrame],
+    y: Union[np.array, pd.DataFrame],
+    x_pred: Union[np.array, pd.DataFrame] = None,
+    bern_mean: np.array = None,
+    path: str = None,
+    return_fig: bool = False
+) -> Optional[Figure]:
     """Plots signal prediction `x_pred` in color of the labels `y`.
     `x` are the inputs or ground truth. Additionally, with `bern_mean` the mean
     of the underlying bernoulli distribution can be plotted.
@@ -348,15 +411,23 @@ def plot_signals_binary(*,
         y (Union[np.array, pd.DataFrame]): Labels.
         x (Union[np.array, pd.DataFrame], optional): Ground truth.
         bern_mean (np.array, optional): Mean of the underlying bernoulli
-        distribution.
+            distribution.
         path (str, optional): Path to save figure to.
+        return_fig (bool): Whether to return the figure. Otherwise,
+            `plt.show()` is called.
+
+    Returns:
+        Optional[matplotlib.figure.Figure]: Returns the figure if `return_fig`
+            is true.
 
     Example:
-        >>> plot_signals_binary(x_pred=np.zeros((10, 2)),
-                              y=np.array([0] * 5 + [1] * 5),
-                              x=np.ones((10, 2)),
-                              bern_mean=np.array(np.ones((10, 2))) * 0.5,
-                              path='signals.png')
+        >>> plot_signals_binary(
+                x_pred=np.zeros((10, 2)),
+                y=np.array([0] * 5 + [1] * 5),
+                x=np.ones((10, 2)),
+                bern_mean=np.array(np.ones((10, 2))) * 0.5,
+                path='signals.png'
+        )
     """
 
     x_pred = _check_inputs(x_pred)
@@ -414,7 +485,7 @@ def plot_signals_binary(*,
 
     plt.tight_layout()
     if path is not None:
-        plt.savefig(path, dpi=300, bbox_inches='tight')
+        plt.savefig(path, dpi=300, bbox_inches='tight', facecolor='white')
 
     plt.show()
 
@@ -426,8 +497,9 @@ def plot_rankings(
     x: np.array,
     x_pred: np.array,
     k=3,
-    context=10
-):
+    context=10,
+    return_figs: bool = False
+) -> Optional[List[Figure]]:
     """Plots the top k features (predictions `x_pred` and ground truth `x`)
     with the biggest error for each anomaly found in `y`. With context
     additional data points to the left and right of the anomaly will be shown.
@@ -439,7 +511,13 @@ def plot_rankings(
         x_pred (np.array): Predictions of `x`.
         k (int, optional): How many features should be plotted. Defaults to 3.
         context (int, optional): Additional datapoints that should be plotted
-        to the left and right of the anomaly. Defaults to 10.
+            to the left and right of the anomaly. Defaults to 10.
+        return_figs (bool): Whether to return the figure. Otherwise,
+            `plt.show()` is called.
+
+    Returns:
+        Optional[matplotlib.figure.Figure]: Returns a list of the figures if
+            `return_figs` is true.
 
     Example:
         >>> x, x_pred = np.ones((7, 4)), np.random.random((7, 4))
@@ -463,13 +541,15 @@ def plot_rankings(
     columns = min(2, k)
     rows = -(-k // columns) + 1
 
+    figs = []
     for (s, e), ranks, mean_error in zip(anm, rks, merr):
         # prepare subplots
         figsize = (7.5 * columns, rows * 2)
         fig = plt.figure(figsize=figsize, constrained_layout=False)
+        figs.append(fig)
         plt.subplots_adjust(hspace=0.5)
 
-        gs = fig.add_gridspec(rows, columns)
+        gs = fig.add_gridspec(nrows=rows, ncols=columns)
         axes = [fig.add_subplot(gs[y, x])
                 for (x, y) in product(range(columns), range(rows - 1))]
 
@@ -500,16 +580,19 @@ def plot_rankings(
         table_ax.axis('off')
         error_dist = _share(mean_error)
 
-        data = [ranks[:10], _fmt(mean_error[:10]), _fmt(error_dist[:10])]
+        data = [ranks[:15], _fmt(mean_error[:15]), _fmt(error_dist[:15])]
 
         table = table_ax.table(cellText=data,
                                rowLabels=['Feature', 'Mean Error', 'Share'],
                                loc='center')
-        table.auto_set_column_width(col=list(range(len(ranks[:10]))))
+        table.auto_set_column_width(col=list(range(len(ranks[:15]))))
 
     plt.tight_layout()
 
-    plt.show()
+    if return_figs:
+        return figs
+    else:
+        plt.show()
 
 
 def _create_lc(

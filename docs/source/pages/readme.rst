@@ -24,8 +24,8 @@ Example
 
    # Plot signals
    mlnext.setup_plot()
-   mlnext.plot_signals(x_pred=X_train, y=y_train)
-   mlnext.plot_signals(x_pred=X_test, y=y_test)
+   mlnext.plot_signals(x=X_train, y=y_train)
+   mlnext.plot_signals(x=X_test, y=y_test)
 
 
 .. image:: /img/output_0_1.png
