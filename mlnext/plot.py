@@ -94,6 +94,7 @@ def plot_error(
         return fig
     else:
         plt.show()
+        return None
 
 
 def plot_history(
@@ -142,6 +143,7 @@ def plot_history(
         return fig
     else:
         plt.show()
+        return None
 
 
 def _check_inputs(
@@ -282,6 +284,7 @@ def plot_signals(
         return fig
     else:
         plt.show()
+        return None
 
 
 def plot_signals_norm(
@@ -391,6 +394,7 @@ def plot_signals_norm(
         return fig
     else:
         plt.show()
+        return None
 
 
 def plot_signals_binary(
@@ -487,7 +491,11 @@ def plot_signals_binary(
     if path is not None:
         plt.savefig(path, dpi=300, bbox_inches='tight', facecolor='white')
 
-    plt.show()
+    if return_fig:
+        return fig
+    else:
+        plt.show()
+        return None
 
 
 def plot_rankings(
@@ -593,6 +601,7 @@ def plot_rankings(
         return figs
     else:
         plt.show()
+        return None
 
 
 def _create_lc(
