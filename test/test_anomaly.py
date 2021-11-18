@@ -70,9 +70,6 @@ def test_rank_features(error: np.array, y: np.array, exp: T.Tuple):
 @pytest.mark.parametrize(
     'error,y,err_msg',
     [
-        ([[0.1, 0.6, 0.4], [0.05, 0.3, 0.1]],
-         [0, 1, 1, 1], 'Length misaligned, got 3 and 4.'),
-
         ([[0.1, 0.6, 0.4, 0.5]],
          [0, 1, 1, 1], 'Expected at least 2 features.'),
     ]
