@@ -65,8 +65,17 @@ def plot_error(
 
     Example:
         >>> # Plots the predictions X in the color of label with a threshold
-        >>> plot_error(X=np.array([0.2, 0.9, 0.4]), y=np.array([0, 1, 0]),
-        ...            threshold=0.5, title='Prediction', path='pred.png')
+        >>> mlnext.plot_error(
+        ...     X=np.random.rand(10),
+        ...     y=np.array([0, 1, 0, 0, 0, 1, 1, 0, 1, 0]),
+        ...     threshold=0.5,
+        ...     title='Prediction',
+        ...     path='pred.png'
+        ... )
+
+    Expected result:
+        .. image:: ../_static/img/plot/plot_error.png
+           :scale: 50 %
     """
     fig = plt.figure()
     plt.title(title)
@@ -122,7 +131,11 @@ def plot_history(
     Example:
         >>> # Plots the training history for entries that match filter
         >>> history = model.fit(...)
-        >>> plot_history(history.history, filter=['loss'], path='history.png')
+        >>> plot_history(history.history, filter=['val'], path='history.png')
+
+    Expected result:
+        .. image:: ../_static/img/plot/plot_history.png
+           :scale: 50 %
     """
     fig = plt.figure()
     legend = []
@@ -224,12 +237,17 @@ def plot_signals(
         is true.
 
     Example:
-        >>> plot_signals(
+        >>> mlnext.plot_signals(
         ...     x_pred=np.zeros((10, 2)),
         ...     y=np.array([0] * 5 + [1] * 5),
         ...     x=np.ones((10, 2)),
         ...     path='signals.png'
         ... )
+
+    Expected result:
+
+        .. image:: ../_static/img/plot/plot_signals.png
+           :scale: 50 %
     """
 
     x_pred = _check_inputs(x_pred)
@@ -263,13 +281,13 @@ def plot_signals(
             # draw x
             ax.plot(idx_x,
                     x.loc[s1:s2, col],
-                    c='C1' if y.iloc[s1, 0] > 0. else 'C0',
+                    c='C1' if y.iloc[s1, 0] > 0. else 'C2',
                     label='x')
 
             # draw x_pred
             if x_pred is not None:
                 ax.plot(idx_x, x_pred.iloc[s1:(s2 + 1), idx],
-                        c='C1' if y.iloc[s1, 0] > 0. else 'C2',
+                        c='C0',
                         alpha=0.8, zorder=10, label='x_pred')
 
     handles, labels = ax.get_legend_handles_labels()
@@ -318,14 +336,19 @@ def plot_signals_norm(
         is true.
 
     Example:
-        >>> plot_signals_norm(
+        >>> mlnext.plot_signals_norm(
         ...     x_pred=np.zeros((10, 2)),
         ...     y=np.array([0] * 5 + [1] * 5),
         ...     x=np.ones((10, 2)),
         ...     norm_mean=np.array(np.ones((10, 2))),
         ...     norm_std=np.array(np.ones((10, 2)) * 0.2),
         ...     path='signals.png'
-        ...    )
+        ... )
+
+    Expected result:
+
+        .. image:: ../_static/img/plot/plot_signals_norm.png
+           :scale: 50 %
     """
     x_pred = _check_inputs(x_pred)
     x = _check_inputs(x)
@@ -369,7 +392,7 @@ def plot_signals_norm(
             if x_pred is not None:
                 ax.plot(idx_x,
                         x_pred.iloc[s1:(s2 + 1), idx],
-                        c='C1' if y.iloc[s1, 0] > 0. else 'C0',
+                        c='C0',
                         label='x_pred')
 
             # plot normal mean and std
@@ -425,13 +448,18 @@ def plot_signals_binary(
         is true.
 
     Example:
-        >>> plot_signals_binary(
+        >>> mlnext.plot_signals_binary(
         ...    x_pred=np.zeros((10, 2)),
         ...    y=np.array([0] * 5 + [1] * 5),
         ...    x=np.ones((10, 2)),
         ...    bern_mean=np.array(np.ones((10, 2))) * 0.5,
         ...    path='signals.png'
         ... )
+
+    Expected result:
+
+        .. image:: ../_static/img/plot/plot_signals_binary.png
+           :scale: 50 %
     """
 
     x_pred = _check_inputs(x_pred)
@@ -473,8 +501,9 @@ def plot_signals_binary(
 
             # draw x_pred
             if x_pred is not None:
-                ax.plot(idx_x, x_pred.iloc[s1:(s2 + 1), idx],
-                        c='C1' if y.iloc[s1, 0] > 0. else 'C0',
+                ax.plot(idx_x,
+                        x_pred.iloc[s1:(s2 + 1), idx],
+                        c='C0',
                         label='x_pred')
 
             # plot bern mean
@@ -538,6 +567,11 @@ def plot_rankings(
         ...    x_pred=x_pred,
         ...    k=2
         ... )
+
+    Expected result:
+
+        .. image:: ../_static/img/plot/plot_rankings.png
+           :scale: 50 %
     """
     error = detemporalize(error, verbose=False)
     x = detemporalize(x, verbose=False)
@@ -547,7 +581,7 @@ def plot_rankings(
     anm, rks, merr = rank_features(error=error, y=y)
 
     columns = min(2, k)
-    rows = -(-k // columns) + 1
+    rows = -(-min(k, error.shape[-1]) // columns) + 1
 
     figs = []
     for (s, e), ranks, mean_error in zip(anm, rks, merr):
@@ -558,8 +592,8 @@ def plot_rankings(
         plt.subplots_adjust(hspace=0.5)
 
         gs = fig.add_gridspec(nrows=rows, ncols=columns)
-        axes = [fig.add_subplot(gs[y, x])
-                for (x, y) in product(range(columns), range(rows - 1))]
+        axes = [fig.add_subplot(gs[x, y])
+                for (x, y) in product(range(rows - 1), range(columns))]
 
         fig.suptitle(f'Anomaly: {(s, e)}')
         fig.legend(handles=[Patch(color='C2', label='x'),

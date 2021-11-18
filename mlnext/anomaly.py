@@ -84,11 +84,13 @@ def rank_features(
     # 2. computes the average per feature per segment
     # 3. ranks the features according to their average error per anomaly
 
-    if (e_len := error.shape[0]) != (y_len := y.shape[0]):
-        raise ValueError(f'Length misaligned, got {e_len} and {y_len}.')
-
     error = detemporalize(error, verbose=False)
     y = detemporalize(y, verbose=False)
+
+    if (e_len := error.shape[0]) != (y_len := y.shape[0]):
+        warnings.warn(f'Length misaligned, got {e_len} and {y_len}.')
+
+    error, y = _truncate_arrays(error, y)
 
     if error.shape[-1] < 2:
         raise ValueError('Expected at least 2 features.')
@@ -130,6 +132,7 @@ def _sort_features(
     rank_err = sorted(enumerate(mean_err),
                       key=lambda item: item[1],
                       reverse=True)
+
     return rank_err
 
 
@@ -164,6 +167,9 @@ def apply_point_adjust(*, y_hat: np.array, y: np.array) -> np.array:
 
 def _truncate_arrays(*arrays: np.array) -> T.List[np.array]:
     """Truncates a list of arrays to the same length.
+
+    Args:
+        arrays (List[np.array]): List of arrays.
 
     Returns:
         T.List[np.array]: Returns the list of arrays truncated to the length of
