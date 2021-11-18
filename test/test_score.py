@@ -213,7 +213,7 @@ class TestNLL(TestCase):
     'mean,log_var,prior_mean,prior_std,exp',
     [
         (np.array([0.0]), np.array([0.0]), 0.0, 1.0, 0.0),
-        (np.array([1.0]), np.array([np.log(0.1)]), 1.0, 0.1, 0.0),
+        (np.array([1.0]), np.array([np.log(0.1**2)]), 1.0, 0.1, 0.0),
     ]
 )
 def test_kl_divergence(
@@ -224,9 +224,9 @@ def test_kl_divergence(
     exp: np.array
 ):
 
-    assert kl_divergence(
+    np.testing.assert_array_almost_equal(kl_divergence(
         mean=mean,
         log_var=log_var,
         prior_mean=prior_mean,
         prior_std=prior_std
-    ) == exp
+    ), exp)
