@@ -27,19 +27,8 @@ repos:
     hooks:
       - id: autopep8
         args: ["-i", "--max-line-length=79"]
-#
-#  - repo: local
-#    hooks:
-#      - id: unittest
-#        name: unittest
-#        entry: python -m unittest discover -v -s ./src -p test_*.py
-#        language: system
-#        pass_filenames: false
-#        always_run: true
-# note: not compatible with tensorflow
-#  - repo: https://github.com/pre-commit/mirrors-mypy
-#    rev: v0.782
-#    hooks:#
-#      - id: mypy
-#        args: [--no-strict-optional]
-#        additional_dependencies: [tokenize-rt==3.2.0, pydantic]
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: "" # Use the sha / tag you want to point at
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-PyYAML]

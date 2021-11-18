@@ -192,7 +192,7 @@ def plot_signals(*,
     y = _check_inputs(y)
 
     if y is None:
-        y = pd.DataFrame(np.zeros((*x.shape[:-1], 1,)))
+        y = pd.DataFrame(np.zeros((*x.shape[:-1], 1,)))  # type: ignore
 
     x_pred, x, y = _truncate_length(x_pred, x, y)
     segments = _get_segments(x, y)
@@ -272,7 +272,7 @@ def plot_signals_norm(*,
     y = _check_inputs(y)
 
     if y is None:
-        y = pd.DataFrame(np.zeros((*x.shape[:-1], 1,)))
+        y = pd.DataFrame(np.zeros((*x.shape[:-1], 1,)))  # type: ignore
 
     if (norm_mean is not None) & (norm_std is not None):
         mean = detemporalize(norm_mean, verbose=False)
@@ -364,7 +364,7 @@ def plot_signals_binary(*,
     y = _check_inputs(y)
 
     if y is None:
-        y = pd.DataFrame(np.zeros((*x.shape[:-1], 1,)))
+        y = pd.DataFrame(np.zeros((*x.shape[:-1], 1,)))  # type: ignore
 
     if bern_mean is not None:
         bern_mean = detemporalize(bern_mean, verbose=False)
