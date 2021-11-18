@@ -1,9 +1,11 @@
 from unittest import TestCase
 
 import numpy as np
+import pytest
 import scipy.stats
 
 from mlnext import score
+from mlnext.score import kl_divergence
 
 
 class TestL2Norm(TestCase):
@@ -205,3 +207,26 @@ class TestNLL(TestCase):
         result = score.bern_log_likelihood(x, mu)
 
         np.testing.assert_allclose(result, expected)
+
+
+@pytest.mark.parametrize(
+    'mean,log_var,prior_mean,prior_std,exp',
+    [
+        (np.array([0.0]), np.array([0.0]), 0.0, 1.0, 0.0),
+        (np.array([1.0]), np.array([np.log(0.1**2)]), 1.0, 0.1, 0.0),
+    ]
+)
+def test_kl_divergence(
+    mean: np.array,
+    log_var: np.array,
+    prior_mean: float,
+    prior_std: float,
+    exp: np.array
+):
+
+    np.testing.assert_array_almost_equal(kl_divergence(
+        mean=mean,
+        log_var=log_var,
+        prior_mean=prior_mean,
+        prior_std=prior_std
+    ), exp)
