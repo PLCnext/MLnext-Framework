@@ -100,6 +100,9 @@ def rank_features(
     # get anomaly segments
     anomalies = find_anomalies(y)
 
+    if len(anomalies) < 1:
+        raise ValueError('No anomalies found.')
+
     # calculate mean per feature for each anomaly
     # rank the features according to their mean error for the anomaly
     errors = np.array([_sort_features(error, a) for a in anomalies])
