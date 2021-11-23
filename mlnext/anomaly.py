@@ -59,7 +59,8 @@ def rank_features(
         y (np.array): Labels (1d).
 
     Raises:
-        ValueError: Raised if length do not align for `error` and `y`.
+        ValueError: Raised if length do not align for `error` and `y` or no
+          anomalies were found.
 
     Returns:
         T.Tuple[T.List[T.Tuple[int, int]], np.array]: Returns a tuple of 1.
