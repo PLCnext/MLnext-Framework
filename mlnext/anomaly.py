@@ -59,7 +59,8 @@ def rank_features(
         y (np.array): Labels (1d).
 
     Raises:
-        ValueError: Raised if length do not align for `error` and `y`.
+        ValueError: Raised if length do not align for `error` and `y` or no
+          anomalies were found.
 
     Returns:
         T.Tuple[T.List[T.Tuple[int, int]], np.array]: Returns a tuple of 1.
@@ -99,6 +100,9 @@ def rank_features(
 
     # get anomaly segments
     anomalies = find_anomalies(y)
+
+    if len(anomalies) < 1:
+        raise ValueError('No anomalies found.')
 
     # calculate mean per feature for each anomaly
     # rank the features according to their mean error for the anomaly
