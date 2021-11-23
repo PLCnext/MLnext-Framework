@@ -49,8 +49,8 @@ def test_find_anomalies_fails(y: np.array, err_msg: str):
         ([[0.1, 0.6, 0.6, 0.4, 0.5], [0.05, 0.3, 0.4, 0.3, 0.7]],
          [0, 1, 1, 0, 1],
          ([(1, 2), (4, 4)],
-          np.array([[0, 1], [1, 0]]),
-          np.array([[0.6, 0.35], [0.7, 0.5]]))),
+          [[0, 1], [1, 0]],
+          [[0.6, 0.35], [0.7, 0.5]])),
 
         ([[0.1, 0.8, 0.3, 0.25], [0.2, 0.4, 0.2, 0.6]],
          [0, 1, 0, 1],
@@ -72,6 +72,9 @@ def test_rank_features(error: np.array, y: np.array, exp: T.Tuple):
     [
         ([[0.1, 0.6, 0.4, 0.5]],
          [0, 1, 1, 1], 'Expected at least 2 features.'),
+
+        ([[0.1, 0.2], [0.1, 0.3]],
+         [0, 0, 0, 0], 'No anomalies found.'),
     ]
 )
 def test_rank_features_fails(error: np.array, y: np.array, err_msg: str):
