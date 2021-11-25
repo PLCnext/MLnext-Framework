@@ -159,7 +159,7 @@ def apply_point_adjust(*, y_hat: np.array, y: np.array) -> np.array:
 
     y_hat, y = _truncate_arrays(y_hat, y)
 
-    y_hat = y_hat.copy()
+    y_hat = np.copy(y_hat)
     for (start, end) in find_anomalies(y):
         # check if y_hat has any observation that lies in the
         # anomaly segment from start to end
@@ -167,6 +167,38 @@ def apply_point_adjust(*, y_hat: np.array, y: np.array) -> np.array:
             y_hat[start:(end + 1)] = 1
 
     return y_hat
+
+
+def apply_point_adjust_score(
+    *,
+    y_score: np.array,
+    y: np.array
+) -> np.array:
+    """Implements the point-adjust approach from
+    https://arxiv.org/pdf/1802.03903.pdf for prediction scores.
+    Thus, the point-adjust method can be used for precision-recall and other
+    similar curves. For any in the ground truth anomaly segment in `y`,
+    the score `y_score` is set to the maximum score in the anomaly segment.
+
+    Args:
+        y_score (np.array): Prediction (usually in range [0, 1]).
+        y (np.array): Ground truth.
+
+    Returns:
+        np.array: Returns the adjusted array.
+    """
+
+    if y_score.shape != y.shape:
+        warnings.warn(f'Shapes unaligned {y_score.shape} and {y.shape}.')
+
+    y_score, y = _truncate_arrays(y_score, y)
+
+    y_score = np.copy(y_score)
+    for (start, end) in find_anomalies(y):
+        # set the error for the anomaly to the maximum score
+        y_score[start:(end + 1)] = np.max(y_score[start:(end + 1)])
+
+    return y_score
 
 
 def _truncate_arrays(*arrays: np.array) -> T.List[np.array]:
