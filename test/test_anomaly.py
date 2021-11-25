@@ -5,8 +5,10 @@ import pytest
 
 from mlnext.anomaly import _truncate_arrays
 from mlnext.anomaly import apply_point_adjust
+from mlnext.anomaly import apply_point_adjust_score
 from mlnext.anomaly import find_anomalies
 from mlnext.anomaly import rank_features
+from mlnext.score import apply_threshold
 
 
 @pytest.mark.parametrize(
@@ -110,9 +112,9 @@ def test_rank_features_fails(error: np.array, y: np.array, err_msg: str):
 
 )
 def test_apply_point_adjust(
-        y_hat: np.array,
-        y: np.array,
-        exp: np.array
+    y_hat: np.array,
+    y: np.array,
+    exp: np.array
 ) -> np.array:
 
     result = apply_point_adjust(y_hat=np.array(y_hat), y=np.array(y))
@@ -133,3 +135,59 @@ def test_truncate_arrays(arrays: T.List[np.array], exp: T.List[np.array]):
     result = _truncate_arrays(*arrays)
 
     np.testing.assert_equal(result, exp)
+
+
+@pytest.mark.parametrize(
+    'y_score,y,exp',
+    [
+        ([0.1, 0.4, 0.6, 0.7, 0.4, 0.2, 0.4, 0.6, 0.25],
+         [1, 0, 0, 1, 1, 1, 0, 0, 1],
+         [0.1, 0.4, 0.6, 0.7, 0.7, 0.7, 0.4, 0.6, 0.25]),
+
+        ([0.1, 0.2, 0.4, 0.5, 0.5, 0.6, 0.4, 0.4, 0.2],
+         [1, 1, 1, 1, 1, 1, 1, 1, 1],
+         [0.6] * 9),
+
+        ([0.2, 0.3, 0.4, 0.3, 0.4, 0.4, 0.5, 0.4, 0.2],
+         [0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [0.2, 0.3, 0.4, 0.3, 0.4, 0.4, 0.5, 0.4, 0.2])
+    ]
+
+)
+def test_apply_point_adjust_score(
+    y_score: np.array,
+    y: np.array,
+    exp: np.array
+) -> np.array:
+    result = apply_point_adjust_score(y_score=np.array(y_score), y=np.array(y))
+
+    np.testing.assert_array_equal(result, exp)
+
+
+@pytest.mark.parametrize(
+    'y_score,y',
+    [
+        ([0.1, 0.4, 0.6, 0.7, 0.4, 0.2, 0.4, 0.6, 0.25],
+         [1, 0, 0, 1, 1, 1, 0, 0, 1]),
+
+        ([0.1, 0.2, 0.4, 0.5, 0.5, 0.6, 0.4, 0.4, 0.2],
+         [1, 1, 1, 1, 1, 1, 1, 1, 1]),
+
+        ([0.2, 0.3, 0.4, 0.3, 0.4, 0.4, 0.5, 0.4, 0.2],
+         [0, 0, 0, 0, 0, 0, 0, 0, 0])
+    ]
+
+)
+def test_apply_point_adjust_threshold(
+    y_score: np.array,
+    y: np.array
+) -> np.array:
+    y = np.array(y)
+
+    y_score = apply_point_adjust_score(y_score=np.array(y_score), y=y)
+    y_score = apply_threshold(y_score, threshold=0.5)
+
+    y_pred = apply_threshold(y_score, threshold=0.5)
+    y_pred = apply_point_adjust(y_hat=y_pred, y=y)
+
+    np.testing.assert_array_equal(y_score, y_pred)
