@@ -3,6 +3,7 @@
 import warnings
 from typing import Any
 from typing import Dict
+from typing import Iterator
 from typing import List
 
 import numpy as np
@@ -231,7 +232,7 @@ def eval_metrics(y: np.array, y_hat: np.array) -> Dict[str, Any]:
         'precision': metrics.precision_score,
         'recall': metrics.recall_score,
         'f1': metrics.f1_score,
-        'AUC': metrics.roc_auc_score
+        'auc': metrics.roc_auc_score
     }
 
     if y.shape != y_hat.shape:
@@ -271,9 +272,13 @@ def eval_metrics_all(y: List[np.array],
     y_ = []
     y_hat_ = []
     for (x, xx) in zip(y, y_hat):
+
+        x, xx = _check_dims(x, xx)
+
         if x.shape != xx.shape:
             warnings.warn(f'Shapes unaligned {x.shape} and {xx.shape}.')
 
+        # make labels and predictions the same length
         length = min(x.shape[0], xx.shape[0])
         y_.append(x[:length])
         y_hat_.append(xx[:length])
@@ -282,3 +287,30 @@ def eval_metrics_all(y: List[np.array],
     y_hat_ = np.vstack(y_hat_)
 
     return eval_metrics(y_, y_hat_)
+
+
+def _check_dims(*arr: np.array) -> Iterator[np.array]:
+    """Checks whether the dimension are valid.
+
+    Raises:
+        ValueError: Raised if an array is more than 2d and the second dim is
+        greater than one.
+
+    Returns:
+        Iterator: Returns the arrays.
+    """
+
+    for a in arr:
+
+        # check greater than 2d
+        if len(shape := a.shape) > 2:
+            raise ValueError(f'Expected 2 dimensional array, but got {shape}.')
+
+        if len(shape) == 2 and shape[-1] > 1:
+            raise ValueError(f'Expected axis 1 of dimension 1. Got: {shape}')
+
+        # insert 2 dim
+        if len(a.shape) == 1:
+            a = a.reshape(-1, 1)
+
+        yield a
