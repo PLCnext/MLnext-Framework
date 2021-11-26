@@ -302,8 +302,8 @@ def _check_dims(*arr: np.array) -> Iterator[np.array]:
 
     for a in arr:
 
-        # check if 1d or 2d
-        if len(shape := a.shape) > 1:
+        # check greater than 2d
+        if len(shape := a.shape) > 2:
             raise ValueError(f'Expected 2 dimensional array, but got {shape}.')
 
         if len(shape) == 2 and shape[-1] > 1:
