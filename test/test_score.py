@@ -177,7 +177,7 @@ class TestMetrics(TestCase):
         y_hat = [np.ones((10, 1)), np.zeros((10, 1))]
 
         expected = {'accuracy': 1.0, 'precision': 1.0,
-                    'recall': 1.0, 'f1': 1.0, 'AUC': 1.0}
+                    'recall': 1.0, 'f1': 1.0, 'auc': 1.0}
         result = score.eval_metrics_all(y, y_hat)
 
         self.assertDictEqual(result, expected)
