@@ -217,11 +217,11 @@ class TestNLL(TestCase):
     ]
 )
 def test_kl_divergence(
-    mean: np.array,
-    log_var: np.array,
+    mean: np.ndarray,
+    log_var: np.ndarray,
     prior_mean: float,
     prior_std: float,
-    exp: np.array
+    exp: np.ndarray
 ):
 
     np.testing.assert_array_almost_equal(kl_divergence(
