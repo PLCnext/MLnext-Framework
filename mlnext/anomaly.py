@@ -10,13 +10,13 @@ from .data import detemporalize
 
 
 def find_anomalies(
-    y: T.Union[np.array, pd.DataFrame]
+    y: T.Union[np.ndarray, pd.DataFrame]
 ) -> T.List[T.Tuple[int, int]]:
     """Finds continuous segments of anomalies and returns a list of tuple with
     the start end end index of each anomaly.
 
     Args:
-        y (T.union[np.array, pd.DataFrame]): Array of labels (1d).
+        y (T.union[np.ndarray, pd.DataFrame]): Array of labels (1d).
 
     Returns:
         T.List[T.Tuple[int, int]]: Returns a list of tuples. A tuple consists
@@ -47,23 +47,23 @@ def find_anomalies(
 
 def rank_features(
     *,
-    error: np.array,
-    y: np.array
-) -> T.Tuple[T.List[T.Tuple[int, int]], np.array, np.array]:
+    error: np.ndarray,
+    y: np.ndarray
+) -> T.Tuple[T.List[T.Tuple[int, int]], np.ndarray, np.ndarray]:
     """Finds the anomalies in y and calculates the feature-wise error for
     each anomaly. Each feature is ranked accordingly to their mean error
     during the anomaly.
 
     Args:
-        error (np.array): Error (2d or 3d).
-        y (np.array): Labels (1d).
+        error (np.ndarray): Error (2d or 3d).
+        y (np.ndarray): Labels (1d).
 
     Raises:
         ValueError: Raised if length do not align for `error` and `y` or no
           anomalies were found.
 
     Returns:
-        T.Tuple[T.List[T.Tuple[int, int]], np.array]: Returns a tuple of 1.
+        T.Tuple[T.List[T.Tuple[int, int]], np.ndarray]: Returns a tuple of 1.
         List of tuple where a tuple contains the start and end index of
         an anomaly. 2. A 2d array where each rows contains the ranked feature
         indexes. 3. A 2d array where each rows contains the mean error for the
@@ -114,13 +114,13 @@ def rank_features(
 
 
 def _sort_features(
-        error: np.array,
+        error: np.ndarray,
         idx: T.Tuple[int, int]
 ) -> T.List[T.Tuple[int, float]]:
     """Calculates the mean error per feature for an anomaly.
 
     Args:
-        error (np.array): Errors.
+        error (np.ndarray): Errors.
         idx (T.List[T.Tuple[int, int]]): Tuple of (start, end) indices of an
         anomaly.
 
@@ -140,7 +140,7 @@ def _sort_features(
     return rank_err
 
 
-def apply_point_adjust(*, y_hat: np.array, y: np.array) -> np.array:
+def apply_point_adjust(*, y_hat: np.ndarray, y: np.ndarray) -> np.ndarray:
     """Implements the point-adjust approach from
     https://arxiv.org/pdf/1802.03903.pdf. For any observation
     in the ground truth anomaly segment in `y`, is detected as anomaly in
@@ -148,11 +148,11 @@ def apply_point_adjust(*, y_hat: np.array, y: np.array) -> np.array:
     observation in the anomaly segment is set to 1.
 
     Args:
-        y_hat (np.array): Label predictions (1d).
-        y (np.array): Ground Truth (1d).
+        y_hat (np.ndarray): Label predictions (1d).
+        y (np.ndarray): Ground Truth (1d).
 
     Returns:
-        np.array: Returns the point-adjusted `y_hat`.
+        np.ndarray: Returns the point-adjusted `y_hat`.
     """
     if y_hat.shape != y.shape:
         warnings.warn(f'Shapes unaligned {y_hat.shape} and {y.shape}.')
@@ -171,9 +171,9 @@ def apply_point_adjust(*, y_hat: np.array, y: np.array) -> np.array:
 
 def apply_point_adjust_score(
     *,
-    y_score: np.array,
-    y: np.array
-) -> np.array:
+    y_score: np.ndarray,
+    y: np.ndarray
+) -> np.ndarray:
     """Implements the point-adjust approach from
     https://arxiv.org/pdf/1802.03903.pdf for prediction scores.
     Thus, the point-adjust method can be used for precision-recall and other
@@ -181,11 +181,11 @@ def apply_point_adjust_score(
     the score `y_score` is set to the maximum score in the anomaly segment.
 
     Args:
-        y_score (np.array): Prediction (usually in range [0, 1]).
-        y (np.array): Ground truth.
+        y_score (np.ndarray): Prediction (usually in range [0, 1]).
+        y (np.ndarray): Ground truth.
 
     Returns:
-        np.array: Returns the adjusted array.
+        np.ndarray: Returns the adjusted array.
     """
 
     if y_score.shape != y.shape:
@@ -201,15 +201,15 @@ def apply_point_adjust_score(
     return y_score
 
 
-def _truncate_arrays(*arrays: np.array) -> T.List[np.array]:
+def _truncate_arrays(*arrays: np.ndarray) -> T.List[np.ndarray]:
     """Truncates a list of arrays to the same length.
 
     Args:
-        arrays (List[np.array]): List of arrays.
+        arrays (List[np.ndarray]): List of arrays.
 
     Returns:
-        T.List[np.array]: Returns the list of arrays truncated to the length of
-        the shortest array in the list.
+        T.List[np.ndarray]: Returns the list of arrays truncated to the length
+        of the shortest array in the list.
     """
     length = min([arr.shape[0] for arr in arrays])
     return [arr[:length] for arr in arrays]
