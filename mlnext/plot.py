@@ -38,8 +38,8 @@ def setup_plot():
 
 
 def plot_error(
-    X: np.array,
-    y: np.array = None,
+    X: np.ndarray,
+    y: np.ndarray = None,
     threshold: float = None,
     title: str = None,
     yscale: str = 'linear',
@@ -50,8 +50,8 @@ def plot_error(
     point. An anomaly threshold can be drawn with threshold.
 
     Arguments:
-        X (np.array): 2D array of error.
-        label (np.array): label for data points.
+        X (np.ndarray): 2D array of error.
+        label (np.ndarray): label for data points.
         threshold (float): Threshold.
         title (str): Title of the plot.
         yscale (str): Scaling of y-axis; passed to plt.yscale. Default: linear.
@@ -160,11 +160,12 @@ def plot_history(
 
 
 def _check_inputs(
-        x: Optional[Union[np.array, pd.DataFrame]]) -> Optional[pd.DataFrame]:
+    x: Optional[Union[np.ndarray, pd.DataFrame]]
+) -> Optional[pd.DataFrame]:
     """Transforms `x` into a dataframe.
 
     Args:
-        x (Union[np.array, pd.DataFrame], optional): Input array.
+        x (Union[np.ndarray, pd.DataFrame], optional): Input array.
 
     Returns:
         pd.DataFrame: Returns a pd.DataFrame.
@@ -200,7 +201,7 @@ def _get_segments(x: pd.DataFrame, y: pd.DataFrame) -> List[int]:
         y (pd.DataFrame): Labels.
 
     Returns:
-        np.array: Returns a list of indices.
+        np.ndarray: Returns a list of indices.
     """
     # get transitions of 0-1 and 1-0
     segments = x.index[(y.iloc[:, -1] > y.shift(1).iloc[:, -1]) |
@@ -215,9 +216,9 @@ def _get_segments(x: pd.DataFrame, y: pd.DataFrame) -> List[int]:
 
 def plot_signals(
     *,
-    x: Union[np.array, pd.DataFrame],
-    y: Union[np.array, pd.DataFrame],
-    x_pred: Optional[Union[np.array, pd.DataFrame]] = None,
+    x: Union[np.ndarray, pd.DataFrame],
+    y: Union[np.ndarray, pd.DataFrame],
+    x_pred: Optional[Union[np.ndarray, pd.DataFrame]] = None,
     path: Optional[str] = None,
     return_fig: bool = False
 ) -> Optional[Figure]:
@@ -225,9 +226,9 @@ def plot_signals(
     Optionally, `x` is the ground truth.
 
     Args:
-        y (Union[np.array, pd.DataFrame]): Labels.
-        x (Union[np.array, pd.DataFrame]): Ground truth.
-        x_pred (Union[np.array, pd.DataFrame], optional): Prediction.
+        y (Union[np.ndarray, pd.DataFrame]): Labels.
+        x (Union[np.ndarray, pd.DataFrame]): Ground truth.
+        x_pred (Union[np.ndarray, pd.DataFrame], optional): Prediction.
         path (str, optional): Path to save fig to.
         return_fig (bool): Whether to return the figure. Otherwise,
           plt.show() is called.
@@ -307,11 +308,11 @@ def plot_signals(
 
 def plot_signals_norm(
     *,
-    x: Union[np.array, pd.DataFrame],
-    y: Union[np.array, pd.DataFrame],
-    x_pred: Union[np.array, pd.DataFrame] = None,
-    norm_mean: np.array = None,
-    norm_std: np.array = None,
+    x: Union[np.ndarray, pd.DataFrame],
+    y: Union[np.ndarray, pd.DataFrame],
+    x_pred: Union[np.ndarray, pd.DataFrame] = None,
+    norm_mean: np.ndarray = None,
+    norm_std: np.ndarray = None,
     path: str = None,
     return_fig: bool = False
 ) -> Optional[Figure]:
@@ -320,12 +321,12 @@ def plot_signals_norm(
     a confidence interval can be plotted.
 
     Args:
-        x_pred (Union[np.array, pd.DataFrame]): Prediction.
-        y (Union[np.array, pd.DataFrame]): Labels.
-        x (Union[np.array, pd.DataFrame], optional): Ground truth.
-        norm_mean (np.array, optional): Mean of the underlying normal
+        x_pred (Union[np.ndarray, pd.DataFrame]): Prediction.
+        y (Union[np.ndarray, pd.DataFrame]): Labels.
+        x (Union[np.ndarray, pd.DataFrame], optional): Ground truth.
+        norm_mean (np.ndarray, optional): Mean of the underlying normal
           distribution.
-        norm_std (np.array, optional): Standard deviation of the underlying
+        norm_std (np.ndarray, optional): Standard deviation of the underlying
           normal distribution.
         path (str, optional): Path to save figure to.
         return_fig (bool): Whether to return the figure. Otherwise,
@@ -357,7 +358,7 @@ def plot_signals_norm(
     if y is None:
         y = pd.DataFrame(np.zeros((*x.shape[:-1], 1,)))  # type: ignore
 
-    if (norm_mean is not None) & (norm_std is not None):
+    if norm_mean is not None and norm_std is not None:
         mean = detemporalize(norm_mean, verbose=False)
         std = detemporalize(norm_std, verbose=False)
 
@@ -422,10 +423,10 @@ def plot_signals_norm(
 
 def plot_signals_binary(
     *,
-    x: Union[np.array, pd.DataFrame],
-    y: Union[np.array, pd.DataFrame],
-    x_pred: Union[np.array, pd.DataFrame] = None,
-    bern_mean: np.array = None,
+    x: Union[np.ndarray, pd.DataFrame],
+    y: Union[np.ndarray, pd.DataFrame],
+    x_pred: Union[np.ndarray, pd.DataFrame] = None,
+    bern_mean: np.ndarray = None,
     path: str = None,
     return_fig: bool = False
 ) -> Optional[Figure]:
@@ -434,10 +435,10 @@ def plot_signals_binary(
     of the underlying bernoulli distribution can be plotted.
 
     Args:
-        x_pred (Union[np.array, pd.DataFrame]): Prediction.
-        y (Union[np.array, pd.DataFrame]): Labels.
-        x (Union[np.array, pd.DataFrame], optional): Ground truth.
-        bern_mean (np.array, optional): Mean of the underlying bernoulli
+        x_pred (Union[np.ndarray, pd.DataFrame]): Prediction.
+        y (Union[np.ndarray, pd.DataFrame]): Labels.
+        x (Union[np.ndarray, pd.DataFrame], optional): Ground truth.
+        bern_mean (np.ndarray, optional): Mean of the underlying bernoulli
           distribution.
         path (str, optional): Path to save figure to.
         return_fig (bool): Whether to return the figure. Otherwise,
@@ -529,10 +530,10 @@ def plot_signals_binary(
 
 def plot_rankings(
     *,
-    error: np.array,
-    y: np.array,
-    x: np.array,
-    x_pred: np.array,
+    error: np.ndarray,
+    y: np.ndarray,
+    x: np.ndarray,
+    x_pred: np.ndarray,
     k=3,
     context=10,
     return_figs: bool = False
@@ -542,10 +543,11 @@ def plot_rankings(
     additional data points to the left and right of the anomaly will be shown.
 
     Args:
-        error (np.array): Feature-wise error (e.g. l2_norm or log_likelihood).
-        y (np.array): Labels (1d array).
-        x (np.array): Input data (ground truth).
-        x_pred (np.array): Predictions of x.
+        error (np.ndarray): Feature-wise error (e.g. l2_norm with reduce=False
+          or {norm, bern}_log_likelihood).
+        y (np.ndarray): Labels (1d array).
+        x (np.ndarray): Input data (ground truth).
+        x_pred (np.ndarray): Predictions of x.
         k (int, optional): How many features should be plotted. Defaults to 3.
         context (int, optional): Additional datapoints that should be plotted
           to the left and right of the anomaly. Defaults to 10.
@@ -639,18 +641,18 @@ def plot_rankings(
 
 
 def _create_lc(
-    x: np.array,
-    y: np.array,
-    labels: np.array,
+    x: np.ndarray,
+    y: np.ndarray,
+    labels: np.ndarray,
     cmap,
     **kwargs
 ) -> LineCollection:
     """Creates a LineCollection.
 
     Args:
-        x (np.array): Data for x axis.
-        y (np.array): Data for y axis.
-        labels (np.array): Labels to color each point.
+        x (np.ndarray): Data for x axis.
+        y (np.ndarray): Data for y axis.
+        labels (np.ndarray): Labels to color each point.
         cmap: Colormap.
 
     Returns:
@@ -664,14 +666,14 @@ def _create_lc(
     return lc
 
 
-def _share(a: np.array) -> np.array:
+def _share(a: np.ndarray) -> np.ndarray:
     """Calculates the share for each element.
 
     Args:
-        a (np.array): Array.
+        a (np.ndarray): Array.
 
     Returns:
-        np.array: Returns the share for each element.
+        np.ndarray: Returns the share for each element.
     """
     a = minmax_scale(a)  # only positive values
     return a / np.sum(a)

@@ -9,11 +9,13 @@ import numpy as np
 import pandas as pd
 
 
-def load_data_3d(*,
-                 path: str,
-                 timesteps: int,
-                 format: Dict[str, Any] = {},
-                 verbose: bool = True) -> np.array:
+def load_data_3d(
+    *,
+    path: str,
+    timesteps: int,
+    format: Dict[str, Any] = {},
+    verbose: bool = True
+) -> np.ndarray:
     """Loads data from `path` and temporalizes it with `timesteps`.
 
     Args:
@@ -23,7 +25,7 @@ def load_data_3d(*,
         verbose (bool): Whether to print status information.
 
     Returns:
-        np.array: Returns the data.
+        np.ndarray: Returns the data.
 
     Example:
         >>> # Loading 2d data and reshaping it to 3d
@@ -61,21 +63,23 @@ def load_data(path: str, *, verbose: bool = True, **kwargs) -> pd.DataFrame:
     return df
 
 
-def temporalize(*,
-                data: Union[pd.DataFrame, np.array],
-                timesteps: int,
-                verbose: bool = True) -> np.array:
+def temporalize(
+    *,
+    data: Union[pd.DataFrame, np.ndarray],
+    timesteps: int,
+    verbose: bool = True
+) -> np.ndarray:
     """ Transforms data from in_rows x features to out_rows x timesteps x
     features. If timesteps is not a proper divisor of rows, the superfluous
     rows are discarded.
 
     Arguments:
-        data (pd.DataFrame, np.array): Data to transform.
+        data (pd.DataFrame, np.ndarray): Data to transform.
         timesteps (int): Number of timesteps.
         verbose (bool): Whether to print status information.
 
     Returns:
-        np.array: Returns an array of shape rows x timesteps x features.
+        np.ndarray: Returns an array of shape rows x timesteps x features.
 
     Example:
         >>> # Transform 2d data into 3d
@@ -101,17 +105,17 @@ def temporalize(*,
     return data
 
 
-def detemporalize(data: np.array, *, verbose: bool = True) -> np.array:
+def detemporalize(data: np.ndarray, *, verbose: bool = True) -> np.ndarray:
     """
     Transforms data from shape rows x timesteps x features to
     (rows * timesteps) x features.
 
     Arguments:
-        data (np.array): Data to transform
+        data (np.ndarray): Data to transform
         verbose (bool): Whether to print status information.
 
     Returns:
-        np.array: Returns an array of shape (rows * timesteps) x features.
+        np.ndarray: Returns an array of shape (rows * timesteps) x features.
 
     Example:
         >>> # Transform 3d data into 2d
@@ -134,15 +138,15 @@ def detemporalize(data: np.array, *, verbose: bool = True) -> np.array:
     return np.reshape(data, (rows, features))
 
 
-def sample_normal(*, mean: np.array, std: np.array) -> np.array:
+def sample_normal(*, mean: np.ndarray, std: np.ndarray) -> np.ndarray:
     """Samples from a normal gaussian with mu=`mean` and sigma=`std`.
 
     Args:
-        mean (np.array): Mean of the normal distribution.
-        std (np.array): Standard deviation of the normal distribution.
+        mean (np.ndarray): Mean of the normal distribution.
+        std (np.ndarray): Standard deviation of the normal distribution.
 
     Returns:
-        np.array: Returns the drawn samples.
+        np.ndarray: Returns the drawn samples.
 
     Example:
         >>> # Sample from a normal distribution with mean and standard dev.
@@ -152,14 +156,14 @@ def sample_normal(*, mean: np.array, std: np.array) -> np.array:
     return np.random.normal(loc=mean, scale=std)
 
 
-def sample_bernoulli(mean: np.array) -> np.array:
+def sample_bernoulli(mean: np.ndarray) -> np.ndarray:
     """Samples from a bernoulli distribution with `mean`.
 
     Args:
-        mean (np.array): Mean of the bernoulli distribution.
+        mean (np.ndarray): Mean of the bernoulli distribution.
 
     Returns:
-        np.array: Returns the drawn samples.
+        np.ndarray: Returns the drawn samples.
 
     Example:
         >>> # Sample from a bernoulli distribution with mean
