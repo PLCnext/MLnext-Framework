@@ -208,6 +208,7 @@ class TestList(TestCase):
         self.data = {'test': [1, 2, 3]}
         self.tasks = os.path.join(self.d.path, 'tasks')
         io.save_json(data=self.data, name='test.json', folder=self.tasks)
+        io.save_json(data=self.data, name='foo.json', folder=self.tasks)
 
     def tearDown(self):
         self.d.cleanup()
@@ -222,7 +223,14 @@ class TestList(TestCase):
     def test_get_folders_full_path(self):
         expected = [os.path.join(self.d.path, p) for p in ['models', 'tasks']]
 
-        result = io.get_folders(self.d.path, full_path=True)
+        result = io.get_folders(self.d.path, absolute=True)
+
+        self.assertCountEqual(result, expected)
+
+    def test_get_folders_filter(self):
+        expected = ['models']
+
+        result = io.get_folders(self.d.path, filter='m')
 
         self.assertCountEqual(result, expected)
 
@@ -231,21 +239,29 @@ class TestList(TestCase):
             io.get_folders(os.path.join(self.tasks, 'test.json'))
 
     def test_get_files(self):
-        expected = ['test.json']
+        expected = ['test.json', 'foo.json']
 
-        result = io.get_files(path=self.tasks, extension='json')
+        result = io.get_files(path=self.tasks, ext='json')
+
+        self.assertCountEqual(result, expected)
+
+    def test_get_files_filter(self):
+        expected = ['foo.json']
+
+        result = io.get_files(path=self.tasks, ext='json', name='foo')
 
         self.assertCountEqual(result, expected)
 
     def test_get_files_full_path(self):
-        expected = [os.path.join(self.tasks, p) for p in ['test.json']]
+        expected = [os.path.join(self.tasks, p)
+                    for p in ['test.json', 'foo.json']]
 
-        result = io.get_files(path=self.tasks, extension='json',
-                              full_path=True)
+        result = io.get_files(path=self.tasks, ext='json',
+                              absolute=True)
 
         self.assertCountEqual(result, expected)
 
     def test_get_files_invalid_path(self):
         with self.assertRaises(ValueError):
             io.get_files(path=os.path.join(self.tasks, 'test.json'),
-                         extension='json')
+                         ext='json')
