@@ -236,15 +236,9 @@ def test_rename_keys(
 
 
 @pytest.mark.parametrize(
-    'mapping,sep,flatten_list,exp',
+    'prefix,sep,flatten_list,exp',
     [
-        ({
-            'flat1': 1,
-            'dict1': {'c': 1, 'd': 2},
-            'nested': {'e': {'c': 1, 'd': 2}, 'd': 2},
-            'list1': [1, 2],
-            'nested_list': [{'1': 1}]
-        }, '.', True, {
+        ('', '.', True, {
             'flat1': 1,
             'dict1.c': 1,
             'dict1.d': 2,
@@ -255,13 +249,7 @@ def test_rename_keys(
             'list1.1': 2,
             'nested_list.0.1': 1
         }),
-        ({
-            'flat1': 1,
-            'dict1': {'c': 1, 'd': 2},
-            'nested': {'e': {'c': 1, 'd': 2}, 'd': 2},
-            'list1': [1, 2],
-            'nested_list': [{'1': 1}]
-        }, '_', True, {
+        ('', '_', True, {
             'flat1': 1,
             'dict1_c': 1,
             'dict1_d': 2,
@@ -272,13 +260,7 @@ def test_rename_keys(
             'list1_1': 2,
             'nested_list_0_1': 1
         }),
-        ({
-            'flat1': 1,
-            'dict1': {'c': 1, 'd': 2},
-            'nested': {'e': {'c': 1, 'd': 2}, 'd': 2},
-            'list1': [1, 2],
-            'nested_list': [{'1': 1}]
-        }, '.', False, {
+        ('', '.', False, {
             'flat1': 1,
             'dict1.c': 1,
             'dict1.d': 2,
@@ -287,16 +269,40 @@ def test_rename_keys(
             'nested.d': 2,
             'list1': [1, 2],
             'nested_list': [{'1': 1}]
-        })
+        }),
+        ('pre', '.', True, {
+            'pre.flat1': 1,
+            'pre.dict1.c': 1,
+            'pre.dict1.d': 2,
+            'pre.nested.e.c': 1,
+            'pre.nested.e.d': 2,
+            'pre.nested.d': 2,
+            'pre.list1.0': 1,
+            'pre.list1.1': 2,
+            'pre.nested_list.0.1': 1
+        }),
     ]
 )
 def test_flatten(
-    mapping: T.Dict[str, T.Any],
+    prefix: str,
     sep: str,
     flatten_list: bool,
     exp: T.Dict[str, T.Any]
 ):
+    mapping = {
+        'flat1': 1,
+        'dict1': {'c': 1, 'd': 2},
+        'nested': {'e': {'c': 1, 'd': 2}, 'd': 2},
+        'list1': [1, 2],
+        'nested_list': [{'1': 1}]
+    }
 
-    result = flatten(mapping, sep=sep, flatten_list=flatten_list)
+    result = flatten(
+        mapping,
+        prefix=prefix,
+        sep=sep,
+        flatten_list=flatten_list
+    )
+    print(result)
 
     np.testing.assert_equal(result, exp)
