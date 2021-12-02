@@ -1,13 +1,15 @@
 """ Module for model evaluation.
 """
 import warnings
-from typing import Any
 from typing import Dict
-from typing import Iterator
 from typing import List
 
 import numpy as np
 from sklearn import metrics
+
+from mlnext.utils import check_ndim
+from mlnext.utils import check_size
+from mlnext.utils import truncate
 
 
 def l2_norm(
@@ -230,7 +232,8 @@ def eval_metrics(y: np.ndarray, y_hat: np.ndarray) -> Dict[str, float]:
     Example:
         >>> y, y_hat = np.ones((10, 1)), np.ones((10, 1))
         >>> eval_metrics(y, y_hat)
-        {'accuracy': 1.0, 'precision': 1.0, 'recall': 1.0, 'f1': 1.0}
+        {'accuracy': 1.0, 'precision': 1.0, 'recall': 1.0, 'f1': 1.0,
+        ... 'auc': 1.0}
     """
     scores = {
         'accuracy': metrics.accuracy_score,
@@ -243,19 +246,21 @@ def eval_metrics(y: np.ndarray, y_hat: np.ndarray) -> Dict[str, float]:
     if y.shape != y_hat.shape:
         warnings.warn(f'Shapes unaligned {y.shape} and {y_hat.shape}.')
 
-    length = min(y.shape[0], y_hat.shape[0])
+    (y, y_hat), = truncate((y, y_hat))
     results = {}
     try:
         for key in scores:
-            results[key] = scores[key](y[:length], y_hat[:length])
+            results[key] = scores[key](y, y_hat)
     except Exception:
         pass
     finally:
         return results
 
 
-def eval_metrics_all(y: List[np.ndarray],
-                     y_hat: List[np.ndarray]) -> Dict[str, Any]:
+def eval_metrics_all(
+    y: List[np.ndarray],
+    y_hat: List[np.ndarray]
+) -> Dict[str, float]:
     """Calculates combined accuracy, f1, precision, recall and AUC scores for
     multiple arrays. The arrays are shorted to the minimum length of the
     corresponding partner and stacked on top of each other to calculated the
@@ -266,53 +271,26 @@ def eval_metrics_all(y: List[np.ndarray],
         y_hat (np.ndarray): Prediction.
 
     Returns:
-        Dict[str, Any]: Returns a dict with all scores.
+        Dict[str, float]: Returns a dict with all scores.
 
     Example:
         >>> y = [np.ones((10, 1)), np.zeros((10, 1))]
         >>> y_hat = [np.ones((10, 1)), np.zeros((10, 1))]
         >>> eval_metrics_all(y, y_hat)
-        {'accuracy': 1.0, 'precision': 1.0, 'recall': 1.0, 'f1': 1.0}
+        {'accuracy': 1.0, 'precision': 1.0, 'recall': 1.0, 'f1': 1.0,
+        ... 'auc': 1.0}
     """
-    y_ = []
-    y_hat_ = []
-    for (x, xx) in zip(y, y_hat):
+    if len(y) != len(y_hat):
+        raise ValueError('y and y_hat must have the same number elements.')
 
-        x, xx = _check_dims(x, xx)
+    # allow 1d or 2d arrays with the 2nd dimension of 1
+    check_ndim(*y, *y_hat, ndim=2, strict=False)
+    check_size(*y, *y_hat, size=1, axis=1, strict=False)
 
-        if x.shape != xx.shape:
-            warnings.warn(f'Shapes unaligned {x.shape} and {xx.shape}.')
+    y = list(map(lambda x: x.reshape(-1), y))
+    y_hat = list(map(lambda x: x.reshape(-1), y_hat))
 
-        # make labels and predictions the same length
-        length = min(x.shape[0], xx.shape[0])
-        y_.append(x[:length])
-        y_hat_.append(xx[:length])
+    # truncate corresponding arrays to the same length
+    y_, y_hat_ = np.hstack(list(truncate(*zip(y, y_hat))))
 
-    return eval_metrics(np.vstack(y_), np.vstack(y_hat_))
-
-
-def _check_dims(*arr: np.ndarray) -> Iterator[np.ndarray]:
-    """Checks whether the dimension are valid.
-
-    Raises:
-        ValueError: Raised if an array is more than 2d and the second dim is
-        greater than one.
-
-    Returns:
-        Iterator: Returns the arrays.
-    """
-
-    for a in arr:
-
-        # check greater than 2d
-        if len(shape := a.shape) > 2:
-            raise ValueError(f'Expected 2 dimensional array, but got {shape}.')
-
-        if len(shape) == 2 and shape[-1] > 1:
-            raise ValueError(f'Expected axis 1 of dimension 1. Got: {shape}')
-
-        # insert 2 dim
-        if len(a.shape) == 1:
-            a = a.reshape(-1, 1)
-
-        yield a
+    return eval_metrics(y_, y_hat_)
