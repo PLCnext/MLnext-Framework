@@ -168,6 +168,7 @@ def rename_keys(
 def flatten(
     mapping: T.Mapping[str, T.Any],
     *,
+    prefix: str = '',
     sep: str = '.',
     flatten_list: bool = True
 ) -> T.Mapping[str, T.Any]:
@@ -175,12 +176,12 @@ def flatten(
 
     Args:
         mapping (T.Mapping[str, T.Any]): Mapping to flatten.
-        sep (str, optional): Seperator of flattened keys. Defaults to '.'.
-        flatten_list (bool, optional): Whether to flatten list (potentially
-          with (nested) mappings.). Defaults to True.
+        prefix (str): Prefix to preprend to the key.
+        sep (str): Seperator of flattened keys.
+        flatten_list (bool): Whether to flatten lists.
 
     Returns:
-        T.Dict[str, T.Any]: Returns the flattened mapping.
+        T.Mapping[str, T.Any]: Returns a (flattened) mapping.
 
     Example:
         >>> flatten({
@@ -203,36 +204,25 @@ def flatten(
         }
     """
 
-    return _flatten(mapping, suffix='', sep=sep, flatten_list=flatten_list)
-
-
-def _flatten(
-    mapping: T.Mapping[str, T.Any],
-    suffix: str,
-    sep: str,
-    flatten_list: bool
-) -> T.Mapping[str, T.Any]:
-    """Turns a nested mapping into a flattened mapping.
-
-    Args:
-        mapping (T.Mapping[str, T.Any]): Mapping to flatten.
-        suffix (str): Suffix to append to the key.
-        sep (str): Seperator of flattened keys.
-        flatten_list (bool): Whether to flatten lists.
-
-    Returns:
-        T.Mapping[str, T.Any]: Returns a (flattened) mapping.
-    """
     items: T.List[T.Tuple[str, T.Any]] = []
     for k, v in mapping.items():
-        key = f'{sep}'.join([suffix, k]) if suffix else k
+        key = f'{sep}'.join([prefix, k]) if prefix else k
         if isinstance(v, collections.Mapping):
-            items.extend(_flatten(v, key, sep, flatten_list).items())
+            items.extend(flatten(
+                v,
+                prefix=key,
+                sep=sep,
+                flatten_list=flatten_list
+            ).items())
 
         elif isinstance(v, list) and flatten_list:
             for i, v in enumerate(v):
-                items.extend(
-                    _flatten({str(i): v}, key, sep, flatten_list).items())
+                items.extend(flatten(
+                    {str(i): v},
+                    prefix=key,
+                    sep=sep,
+                    flatten_list=flatten_list
+                ).items())
 
         else:
             items.append((key, v))
