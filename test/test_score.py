@@ -182,6 +182,28 @@ class TestMetrics(TestCase):
 
         self.assertDictEqual(result, expected)
 
+    def test_eval_metrics_all_uneven_length(self):
+
+        y = [np.ones((10, 1)), np.zeros((10, 1))]
+        y_hat = [np.ones((11, 1)), np.zeros((12, 1))]
+
+        expected = {'accuracy': 1.0, 'precision': 1.0,
+                    'recall': 1.0, 'f1': 1.0, 'auc': 1.0}
+        result = score.eval_metrics_all(y, y_hat)
+
+        self.assertDictEqual(result, expected)
+
+    def test_eval_metrics_all_shapes(self):
+
+        y = [np.ones((10,)), np.zeros((8,))]
+        y_hat = [np.ones((11,)), np.zeros((12,))]
+
+        expected = {'accuracy': 1.0, 'precision': 1.0,
+                    'recall': 1.0, 'f1': 1.0, 'auc': 1.0}
+        result = score.eval_metrics_all(y, y_hat)
+
+        self.assertDictEqual(result, expected)
+
 
 class TestNLL(TestCase):
 
