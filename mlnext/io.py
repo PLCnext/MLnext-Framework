@@ -11,7 +11,7 @@ import yaml
 from pydantic import BaseModel
 
 
-def save_json(*, data: Dict[str, Any], name: str, folder: str = '.'):
+def save_json(data: Dict[str, Any], *, name: str, folder: str = '.'):
     """Saves `data` to a name.json in `folder`.
 
     Args:
@@ -61,7 +61,7 @@ def load_json(path: str) -> Dict[str, Any]:
     return data
 
 
-def save_yaml(*, data: Dict[str, Any], name: str, folder: str = '.'):
+def save_yaml(data: Dict[str, Any], *, name: str, folder: str = '.'):
     """Saves `data` to a name.yaml in `folder`.
 
     Args:
@@ -111,7 +111,7 @@ def load_yaml(path: str) -> Dict[str, Any]:
     return data
 
 
-def save_config(*, config: BaseModel, name: str, folder: str = '.'):
+def save_config(config: BaseModel, *, name: str, folder: str = '.'):
     """Saves a `pydantic.BaseModel` to `yaml`.
 
     Args:
@@ -175,54 +175,69 @@ def load(path: str) -> Dict[str, Any]:
     return exts[ext](path)
 
 
-def get_files(*,
-              path: str,
-              extension: str,
-              full_path: bool = False) -> List[str]:
-    """List all files in `path` with `extension`.
+def get_files(
+    path: str,
+    *,
+    name: str = '*',
+    ext: str = '*',
+    absolute: bool = False
+) -> List[str]:
+    """List all files in `path` with extension `ext`.
 
     Args:
-        path (str): Path of directory.
-        extension (str): File extension (without dot).
-        full_path (bool): Whether to return the full path or only the
-        filenames.
+        path (str): Path of the directory.
+        ext (str): File extension (without dot).
+        name (str): Pattern for the name of the files to appear in the result.
+        absolute (bool): Whether to return the absolute path or only the
+          filenames.
 
     Raises:
         ValueError: Raised if `path` is not a directory.
 
     Returns:
-        List[str]: Returns a list of files of `extension` in `path`.
+        List[str]: Returns a list of files with extension `ext` in `path`.
 
     Example:
         >>> # lists all files in dir
-        >>> get_files(path='./resources/tasks', extension='json')
+        >>> get_files(path='./resources/tasks', ext='json')
         ['task.json']
 
-        >>> get_files(path='.resources/tasks', extension='json',
-        ... full_path=True)
+        >>> # get all files named task
+        >>> get_files(path='./resources/tasks', name='task')
+        ['task.json', 'task.yaml']
+
+        >>> # get the absolute path of the files
+        >>> get_files(path='.resources/tasks', ext='json',
+        ... absolute=True)
         ['.../resources/tasks/task.json']
     """
     if not os.path.isdir(path):
         raise ValueError(f'Path "{path}" is not a directory.')
 
-    files = glob.glob(f'{path}/*.{extension}')
+    files = glob.glob(f'{path}/{name}.{ext}')
 
-    if full_path:
+    if absolute:
         return files
 
     return list(map(os.path.basename, files))  # type: ignore
 
 
-def get_folders(path: str, *, full_path: bool = False) -> List[str]:
-    """Lists all folders in a directory.
+def get_folders(
+    path: str,
+    *,
+    filter: str = '',
+    absolute: bool = False
+) -> List[str]:
+    """Lists all folders in `folder`.
 
     Args:
-        path (str): Path of directory.
-        full_path (bool): Whether to return the full path or only the folder
-        names.
+        path (str): Path of the directory.
+        filter (str): Pattern to match the beginning of the folders names.
+        absolute (bool): Whether to return the absolute path or only the
+          foldernames.
 
     Raises:
-        ValueError: Raised if `path` is not a directory.
+        ValueError: Raised if `folder` is not a directory.
 
     Returns:
         List[str]: Returns a list of the names of the folders.
@@ -232,12 +247,19 @@ def get_folders(path: str, *, full_path: bool = False) -> List[str]:
         >>> get_folders('./resources')
         ['tasks', 'models']
 
-        >>> get_folders('./resources', full_path=True)
+        >>> # Get all folders that start with the letter m
+        >>> get_folders('./resources', filter='m')
+        ['models']
+
+        # Get the absolute path of the folders
+        >>> get_folders('./resources', absolute=True)
         ['.../resources/tasks', '.../resources/models']
+
     """
     if not os.path.isdir(path):
         raise ValueError(f'Path "{path}" is not a directory.')
 
-    return [name if not full_path else os.path.join(path, name)
+    return [name if not absolute else os.path.join(path, name)
             for name in os.listdir(path)
-            if os.path.isdir(os.path.join(path, name))]
+            if (os.path.isdir(os.path.join(path, name))
+                and name.startswith(filter))]
