@@ -1,3 +1,4 @@
+import collections
 import typing as T
 
 import numpy as np
@@ -139,3 +140,101 @@ def check_size(
             raise ValueError(
                 f'Expected axis {axis} of array to be of size {size}, but got '
                 f'{shape} for array at position {i}.')
+
+
+def rename_keys(
+    mapping: T.Dict[str, T.Any],
+    *,
+    prefix: T.Optional[str] = None,
+    suffix: T.Optional[str] = None
+) -> T.Dict[str, T.Any]:
+    """Renames every key in `mapping` with a `prefix` and/or `suffix`.
+
+    Args:
+        mapping (T.Dict): Mapping.
+        prefix (str, optional): String to prepend. Defaults to None.
+        suffix (str, optional): String to append. Defaults to None.
+
+    Returns:
+        T.Dict: Returns the updated mapping.
+    """
+
+    return {
+        f'{prefix or ""}{k}{suffix or ""}': v
+        for k, v in mapping.items()
+    }
+
+
+def flatten(
+    mapping: T.Mapping[str, T.Any],
+    *,
+    sep: str = '.',
+    flatten_list: bool = True
+) -> T.Mapping[str, T.Any]:
+    """Turns a nested mapping into a flattened mapping.
+
+    Args:
+        mapping (T.Mapping[str, T.Any]): Mapping to flatten.
+        sep (str, optional): Seperator of flattened keys. Defaults to '.'.
+        flatten_list (bool, optional): Whether to flatten list (potentially
+          with (nested) mappings.). Defaults to True.
+
+    Returns:
+        T.Dict[str, T.Any]: Returns the flattened mapping.
+
+    Example:
+        >>> flatten({
+        ...    'flat1': 1,
+        ...    'dict1': {'c': 1, 'd': 2},
+        ...    'nested': {'e': {'c': 1, 'd': 2}, 'd': 2},
+        ...    'list1': [1, 2],
+        ...    'nested_list': [{'1': 1}]
+        ... })
+        {
+            'flat1': 1,
+            'dict1.c': 1,
+            'dict1.d': 2,
+            'nested.e.c': 1,
+            'nested.e.d': 2,
+            'nested.d': 2,
+            'list1.0': 1,
+            'list1.1': 2,
+            'nested_list.0.1': 1
+        }
+    """
+
+    return _flatten(mapping, suffix='', sep=sep, flatten_list=flatten_list)
+
+
+def _flatten(
+    mapping: T.Mapping[str, T.Any],
+    suffix: str,
+    sep: str,
+    flatten_list: bool
+) -> T.Mapping[str, T.Any]:
+    """Turns a nested mapping into a flattened mapping.
+
+    Args:
+        mapping (T.Mapping[str, T.Any]): Mapping to flatten.
+        suffix (str): Suffix to append to the key.
+        sep (str): Seperator of flattened keys.
+        flatten_list (bool): Whether to flatten lists.
+
+    Returns:
+        T.Mapping[str, T.Any]: Returns a (flattened) mapping.
+    """
+    items: T.List[T.Tuple[str, T.Any]] = []
+    for k, v in mapping.items():
+        key = f'{sep}'.join([suffix, k]) if suffix else k
+        if isinstance(v, collections.Mapping):
+            items.extend(_flatten(v, key, sep, flatten_list).items())
+
+        elif isinstance(v, list) and flatten_list:
+            for i, v in enumerate(v):
+                items.extend(
+                    _flatten({str(i): v}, key, sep, flatten_list).items())
+
+        else:
+            items.append((key, v))
+
+    return dict(items)
