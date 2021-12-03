@@ -7,7 +7,7 @@ from .pipeline import *  # noqa
 from .plot import *  # noqa
 from .score import *  # noqa
 
-__version__ = '0.2.0'
+__version__ = '0.3.0.dev0'
 
 __title__ = 'MLnext'
 __description__ = 'Machine learning utilities.'
