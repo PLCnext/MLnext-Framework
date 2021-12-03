@@ -1,1 +1,0 @@
-Added truncation and shape assertion methods in ``mlnext.utils``.

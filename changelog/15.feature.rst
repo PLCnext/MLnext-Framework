@@ -1,1 +1,0 @@
-Functions in ``mlnext.plot`` now optionally return the figure with ``return_fig``.
