@@ -6,6 +6,8 @@ import pytest
 from mlnext.utils import check_ndim
 from mlnext.utils import check_shape
 from mlnext.utils import check_size
+from mlnext.utils import flatten
+from mlnext.utils import rename_keys
 from mlnext.utils import truncate
 
 
@@ -209,3 +211,98 @@ def test_check_shape_fails(
                f'array at position {position} (exclude_axis: {exclude_axis}).')
 
     assert exc_info.value.args[0] == err_msg
+
+
+@pytest.mark.parametrize(
+    'mapping,prefix,suffix,expected',
+    (
+        ({'a': 0, 'b': 1}, 'test/', None, {'test/a': 0, 'test/b': 1}),
+        ({'a': 0, 'b': 1}, None, '_test', {'a_test': 0, 'b_test': 1}),
+        ({'a': 0, 'b': 1}, 'test/', '_test',
+         {'test/a_test': 0, 'test/b_test': 1}),
+
+    )
+)
+def test_rename_keys(
+    mapping: T.Dict,
+    prefix: T.Optional[str],
+    suffix: T.Optional[str],
+    expected: T.Dict
+):
+
+    result = rename_keys(mapping, prefix=prefix, suffix=suffix)
+
+    assert result == expected
+
+
+@pytest.mark.parametrize(
+    'prefix,sep,flatten_list,exp',
+    [
+        ('', '.', True, {
+            'flat1': 1,
+            'dict1.c': 1,
+            'dict1.d': 2,
+            'nested.e.c': 1,
+            'nested.e.d': 2,
+            'nested.d': 2,
+            'list1.0': 1,
+            'list1.1': 2,
+            'nested_list.0.1': 1
+        }),
+        ('', '_', True, {
+            'flat1': 1,
+            'dict1_c': 1,
+            'dict1_d': 2,
+            'nested_e_c': 1,
+            'nested_e_d': 2,
+            'nested_d': 2,
+            'list1_0': 1,
+            'list1_1': 2,
+            'nested_list_0_1': 1
+        }),
+        ('', '.', False, {
+            'flat1': 1,
+            'dict1.c': 1,
+            'dict1.d': 2,
+            'nested.e.c': 1,
+            'nested.e.d': 2,
+            'nested.d': 2,
+            'list1': [1, 2],
+            'nested_list': [{'1': 1}]
+        }),
+        ('pre', '.', True, {
+            'pre.flat1': 1,
+            'pre.dict1.c': 1,
+            'pre.dict1.d': 2,
+            'pre.nested.e.c': 1,
+            'pre.nested.e.d': 2,
+            'pre.nested.d': 2,
+            'pre.list1.0': 1,
+            'pre.list1.1': 2,
+            'pre.nested_list.0.1': 1
+        }),
+    ]
+)
+def test_flatten(
+    prefix: str,
+    sep: str,
+    flatten_list: bool,
+    exp: T.Dict[str, T.Any]
+):
+    mapping = {
+        'flat1': 1,
+        'dict1': {'c': 1, 'd': 2},
+        'nested': {'e': {'c': 1, 'd': 2}, 'd': 2},
+        'list1': [1, 2],
+        'nested_list': [{'1': 1}]
+    }
+
+    result = flatten(
+        mapping,
+        prefix=prefix,
+        sep=sep,
+        flatten_list=flatten_list
+    )
+    print(result)
+
+    np.testing.assert_equal(result, exp)
