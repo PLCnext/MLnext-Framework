@@ -88,7 +88,7 @@ html_show_sourcelink = False
 # -- Extensions --------------------------------------------------------------
 
 autosectionlabel_prefix_document = True
-autosectionlabel_maxdepth = 3
+autosectionlabel_maxdepth = 2
 autosummary_generate = True
 autodoc_inherit_docstrings = False
 set_type_checking_flag = True
