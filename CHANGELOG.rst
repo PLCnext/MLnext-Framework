@@ -13,7 +13,7 @@ Changes for the upcoming release can be found in the `"changelog" directory <htt
 .. towncrier release notes start
 
 0.2.0 (2021-12-03)
-------------------
+-----------------------
 
 
 Changes
