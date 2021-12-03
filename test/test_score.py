@@ -69,6 +69,16 @@ class TestThreshold(TestCase):
 
         np.testing.assert_array_equal(result, expected)
 
+    def test_apply_threshold_labels(self):
+
+        data = np.array([0, 0.4, 0.6, 1.])
+        expected = np.array([1, 1, 2, 2])
+
+        result = score.apply_threshold(
+            data, threshold=0.5, pos_label=2, neg_label=1)
+
+        np.testing.assert_array_equal(result, expected)
+
 
 class TestEval(TestCase):
 

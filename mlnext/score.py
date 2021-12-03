@@ -146,13 +146,23 @@ def get_threshold(x: np.ndarray, p: float = 100) -> float:
     return np.percentile(x, p)
 
 
-def apply_threshold(x: np.ndarray, *, threshold: float) -> np.ndarray:
-    """Applies `threshold t` to `x`. Values greater than the `threshold`
-    are 1 and below or equal are 0.
+def apply_threshold(
+    x: np.ndarray,
+    *,
+    threshold: float,
+    pos_label: int = 1,
+    neg_label: int = 0,
+) -> np.ndarray:
+    """Applies `threshold t` to `x`. Values that are greater than or equal
+    than the `threshold` are changed to `pos_label` and below to `neg_label`.
 
     Arguments:
         x (np.ndarray): Input array.
         t (float): Threshold.
+        pos_label (int): Label for the class above the threshold. Defaults to
+          1.
+        neg_label (int): Label fot the class below the threshold. Default to
+          0.
 
     Returns:
         np.ndarray: Returns the result of the threshold operation.
@@ -161,7 +171,7 @@ def apply_threshold(x: np.ndarray, *, threshold: float) -> np.ndarray:
         >>> apply_threshold(np.array([0.1, 0.4, 0.8, 1.0]), threshold=0.5)
         np.ndarray([0, 0, 0, 1, 1])
     """
-    return np.where(x > threshold, 1, 0)
+    return np.where(x >= threshold, pos_label, neg_label)
 
 
 def eval_softmax(y: np.ndarray) -> np.ndarray:
