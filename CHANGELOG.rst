@@ -12,6 +12,51 @@ Changes for the upcoming release can be found in the `"changelog" directory <htt
 
 .. towncrier release notes start
 
+0.2.0 (2021-12-03)
+------------------
+
+
+Changes
+^^^^^^^
+
+- Removed ``mlnext.io.load_model`` and ``Tensorflow`` dependency.
+  `#10 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/10>`__
+- Changed the roles of ``x`` and ``x_pred`` in ``plot_signals``.
+  `#12 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/12>`__
+- Fixed typing of ``np.ndarray``.
+  `#20 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/20>`__
+- Refactored ``mlnext.io``.
+  `#22 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/22>`__
+
+
+Features
+^^^^^^^^
+
+- Added legend to ``plot_signal``.
+  `#11 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/11>`__
+- Added ``norm_log_likelihood`` and ``bern_log_likelihood``.
+  `#13 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/13>`__
+- Added ``mlnext.anomaly``.
+  `#14 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/14>`__
+- Functions in ``mlnext.plot`` now optionally return the figure with ``return_fig``.
+  `#15 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/15>`__
+- Added ``mlnext.score.kl_divergence`` for two normal distributions.
+  `#16 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/16>`__
+- Added example images for ``mlnext.plot``.
+  `#17 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/17>`__
+- Added ``mlnext.anomaly.apply_point_adjust_score``.
+  `#18 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/18>`__
+- Added MIT license with PLCnext Technology Copyright.
+  `#19 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/19>`__
+- Added truncation and shape assertion methods in ``mlnext.utils``.
+  `#21 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/21>`__
+- Added ``mlnext.utils.rename_keys`` and ``mlnext.utils.flatten``.
+  `#23 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/23>`__
+
+
+----
+
+
 0.1.2 (2021-10-01)
 ------------------
 
