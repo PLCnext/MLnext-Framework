@@ -1,0 +1,1 @@
+Changed `mlnext.score.apply_threshold` to being inclusive for the positive class.
