@@ -247,7 +247,7 @@ def eval_metrics(y: np.ndarray, y_hat: np.ndarray) -> Dict[str, float]:
         >>> y, y_hat = np.ones((10, 1)), np.ones((10, 1))
         >>> eval_metrics(y, y_hat)
         {'accuracy': 1.0, 'precision': 1.0, 'recall': 1.0, 'f1': 1.0,
-        ... 'auc': 1.0}
+         'auc': 1.0}
     """
     scores = {
         'accuracy': metrics.accuracy_score,
@@ -292,7 +292,7 @@ def eval_metrics_all(
         >>> y_hat = [np.ones((10, 1)), np.zeros((10, 1))]
         >>> eval_metrics_all(y, y_hat)
         {'accuracy': 1.0, 'precision': 1.0, 'recall': 1.0, 'f1': 1.0,
-        ... 'auc': 1.0}
+         'auc': 1.0}
     """
     if len(y) != len(y_hat):
         raise ValueError('y and y_hat must have the same number elements.')
@@ -312,7 +312,7 @@ def eval_metrics_all(
 
 @dataclass
 class ConfusionMatrix:
-    """``ConfusionMatrix`` is a confusion matrix for a binary classification
+    """`ConfusionMatrix` is a confusion matrix for a binary classification
     problem. See https://en.wikipedia.org/wiki/Confusion_matrix.
 
     Args:
@@ -324,10 +324,6 @@ class ConfusionMatrix:
         that are correctly assigned to negative class.
       FP (int): true negatives, the number of samples from the negative class
         that are wrongly assigned to the positive class.
-      precision (float): Precision TP/(TP+FP).
-      recall (float): Recall TP/(TP +FN).
-      f1 (float): F1-Score 2 * (precision * recall) / (precision + recall).
-      accuracy (float): (TP + TN) / (TP + TN + FP + FN).
     """
     TP: int = 0  # True Positives
     FN: int = 0  # False Negatives
@@ -349,7 +345,8 @@ class ConfusionMatrix:
         )
 
     def __str__(self) -> str:
-        """
+        """Creates a string representation of the matrix.
+
         Returns:
             str: Returns a string representation of the confusion matrix.
         """
@@ -364,7 +361,8 @@ class ConfusionMatrix:
 
     @property
     def accuracy(self) -> float:
-        """
+        """Calculates the accuracy `(TP + TN) / (TP + TN + FP + FN)`.
+
         Returns:
             np.ndarray: Returns the accuracy.
         """
@@ -373,7 +371,8 @@ class ConfusionMatrix:
 
     @property
     def precision(self) -> float:
-        """
+        """Calculates the precision `TP / (TP + FP)`.
+
         Returns:
             float: Returns the precision.
         """
@@ -381,7 +380,8 @@ class ConfusionMatrix:
 
     @property
     def recall(self) -> float:
-        """
+        """Calculates the recall `TP / (TP + FN)`.
+
         Returns:
             float: Returns the recall.
         """
@@ -389,7 +389,8 @@ class ConfusionMatrix:
 
     @property
     def f1(self) -> float:
-        """See https://en.wikipedia.org/wiki/F-score.
+        """Calculates the F1-Score
+        `2 * (precision * recall) / (precision + recall)`.
 
         Returns:
             np.ndarray: Returns the F1-score.
@@ -398,7 +399,8 @@ class ConfusionMatrix:
                 (self.precision + self.recall))
 
     def metrics(self) -> T.Dict[str, float]:
-        """
+        """Returns all metrics.
+
         Returns:
             T.Dict[str, float]: Returns an mapping of all performance metrics.
         """
@@ -412,9 +414,9 @@ class ConfusionMatrix:
 
 @dataclass
 class PRCurve:
-    """Container for the result of ``pr_curve``. Additionally computes the
-    F1-score for each threshold. The method ``to_tensorboard`` coverts the
-
+    """Container for the result of `pr_curve`. Additionally computes the
+    F1-score for each threshold. Can be indexed and returns a
+    `ConfusionMatrix` for the i-th threshold.
 
     Args:
         tps (np.ndarray): An increasing count of true positives, at index i
@@ -432,10 +434,6 @@ class PRCurve:
           the recall of predictions with score >= thresholds[i].
         thresholds (np.ndarray): Increasing thresholds on the decision function
           used to compute precision and recall.
-          n_thresholds <= len(np.unique(probas_pred)).
-        f1 (np.ndarray): F1-scores at each threshold.
-        accuracy(np.ndarray): Accuracy at each threshold.
-        auc (float): Area under the curve.
     """
 
     tps: np.ndarray  # true positives
@@ -448,7 +446,8 @@ class PRCurve:
     thresholds: np.ndarray
 
     def __str__(self) -> str:
-        """
+        """Creates a string representation of the curve.
+
         Returns:
             str: Returns a string respresentation of the pr-curve.
         """
@@ -476,7 +475,7 @@ class PRCurve:
 
         Returns:
             ConfusionMatrix: Returns the confusion matrix for threshold at
-              index i.
+            index i.
         """
 
         if i < 0 or i >= len(self.thresholds):
@@ -490,17 +489,20 @@ class PRCurve:
         )
 
     def __len__(self) -> int:
-        """
+        """Retruns the number of thresholds that make up the curve.
+
         Returns:
             int: Returns the number of thresholds.
         """
         return len(self.thresholds)
 
     def __iter__(self) -> T.Iterator[ConfusionMatrix]:
-        """
+        """Creates an iterator over the curve.
+
         Yields:
-            Iterator[T.Iterator[ConfusionMatrix]]: Returns an iterator over
-              the pr curve.
+            T.Iterator[ConfusionMatrix]: Returns an iterator over the pr curve.
+            At index i, the iterator returns a ConfusionMatrix for the i-th
+            threshold.
         """
         for i in range(len(self)):
             yield self[i]
@@ -518,17 +520,18 @@ class PRCurve:
 
     @property
     def auc(self) -> float:
-        """
+        """Calculates the area-under-curve (auc).
+
         Returns:
             float: Returns the area-under-curve (auc) for the precision-recall
-              curve.
+            curve.
         """
         # insert (0,1) such that the curve starts from 0
         return auc(np.r_[self.recall, 0], np.r_[self.precision, 1])
 
     @property
     def f1(self) -> np.ndarray:
-        """Calculates the F1-score. See https://en.wikipedia.org/wiki/F-score.
+        """Calculates the F1-score.
 
         Returns:
             np.ndarray: Returns the F1-score.
@@ -537,12 +540,12 @@ class PRCurve:
                 (self.precision + self.recall))
 
     def to_tensorboard(self) -> T.Dict[str, T.Any]:
-        """Converts the container to the representation expected for
-        Tensorboard. See https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/pr_curve/README.md.
+        """Converts the container to keyword arguments for Tensorboard.
+        See https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/pr_curve/README.md.
 
         Returns:
             T.Dict[str, T.Any]: Returns the pr-curve format expected for
-              Tensorboard.
+            Tensorboard.
         """  # noqa
         return {
             'true_positive_counts': self.tps,
@@ -566,7 +569,7 @@ def pr_curve(
     binary classification tasks.
 
     Adapted from https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_curve.html.
-    Changed the return value to ``PR_Curve`` which encapsulates not only the
+    Changed the return value to PRCurve which encapsulates not only the
     recall, precision and thresholds but also the tps, fps, tns and fns. Thus,
     we can obtain all necessary parameters that are required for the logging of
     a pr-curve in tensorboard (https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/pr_curve/README.md).
@@ -577,14 +580,14 @@ def pr_curve(
           Otherwise, pos_label needs to be given.
         y_score (np.ndarray):  Target scores in range [0, 1].
         pos_label (int, optional):The label of the positive class.
-          When ``pos_label=None``, if y_true is in {-1, 1} or {0, 1},
-          ``pos_label`` is set to 1, otherwise an error will be raised.
+          When pos_label=None, if y_true is in {-1, 1} or {0, 1},
+          pos_label is set to 1, otherwise an error will be raised.
           Defaults to None.
         sample_weight (T.Union[T.List, np.ndarray], optional): Sample weights.
           Defaults to None.
 
     Returns:
-        Curve: Returns a container for the results.
+        PRCurve: Returns a PRCurve container for the results.
 
     Example:
         >>> import numpy as np
@@ -616,13 +619,13 @@ def pr_curve(
         >>> import tensorflow as tf
         >>> import tensorboard.summary.v1 as tb_summary
         >>> pr_curve_summary = tb_summary.pr_curve_raw_data_op(
-            "pr", **curve.to_tensorboard())
+        ...    "pr", **curve.to_tensorboard())
         >>> writer = tf.summary.create_file_writer("./tmp/pr_curves")
         >>> with writer.as_default():
         >>>    tf.summary.experimental.write_raw_pb(pr_curve_summary, step=1)
 
-    Tensorboard:
-        ..image:: ../_static/img/plot/pr_curve.png
+    Result:
+        .. image:: ../_static/img/plot/pr_curve.png
            :scale: 50 %
     """  # noqa
 
