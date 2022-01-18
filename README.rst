@@ -1,12 +1,11 @@
-
-MLNext Framework
+MLnext Framework
 ================
 
-*MLNext Framework* is an open source framework for hardware independent execution of
+*MLnext Framework* is an open source framework for hardware independent execution of
 machine learning using *Python* and *Docker*.
 It provides machine learning utilities.
 The corresponding *Python* package is called *mlnext*.
-MLNext Framework belongs to a solution portfolio for the Digital Factory now to realize Data collection, storage, and evaluation.
+MLnext Framework belongs to a solution portfolio for the Digital Factory now to realize Data collection, storage, and evaluation.
 
 Digitalization is posing numerous challenges for production – but above all, it provides countless opportunities for increasing productivity and system availability. To ensure that you benefit from the advantages of digitalization as quickly as possible, we will provide you with needs-based support – from installing simple stand-alone solutions to comprehensive digitalization concepts.
 
