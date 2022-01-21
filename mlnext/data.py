@@ -261,6 +261,7 @@ def detemporalize(
          [30 31 32]
          [40 41 42]
          [50 51 52]]
+
     """
     data = np.array(data)
 
