@@ -228,3 +228,25 @@ def flatten(
             items.append((key, v))
 
     return dict(items)
+
+
+class RangeDict(dict):
+    """Dictionary that accepts range keys.
+    """
+
+    def __getitem__(self, k__: int) -> T.Any:
+        """Gets an item by key `k__` if it is in range of a key.
+
+        Args:
+            k__ (int): Key.
+
+        Raises:
+            KeyError: Raised if no range match was found.
+
+        Returns:
+            T.Any: Returns the item.
+        """
+        for key in self.keys():
+            if k__ in key:
+                return super().__getitem__(key)
+        raise KeyError(k__)

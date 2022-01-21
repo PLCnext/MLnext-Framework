@@ -7,6 +7,7 @@ from mlnext.utils import check_ndim
 from mlnext.utils import check_shape
 from mlnext.utils import check_size
 from mlnext.utils import flatten
+from mlnext.utils import RangeDict
 from mlnext.utils import rename_keys
 from mlnext.utils import truncate
 
@@ -306,3 +307,33 @@ def test_flatten(
     print(result)
 
     np.testing.assert_equal(result, exp)
+
+
+@pytest.mark.parametrize(
+    'mapping,checks',
+    [
+        ({range(0, 10): 0, range(100, 1000): 1},
+         {0: 0, 4: 0, 9: 0, 100: 1, 500: 1, 999: 1})
+    ]
+)
+def test_rangedict(mapping: T.Dict, checks: T.Dict):
+    rd = RangeDict(mapping)
+
+    for k, v in checks.items():
+        assert rd[k] == v
+
+
+@pytest.mark.parametrize(
+    'mapping,check',
+    [
+        ({range(0, 10): 0, range(100, 1000): 1}, 10),
+        ({range(0, 10): 0, range(100, 1000): 1}, 1000)
+    ]
+)
+def test_rangedict_fails(mapping: T.Dict, check: int):
+    rd = RangeDict(mapping)
+
+    with pytest.raises(KeyError) as exc_info:
+        rd[check]
+
+    assert exc_info.value.args[0] == check
