@@ -106,7 +106,7 @@ def temporalize(
 
         >>> # Transform 2d data into 3d
         >>> mlnext.temporalize(data=data, timesteps=2, verbose=True)
-        Old shape: (6, 2). New shape: (3, 2, 2).
+        Old shape: (6, 2). New shape: (3, 2, 3).
         [[[ 0  1  2]
           [10 11 12]]
           [[20 21 22]
@@ -115,7 +115,8 @@ def temporalize(
            [50 51 52]]]
 
         >>> # Transform 2d into 3d with stride=1
-        >>> mlnext.temporalize(data, timesteps=3, stride=1)
+        >>> mlnext.temporalize(data, timesteps=3, stride=1, verbose=True)
+        Old shape: (6, 3). New shape: (4, 3, 3).
         [[[ 0  1  2]
           [10 11 12]
           [20 21 22]]
@@ -209,12 +210,12 @@ def detemporalize(
         >>> print(data_3d)
         [[[ 0  1  2]
           [10 11 12]]
-          [[20 21 22]
+         [[20 21 22]
            [30 31 32]]
-          [[40 41 42]
-           [50 51 52]]]
+         [[40 41 42]
+          [50 51 52]]]
         >>> mlnext.detemporalize(data_3d, verbose=True)
-        Old shape: (3, 2, 2). New shape: (6, 2).
+        Old shape: (3, 2, 3). New shape: (6, 3).
         [[ 0  1  2]
          [10 11 12]
          [20 21 22]
@@ -223,7 +224,9 @@ def detemporalize(
          [50 51 52]]
 
         >>> # Transform 3d data into 2d with stride=1
-        >>> data_3d = mlnext.temporalize(data, timesteps=3, stride=1)
+        >>> data_3d = mlnext.temporalize(data,
+        ... timesteps=3, stride=1, verbose=True)
+        Old shape: (6, 3). New shape: (4, 3, 3).
         >>> print(data_3d)
         [[[ 0  1  2]
           [10 11 12]
@@ -238,6 +241,7 @@ def detemporalize(
           [40 41 42]
           [50 51 52]]]
         >>> mlnext.detemporalize(data_3d, stride=1, verbose=True)
+        Old shape: (4, 3, 3). New shape: (6, 3).
         [[ 0  1  2]
          [10 11 12]
          [20 21 22]
@@ -246,7 +250,7 @@ def detemporalize(
          [50 51 52]]
         >>> # Take only the last point from each window
         >>> mlnext.detemporalize(data_3d, last_point_only=True, verbose=True)
-        Old shape: (2, 3, 3). New shape: (2, 3).
+        Old shape: (4, 3, 3). New shape: (4, 3).
         [[20 21 22]
          [30 31 32]
          [40 41 42]
