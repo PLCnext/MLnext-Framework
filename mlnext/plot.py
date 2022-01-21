@@ -21,6 +21,7 @@ from sklearn.preprocessing import minmax_scale
 
 from .anomaly import rank_features
 from .data import detemporalize
+from .utils import RangeDict
 
 
 def setup_plot():
@@ -35,6 +36,21 @@ def setup_plot():
         '#377eb8', '#ff7f00', '#4daf4a', '#f781bf', '#a65628', '#984ea3',
         '#999999', '#e41a1c', '#dede00'
     ])
+
+
+marker_sizes = RangeDict({
+    range(0, 2499): 4,
+    range(2500, 4999): 3.5,
+    range(5000, 7499): 3,
+    range(7500, 9999): 2.5
+})
+
+
+def _adaptive_makersize(num_points: int) -> float:
+    try:
+        return marker_sizes[num_points]
+    except KeyError:
+        return 2.0
 
 
 def plot_error(
@@ -83,12 +99,20 @@ def plot_error(
 
     if y is None:
         y = np.zeros((X.shape[0], 1))
+
+    if X.shape[0] != y.shape[0]:
+        raise Warning('Length misaligned: '
+                      f'X ({X.shape[0]}) and y ({y.shape[0]}).')
+
     y = y[:X.shape[0]]
 
     plt.xlabel('Sample')
     plt.ylabel('Error')
 
-    plt.scatter(range(X.shape[0]), X, c=y, cmap='jet', zorder=2)
+    plt.scatter(
+        range(X.shape[0]), X,
+        c=y, cmap='jet', zorder=2,
+        s=_adaptive_makersize(X.shape[0])**2)
     plt.plot(range(X.shape[0]), X, linewidth=0.5, zorder=1)
 
     if threshold is not None:
