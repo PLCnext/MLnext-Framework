@@ -220,6 +220,7 @@ def detemporalize(
 
           [[40 41 42]
            [50 51 52]]]
+
         >>> mlnext.detemporalize(data_3d, verbose=True)
         Old shape: (3, 2, 2). New shape: (6, 2).
         [[ 0  1  2]
@@ -247,6 +248,7 @@ def detemporalize(
          [[30 31 32]
           [40 41 42]
           [50 51 52]]]
+
         >>> mlnext.detemporalize(data_3d, stride=1, verbose=True)
         [[ 0  1  2]
          [10 11 12]
@@ -254,6 +256,7 @@ def detemporalize(
          [30 31 32]
          [40 41 42]
          [50 51 52]]
+
         >>> # Take only the last point from each window
         >>> mlnext.detemporalize(data_3d, last_point_only=True, verbose=True)
         Old shape: (2, 3, 3). New shape: (2, 3).
