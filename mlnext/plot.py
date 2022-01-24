@@ -23,6 +23,16 @@ from .anomaly import rank_features
 from .data import detemporalize
 from .utils import RangeDict
 
+__all__ = [
+    'setup_plot',
+    'plot_error',
+    'plot_history',
+    'plot_signals',
+    'plot_signals_norm',
+    'plot_signals_binary',
+    'plot_rankings'
+]
+
 
 def setup_plot():
     """Sets the the global style for plots.
