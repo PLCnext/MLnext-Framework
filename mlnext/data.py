@@ -156,8 +156,8 @@ def temporalize(
             f'Reversion with mlnext.detemporalize will result in a loss of '
             f'rows (stride: {stride} larger than timesteps: {timesteps}).')
 
-    # stride = None and stride=timesteps is the same as a simple reshape
-    # to (rows, timesteps, features)
+    # stride = 0 and stride=timesteps is the same as a simple reshape
+    # to (rows, timesteps, features) (slice=0 is replaced by timesteps)
     stride = stride or timesteps
 
     # sliding view with stride
