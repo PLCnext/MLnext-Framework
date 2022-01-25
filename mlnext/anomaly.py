@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 
 from .data import detemporalize
+from .utils import check_ndim
+from .utils import truncate
 
 __all__ = [
     'find_anomalies',
@@ -36,10 +38,9 @@ def find_anomalies(
     """
 
     y = y.squeeze()
-    if len(y.shape) > 1:
-        raise ValueError(f'Expected y to be an 1d array, but got {y.shape}.')
+    check_ndim(y, ndim=1)
 
-    y = pd.DataFrame(y)
+    y = pd.Series(y)
 
     # true for index i when y[i - 1] = 0 and y[i] = 1
     start = (y > y.shift(1, fill_value=0))
@@ -98,7 +99,7 @@ def rank_features(
     if (e_len := error.shape[0]) != (y_len := y.shape[0]):
         warnings.warn(f'Length misaligned, got {e_len} and {y_len}.')
 
-    error, y = _truncate_arrays(error, y)
+    (error, y), = truncate((error, y))
 
     if error.shape[-1] < 2:
         raise ValueError('Expected at least 2 features.')
@@ -147,31 +148,70 @@ def _sort_features(
     return rank_err
 
 
-def apply_point_adjust(*, y_hat: np.ndarray, y: np.ndarray) -> np.ndarray:
+def apply_point_adjust(
+    *,
+    y_hat: np.ndarray,
+    y: np.ndarray,
+    k: float = 0
+) -> np.ndarray:
     """Implements the point-adjust approach from
-    https://arxiv.org/pdf/1802.03903.pdf. For any observation
-    in the ground truth anomaly segment in `y`, is detected as anomaly in
-    `y_hat`, then the segment is detected correctly and the label for each
-    observation in the anomaly segment is set to 1.
+    https://arxiv.org/abs/1802.03903 and its variation from
+    https://arxiv.org/abs/2109.05257 (parameter ``k``).
+    For a ground truth anomaly segment in ``y``:
+      - ``k=0``, if any point ``x`` in the segment was classified as anomalous
+        (``y_hat=1`` for ``x``)
+      - ``0 < k < 100``, if more than (>) ``%k`` of points in the segment
+        are classified as anomalous (``y_hat=1`` for %k of points)
+      - ``k=100`` if all points in the segment are classified as anomalous
+        (``y_hat=1`` for all points)
+    then the label for all observations in the segment are adjusted to
+    ``y_hat=1``. If ``k=0`` it is equal to the original point-adjust, if
+    ``k=100`` it is equal to the F1.
 
     Args:
         y_hat (np.ndarray): Label predictions (1d).
         y (np.ndarray): Ground Truth (1d).
+        k (int): Percentage [0, 100] of points detected as an anomaly in a
+          segment before an adjustment is made (Default: 0).
 
     Returns:
         np.ndarray: Returns the point-adjusted `y_hat`.
+
+    Example:
+        >>> import mlnext
+        >>> import numpy as np
+        >>> mlnext.apply_point_adjust(
+        ...   y_hat = np.array([1, 0, 0, 1, 0, 0, 0, 1, 1]),
+        ...   y =     np.array([0, 0, 1, 1, 1, 0, 1, 1, 0]))
+        [1, 0, 1, 1, 1, 0, 1, 1, 1]
+
+        >>> # for k = 40; only adjusts the second segment
+        >>> mlnext.apply_point_adjust(
+        ...   y_hat = np.array([1, 0, 0, 1, 0, 0, 0, 1, 1]),
+        ...   y =     np.array([0, 0, 1, 1, 1, 0, 1, 1, 0])
+        ...   k = 40)
+        [1, 0, 0, 1, 0, 0, 1, 1, 1]
+
     """
+    y, y_hat = y.squeeze(), y_hat.squeeze()
+    check_ndim(y, y_hat, ndim=1)
+
     if y_hat.shape != y.shape:
         warnings.warn(f'Shapes unaligned {y_hat.shape} and {y.shape}.')
 
-    y_hat, y = _truncate_arrays(y_hat, y)
-
+    (y_hat, y), = truncate((y_hat, y))
     y_hat = np.copy(y_hat)
+
+    if k < 0 or k > 100:
+        raise ValueError(f'Parameter k must be in [0, 100], but got: {k}.')
+
     for (start, end) in find_anomalies(y):
-        # check if y_hat has any observation that lies in the
-        # anomaly segment from start to end
-        if np.any(y_hat[start:(end + 1)]):
-            y_hat[start:(end + 1)] = 1
+        s = np.s_[start: (end + 1)]
+
+        # check if more than %k points of that segment are anomalous
+        # otherwise the label is left as is
+        if np.sum(y_hat[s]) > (k * (end + 1 - start)) / 100:
+            y_hat[s] = 1
 
     return y_hat
 
@@ -179,44 +219,72 @@ def apply_point_adjust(*, y_hat: np.ndarray, y: np.ndarray) -> np.ndarray:
 def apply_point_adjust_score(
     *,
     y_score: np.ndarray,
-    y: np.ndarray
+    y: np.ndarray,
+    k: float = 0
 ) -> np.ndarray:
     """Implements the point-adjust approach from
-    https://arxiv.org/pdf/1802.03903.pdf for prediction scores.
-    Thus, the point-adjust method can be used for precision-recall and other
-    similar curves. For any in the ground truth anomaly segment in `y`,
-    the score `y_score` is set to the maximum score in the anomaly segment.
+    https://arxiv.org/pdf/1802.03903.pdf  and its variation from
+    https://arxiv.org/abs/2109.05257 (parameter ``k``) for prediction scores.
+    For a ground truth anomaly segment in ``y``:
+      - ``k=0``, the score of all points are adjusted to the maximum score in
+      the segment
+      - ``0 < k < 100``, the score for the adjustment is chosen, such that at
+      least %k of points in the anomaly segments have a higher score and only
+      the points below the chosen score are adjusted to the score
+      - ``k=100``, no adjustment is made
+    If ``k=0`` it is equal to the original point-adjust, if ``k=100`` it is
+    equal to the F1. This method allows the usage of the point-adjust method
+    in conjunction with precision-recall and other similar curves.
 
     Args:
-        y_score (np.ndarray): Prediction (usually in range [0, 1]).
-        y (np.ndarray): Ground truth.
+        y_score (np.ndarray): Prediction score in range [0, 1] (1d array).
+        y (np.ndarray): Ground truth (1d array).
 
     Returns:
         np.ndarray: Returns the adjusted array.
+
+    Example:
+        >>> import numpy as np
+        >>> import mlnext
+        >>> mlnext.apply_point_adjust_score(
+        ... y_score = np.array([0.1, 0.4, 0.6, 0.7, 0.4, 0.2, 0.4, 0.6, 0.25]),
+        ... y=        np.array([  0,   0,   1,   1,   1,   0,   1,   1,    0]),
+        ... k=0)
+        [0.1, 0.4, 0.7, 0.7, 0.7, 0.2, 0.6, 0.6, 0.25]
+
+        >>> # for k=40; both segments are adjusted
+        >>> mlnext.apply_point_adjust_score(
+        ... y_score = np.array([0.1, 0.4, 0.6, 0.7, 0.4, 0.2, 0.4, 0.6, 0.25]),
+        ... y=        np.array([  0,   0,   1,   1,   1,   0,   1,   1,    0]),
+        ... k=40)
+        [0.1, 0.4, 0.6, 0.7, 0.6, 0.2, 0.6, 0.6, 0.25]
     """
+    y, y_score = y.squeeze(), y_score.squeeze()
+    check_ndim(y, y_score, ndim=1)
 
     if y_score.shape != y.shape:
         warnings.warn(f'Shapes unaligned {y_score.shape} and {y.shape}.')
 
-    y_score, y = _truncate_arrays(y_score, y)
-
+    (y_score, y), = truncate((y_score, y))
     y_score = np.copy(y_score)
+
+    if k < 0 or k > 100:
+        raise ValueError(f'Parameter k must be in [0, 100], but got: {k}.')
+
     for (start, end) in find_anomalies(y):
-        # set the error for the anomaly to the maximum score
-        y_score[start:(end + 1)] = np.max(y_score[start:(end + 1)])
+        s = np.s_[start: (end + 1)]
+
+        # find the index of the element that fulfills the condition:
+        # at least %k points are above a threshold
+        length = (end + 1) - start
+
+        index = min(int(np.floor((length * k) / 100)) + 1, length)
+        score = np.sort(y_score[s])[-index]
+        # adjust only points that are below the score
+        mask = y_score[s] < score
+        y_score[s][mask] = score
 
     return y_score
 
 
-def _truncate_arrays(*arrays: np.ndarray) -> T.List[np.ndarray]:
-    """Truncates a list of arrays to the same length.
-
-    Args:
-        arrays (List[np.ndarray]): List of arrays.
-
-    Returns:
-        T.List[np.ndarray]: Returns the list of arrays truncated to the length
-        of the shortest array in the list.
-    """
-    length = min([arr.shape[0] for arr in arrays])
-    return [arr[:length] for arr in arrays]
+# TODO: implement AUC for k=[0, 100]

@@ -3,7 +3,6 @@ import typing as T
 import numpy as np
 import pytest
 
-from mlnext.anomaly import _truncate_arrays
 from mlnext.anomaly import apply_point_adjust
 from mlnext.anomaly import apply_point_adjust_score
 from mlnext.anomaly import find_anomalies
@@ -23,7 +22,7 @@ from mlnext.score import apply_threshold
         (np.array([[0, 1, 1, 0, 1, 0, 1, 1]]).T, [(1, 2), (4, 4), (6, 7)])
     ]
 )
-def test_find_anomalies(y: np.array, exp: T.List[T.Tuple[int, int]]):
+def test_find_anomalies(y: np.ndarray, exp: T.List[T.Tuple[int, int]]):
 
     result = find_anomalies(y=np.array(y))
 
@@ -34,10 +33,10 @@ def test_find_anomalies(y: np.array, exp: T.List[T.Tuple[int, int]]):
     'y,err_msg',
     [
         ([[0, 1], [1, 0]],
-         'Expected y to be an 1d array, but got (2, 2).'),
+         'Expected array of dimension 1, but got 2 for array at position 0.'),
     ]
 )
-def test_find_anomalies_fails(y: np.array, err_msg: str):
+def test_find_anomalies_fails(y: np.ndarray, err_msg: str):
 
     with pytest.raises(ValueError) as exc_info:
         find_anomalies(y=np.array(y))
@@ -59,7 +58,7 @@ def test_find_anomalies_fails(y: np.array, err_msg: str):
          ([(1, 1), (3, 3)], [[0, 1], [1, 0]], [[0.8, 0.4], [0.6, 0.25]]))
     ]
 )
-def test_rank_features(error: np.array, y: np.array, exp: T.Tuple):
+def test_rank_features(error: np.ndarray, y: np.ndarray, exp: T.Tuple):
 
     error = np.array(error).T
     y = np.array(y)
@@ -79,7 +78,7 @@ def test_rank_features(error: np.array, y: np.array, exp: T.Tuple):
          [0, 0, 0, 0], 'No anomalies found.'),
     ]
 )
-def test_rank_features_fails(error: np.array, y: np.array, err_msg: str):
+def test_rank_features_fails(error: np.ndarray, y: np.ndarray, err_msg: str):
 
     error = np.array(error).T
     y = np.array(y)
@@ -91,103 +90,216 @@ def test_rank_features_fails(error: np.array, y: np.array, err_msg: str):
 
 
 @pytest.mark.parametrize(
-    'y_hat,y,exp',
+    'y_hat,y,k,exp',
     [
         ([1, 0, 0, 1, 0, 0, 0, 0, 1],
-         [0, 0, 1, 1, 1, 0, 1, 1, 0],
+         [0, 0, 1, 1, 1, 0, 1, 1, 0], 0,
          [1, 0, 1, 1, 1, 0, 0, 0, 1]),
 
         ([1, 1, 1, 1, 1, 1, 1, 1, 1],
-         [0, 0, 1, 1, 1, 0, 1, 1, 0],
+         [0, 0, 1, 1, 1, 0, 1, 1, 0], 0,
          [1, 1, 1, 1, 1, 1, 1, 1, 1]),
 
         ([0, 0, 0, 0, 0, 0, 0, 0, 0],
-         [0, 0, 1, 1, 1, 0, 1, 1, 0],
+         [0, 0, 1, 1, 1, 0, 1, 1, 0], 0,
          [0, 0, 0, 0, 0, 0, 0, 0, 0]),
 
         ([1, 0, 0, 1, 1, 1, 0, 0, 0, 0],
-         [0, 0, 1, 1, 1, 0, 0, 1, 1, 1],
-         [1, 0, 1, 1, 1, 1, 0, 0, 0, 0])
-    ]
+         [0, 0, 1, 1, 1, 0, 0, 1, 1, 1], 0,
+         [1, 0, 1, 1, 1, 1, 0, 0, 0, 0]),
 
+        ([1, 0, 0, 1, 0, 0, 0, 1, 1],
+         [0, 0, 1, 1, 1, 0, 1, 1, 0], 0,
+         [1, 0, 1, 1, 1, 0, 1, 1, 1]),
+
+        ([1, 0, 0, 1, 0, 0, 0, 1, 1],
+         [0, 0, 1, 1, 1, 0, 1, 1, 0], 0,
+         [1, 0, 1, 1, 1, 0, 1, 1, 1]),
+
+        ([1, 0, 0, 1, 0, 0, 0, 1, 1],
+         [0, 0, 1, 1, 1, 0, 1, 1, 0], 40,
+         [1, 0, 0, 1, 0, 0, 1, 1, 1]),
+    ]
 )
 def test_apply_point_adjust(
-    y_hat: np.array,
-    y: np.array,
-    exp: np.array
-) -> np.array:
+    y_hat: np.ndarray,
+    y: np.ndarray,
+    k: int,
+    exp: np.ndarray
+):
 
-    result = apply_point_adjust(y_hat=np.array(y_hat), y=np.array(y))
+    result = apply_point_adjust(y_hat=np.array(y_hat), y=np.array(y), k=k)
 
     np.testing.assert_array_equal(result, exp)
 
 
 @pytest.mark.parametrize(
-    'arrays,exp',
-    [
-        ([np.zeros((15, 1)), np.ones((10, 2))],
-         [np.zeros((10, 1)), np.ones((10, 2))])
-
-    ]
+    'k',
+    list(range(1, 100))
 )
-def test_truncate_arrays(arrays: T.List[np.array], exp: T.List[np.array]):
+def test_apply_point_adjust_k_1_99(k: int):
+    y_hat = np.r_[[1] * (k + 1), [0] * (100 - k - 1)]
+    y = np.ones(100)
 
-    result = _truncate_arrays(*arrays)
-
-    np.testing.assert_equal(result, exp)
+    result = apply_point_adjust(y_hat=y_hat, y=y, k=k)
+    np.testing.assert_array_equal(result, y)
 
 
 @pytest.mark.parametrize(
-    'y_score,y,exp',
+    'k',
+    list(range(1, 100))
+)
+def test_apply_point_adjust_k_1_99_not_adjusted(k: int):
+    y_hat = np.r_[[1] * k, [0] * (100 - k)]
+    y = np.ones(100)
+
+    result = apply_point_adjust(y_hat=y_hat, y=y, k=k)
+    np.testing.assert_array_equal(result, y_hat)
+
+
+@pytest.mark.parametrize(
+    'y_score,y,k,exp',
     [
         ([0.1, 0.4, 0.6, 0.7, 0.4, 0.2, 0.4, 0.6, 0.25],
          [1, 0, 0, 1, 1, 1, 0, 0, 1],
+         0,
          [0.1, 0.4, 0.6, 0.7, 0.7, 0.7, 0.4, 0.6, 0.25]),
 
         ([0.1, 0.2, 0.4, 0.5, 0.5, 0.6, 0.4, 0.4, 0.2],
          [1, 1, 1, 1, 1, 1, 1, 1, 1],
+         0,
          [0.6] * 9),
 
         ([0.2, 0.3, 0.4, 0.3, 0.4, 0.4, 0.5, 0.4, 0.2],
          [0, 0, 0, 0, 0, 0, 0, 0, 0],
-         [0.2, 0.3, 0.4, 0.3, 0.4, 0.4, 0.5, 0.4, 0.2])
+         0,
+         [0.2, 0.3, 0.4, 0.3, 0.4, 0.4, 0.5, 0.4, 0.2]),
+
+        ([0.1, 0.4, 0.6, 0.7, 0.4, 0.2, 0.4, 0.6, 0.25],
+         [0, 0, 1, 1, 1, 0, 1, 1, 0],
+         0,
+         [0.1, 0.4, 0.7, 0.7, 0.7, 0.2, 0.6, 0.6, 0.25]),
+
+        ([0.1, 0.4, 0.6, 0.7, 0.4, 0.2, 0.4, 0.6, 0.25],
+         [1, 0, 0, 1, 1, 1, 0, 0, 1],
+         40,
+         [0.1, 0.4, 0.6, 0.7, 0.4, 0.4, 0.4, 0.6, 0.25]),
+
+        ([0.1, 0.4, 0.6, 0.7, 0.4, 0.2, 0.4, 0.6, 0.25],
+         [0, 0, 1, 1, 1, 0, 1, 1, 0],
+         40,
+         [0.1, 0.4, 0.6, 0.7, 0.6, 0.2, 0.6, 0.6, 0.25]),
+
+        ([0.1, 0.4, 0.6, 0.7, 0.4, 0.2, 0.4, 0.6, 0.25],
+         [0, 0, 1, 1, 1, 0, 1, 1, 0],
+         100,
+         [0.1, 0.4, 0.6, 0.7, 0.4, 0.2, 0.4, 0.6, 0.25]),
     ]
 
 )
 def test_apply_point_adjust_score(
-    y_score: np.array,
-    y: np.array,
-    exp: np.array
-) -> np.array:
-    result = apply_point_adjust_score(y_score=np.array(y_score), y=np.array(y))
+    y_score: np.ndarray,
+    y: np.ndarray,
+    k: float,
+    exp: np.ndarray
+):
+    result = apply_point_adjust_score(
+        y_score=np.array(y_score),
+        y=np.array(y),
+        k=k
+    )
 
     np.testing.assert_array_equal(result, exp)
 
 
 @pytest.mark.parametrize(
-    'y_score,y',
+    'k',
+    list(range(1, 100))
+
+)
+def test_apply_point_adjust_score_k_1_100(
+    k: int,
+    y_score=np.arange(0, 1, 0.01),
+    y=np.ones(100)
+):
+
+    exp = np.copy(y_score)
+    exp[:-(k + 1)] = exp[-(k + 1)]
+
+    result = apply_point_adjust_score(
+        y_score=y_score,
+        y=y,
+        k=k
+    )
+
+    np.testing.assert_array_equal(result, exp)
+
+
+@pytest.mark.parametrize(
+    'y_score,y,k',
     [
         ([0.1, 0.4, 0.6, 0.7, 0.4, 0.2, 0.4, 0.6, 0.25],
-         [1, 0, 0, 1, 1, 1, 0, 0, 1]),
+         [1, 0, 0, 1, 1, 1, 0, 0, 1],
+         0),
 
         ([0.1, 0.2, 0.4, 0.5, 0.5, 0.6, 0.4, 0.4, 0.2],
-         [1, 1, 1, 1, 1, 1, 1, 1, 1]),
+         [1, 1, 1, 1, 1, 1, 1, 1, 1],
+         0),
 
         ([0.2, 0.3, 0.4, 0.3, 0.4, 0.4, 0.5, 0.4, 0.2],
-         [0, 0, 0, 0, 0, 0, 0, 0, 0])
+         [0, 0, 0, 0, 0, 0, 0, 0, 0],
+         0),
+
+        ([0.1, 0.4, 0.6, 0.7, 0.4, 0.2, 0.4, 0.6, 0.25],
+         [1, 0, 0, 1, 1, 1, 0, 0, 1],
+         0),
+
+        ([0.1, 0.4, 0.6, 0.7, 0.4, 0.2, 0.4, 0.6, 0.25],
+         [0, 0, 1, 1, 1, 0, 1, 1, 0],
+         0),
+
+        ([0.1, 0.4, 0.6, 0.7, 0.4, 0.2, 0.4, 0.6, 0.25],
+         [0, 0, 1, 1, 1, 0, 1, 1, 0],
+         40),
+
+        ([0.1, 0.4, 0.6, 0.7, 0.4, 0.2, 0.4, 0.6, 0.25],
+         [0, 0, 1, 1, 1, 0, 1, 1, 0],
+         100),
     ]
 
 )
 def test_apply_point_adjust_threshold(
-    y_score: np.array,
-    y: np.array
-) -> np.array:
+    y_score: np.ndarray,
+    y: np.ndarray,
+    k: float
+):
+    y_score = np.array(y_score)
     y = np.array(y)
 
-    y_score = apply_point_adjust_score(y_score=np.array(y_score), y=y)
+    y_score = apply_point_adjust_score(y_score=y_score, y=y, k=k)
     y_score = apply_threshold(y_score, threshold=0.5)
 
     y_pred = apply_threshold(y_score, threshold=0.5)
-    y_pred = apply_point_adjust(y_hat=y_pred, y=y)
+    y_pred = apply_point_adjust(y_hat=y_pred, y=y, k=k)
+
+    np.testing.assert_array_equal(y_score, y_pred)
+
+
+@pytest.mark.parametrize(
+    'k',
+    list(range(0, 101))
+)
+def test_apply_point_adjust_threshold_k_0_100(
+    k: float,
+    y_score: np.ndarray = np.array(
+        [0.1, 0.4, 0.6, 0.7, 0.4, 0.2, 0.4, 0.6, 0.25]),
+    y: np.ndarray = np.array([0, 0, 1, 1, 1, 0, 1, 1, 0]),
+):
+
+    y_score = apply_point_adjust_score(y_score=y_score, y=y, k=k)
+    y_score = apply_threshold(y_score, threshold=0.5)
+
+    y_pred = apply_threshold(y_score, threshold=0.5)
+    y_pred = apply_point_adjust(y_hat=y_pred, y=y, k=k)
 
     np.testing.assert_array_equal(y_score, y_pred)
