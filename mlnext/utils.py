@@ -39,8 +39,6 @@ def truncate(
                 f'Expected tuple or list but got {type(array)} for array at '
                 f'position {i}.')
 
-        check_shape(*array, exclude_axis=axis)
-
         # find minimum length in tuple
         length = min(map(lambda x: np.shape(x)[axis], array))
         # moveaxis creates a view on the array that moves axis to the front
