@@ -24,7 +24,9 @@ from mlnext.utils import truncate
          [(np.ones((1, 1)), np.ones((1, 1))),
           (np.ones((4, 2)), np.ones((4, 2)))]),
         ([(np.ones((1, 1)), np.ones((1, 2)), np.ones((1, 3)))], 1,
-         [(np.ones((1, 1)), np.ones((1, 1)), np.ones((1, 1)))])
+         [(np.ones((1, 1)), np.ones((1, 1)), np.ones((1, 1)))]),
+        ([(np.ones((1, 1)), np.ones((2, 2)), np.ones((3, 3)))], 0,
+         [(np.ones((1, 1)), np.ones((1, 2)), np.ones((1, 3)))])
     ]
 )
 def test_truncate(
