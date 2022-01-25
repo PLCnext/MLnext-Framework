@@ -177,7 +177,7 @@ def apply_point_adjust(
           segment before an adjustment is made (Default: 0).
 
     Returns:
-        np.ndarray: Returns the point-adjusted `y_hat`.
+        np.ndarray: Returns the point-adjusted ``y_hat``.
 
     Example:
         >>> import mlnext
