@@ -158,12 +158,14 @@ def apply_point_adjust(
     https://arxiv.org/abs/1802.03903 and its variation from
     https://arxiv.org/abs/2109.05257 (parameter ``k``).
     For a ground truth anomaly segment in ``y``:
-      - ``k=0``, if any point ``x`` in the segment was classified as anomalous
-        (``y_hat=1`` for ``x``)
-      - ``0 < k < 100``, if more than (>) ``%k`` of points in the segment
-        are classified as anomalous (``y_hat=1`` for %k of points)
-      - ``k=100`` if all points in the segment are classified as anomalous
-        (``y_hat=1`` for all points)
+
+    - ``k=0``, if any point ``x`` in the segment was classified as
+      anomalous (``y_hat=1`` for ``x``)
+    - ``0 < k < 100``, if more than (>) ``%k`` of points in the segment
+      are classified as anomalous (``y_hat=1`` for %k of points)
+    - ``k=100`` if all points in the segment are classified as anomalous
+      (``y_hat=1`` for all points)
+
     then the label for all observations in the segment are adjusted to
     ``y_hat=1``. If ``k=0`` it is equal to the original point-adjust, if
     ``k=100`` it is equal to the F1.
@@ -226,12 +228,14 @@ def apply_point_adjust_score(
     https://arxiv.org/pdf/1802.03903.pdf  and its variation from
     https://arxiv.org/abs/2109.05257 (parameter ``k``) for prediction scores.
     For a ground truth anomaly segment in ``y``:
-      - ``k=0``, the score of all points are adjusted to the maximum score in
+
+    - ``k=0``, the score of all points are adjusted to the maximum score in
       the segment
-      - ``0 < k < 100``, the score for the adjustment is chosen, such that at
-      least %k of points in the anomaly segments have a higher score and only
-      the points below the chosen score are adjusted to the score
-      - ``k=100``, no adjustment is made
+    - ``0 < k < 100``, the score for the adjustment is chosen, such that at
+      least %k of points in the anomaly segments have a higher score and
+      only  the points below the chosen score are adjusted to the score
+    - ``k=100``, no adjustment is made
+
     If ``k=0`` it is equal to the original point-adjust, if ``k=100`` it is
     equal to the F1. This method allows the usage of the point-adjust method
     in conjunction with precision-recall and other similar curves.
