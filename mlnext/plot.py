@@ -11,16 +11,19 @@ from typing import Union
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import seaborn as sns
 from matplotlib import cycler
 from matplotlib import rcParams
 from matplotlib.collections import LineCollection
 from matplotlib.colors import LinearSegmentedColormap as LSC
 from matplotlib.figure import Figure
 from matplotlib.patches import Patch
+from sklearn.metrics import auc
 from sklearn.preprocessing import minmax_scale
 
 from .anomaly import rank_features
 from .data import detemporalize
+from .score import point_adjust_metrics
 from .utils import RangeDict
 
 __all__ = [
@@ -30,7 +33,8 @@ __all__ = [
     'plot_signals',
     'plot_signals_norm',
     'plot_signals_binary',
-    'plot_rankings'
+    'plot_rankings',
+    'plot_point_adjust_metrics'
 ]
 
 
@@ -90,6 +94,8 @@ def plot_error(
         is true.
 
     Example:
+        >>> import mlnext
+        >>> import numpy as np
         >>> # Plots the predictions X in the color of label with a threshold
         >>> mlnext.plot_error(
         ...     X=np.random.rand(10),
@@ -163,9 +169,11 @@ def plot_history(
         true.
 
     Example:
+        >>> import numpy as np
         >>> # Plots the training history for entries that match filter
         >>> history = model.fit(...)
-        >>> plot_history(history.history, filter=['val'], path='history.png')
+        >>> mlnext.plot_history(
+        ...  history.history, filter=['val'], path='history.png')
 
     Expected result:
         .. image:: ../_static/img/plot/plot_history.png
@@ -272,6 +280,8 @@ def plot_signals(
         is true.
 
     Example:
+        >>> import mlnext
+        >>> import numpy as np
         >>> mlnext.plot_signals(
         ...     x_pred=np.zeros((10, 2)),
         ...     y=np.array([0] * 5 + [1] * 5),
@@ -371,6 +381,8 @@ def plot_signals_norm(
         is true.
 
     Example:
+        >>> import mlnext
+        >>> import numpy as np
         >>> mlnext.plot_signals_norm(
         ...     x_pred=np.zeros((10, 2)),
         ...     y=np.array([0] * 5 + [1] * 5),
@@ -483,6 +495,8 @@ def plot_signals_binary(
         is true.
 
     Example:
+        >>> import mlnext
+        >>> import numpy as np
         >>> mlnext.plot_signals_binary(
         ...    x_pred=np.zeros((10, 2)),
         ...    y=np.array([0] * 5 + [1] * 5),
@@ -593,6 +607,8 @@ def plot_rankings(
         return_figs is true.
 
     Example:
+        >>> import mlnext
+        >>> import numpy as np
         >>> x, x_pred = np.ones((7, 4)), np.random.random((7, 4))
         >>> y = np.array([0, 0, 1, 1, 1, 0, 0])
         >>> error = mlnext.l2_norm(x, x_pred, reduce=False)
@@ -723,3 +739,57 @@ def _fmt(a: Iterable) -> List[str]:
         List[str]: Returns a list with the formatted elements.
     """
     return list(map(lambda a: f'{a:.3f}', a))
+
+
+def plot_point_adjust_metrics(
+    y_hat: np.ndarray,
+    y: np.ndarray,
+    return_fig: bool = False
+) -> Optional[Figure]:
+    """Plots ``point_adjust_metrics``.
+
+    Args:
+        y_hat (np.ndarray): Label predictions.
+        y (np.ndarray): Ground truth.
+        return_fig (bool): Whether to return the figure (Default: False).
+
+    Returns:
+        Optional[Figure]: Returns the figure if return_fig=True.
+
+    Example:
+        >>> import mlnext
+        >>> import numpy as np
+        >>> mlnext.plot_point_adjust_metrics(
+        ...   y_hat=np.array([0, 1, 1, 0]), y=np.array([0, 1, 1, 1]))
+
+    Expected result:
+
+    .. image:: ../_static/img/plot/plot_point_adjust_metrics.png
+        :scale: 100 %
+
+    """
+
+    df = point_adjust_metrics(y_hat=y_hat, y=y)
+    df = df.reset_index().rename(columns={
+        'index': 'K',
+        **{
+            col: f'{col} (AUC: {auc(df.index, df[col]) / 100:.2f})'
+            for col in df
+        }
+    })
+    dfm = df.melt('K', var_name='Metrics', value_name='Score')
+
+    with sns.plotting_context('notebook'), sns.axes_style('darkgrid'):
+        fig, ax = plt.subplots()
+        g = sns.lineplot(
+            x='K', y='Score', hue='Metrics',
+            data=dfm, markers=True, marker='o',
+            ax=ax
+        )
+        g.set(
+            xlim=(0, 100),
+            xticks=range(0, 101, 10),
+            xticklabels=range(0, 101, 10)
+        )
+
+    return fig if return_fig else None

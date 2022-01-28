@@ -7,10 +7,12 @@ from typing import Dict
 from typing import List
 
 import numpy as np
+import pandas as pd
 from sklearn import metrics
 from sklearn.metrics import auc
 from sklearn.metrics._ranking import _binary_clf_curve
 
+from .anomaly import apply_point_adjust
 from mlnext.utils import check_ndim
 from mlnext.utils import check_size
 from mlnext.utils import truncate
@@ -29,7 +31,9 @@ __all__ = [
     'eval_metrics_all',
     'ConfusionMatrix',
     'PRCurve',
-    'pr_curve'
+    'pr_curve',
+    'auc_point_adjust_metrics',
+    'point_adjust_metrics'
 ]
 
 
@@ -264,14 +268,14 @@ def eval_metrics(y: np.ndarray, y_hat: np.ndarray) -> Dict[str, float]:
         >>> y, y_hat = np.ones((10, 1)), np.ones((10, 1))
         >>> eval_metrics(y, y_hat)
         {'accuracy': 1.0, 'precision': 1.0, 'recall': 1.0, 'f1': 1.0,
-         'auc': 1.0}
+         'roc_auc': 1.0}
     """
     scores = {
         'accuracy': metrics.accuracy_score,
         'precision': metrics.precision_score,
         'recall': metrics.recall_score,
         'f1': metrics.f1_score,
-        'auc': metrics.roc_auc_score
+        'roc_auc': metrics.roc_auc_score
     }
 
     if y.shape != y_hat.shape:
@@ -309,7 +313,7 @@ def eval_metrics_all(
         >>> y_hat = [np.ones((10, 1)), np.zeros((10, 1))]
         >>> eval_metrics_all(y, y_hat)
         {'accuracy': 1.0, 'precision': 1.0, 'recall': 1.0, 'f1': 1.0,
-         'auc': 1.0}
+         'roc_auc': 1.0}
     """
     if len(y) != len(y_hat):
         raise ValueError('y and y_hat must have the same number elements.')
@@ -666,3 +670,98 @@ def pr_curve(
         tps[sl], fns[sl], tns[sl], fps[sl],
         precision[sl], recall[sl], thresholds[sl]
     )
+
+
+def point_adjust_metrics(
+    *,
+    y_hat: np.ndarray,
+    y: np.ndarray
+) -> pd.DataFrame:
+    """Calculates the performance metrics for various ``k`` in [0, 100].
+
+    Args:
+        y_hat (np.ndarray): Label predictions.
+        y (np.ndarray): Ground truth.
+
+    Returns:
+        pd.DataFrame: Returns a dataframe with the k as index and the
+        corresponding metrics for each k.
+
+    See Also:
+        :meth:`mlnext.plot.plot_point_adjust_metrics`: For plotting the
+        results.
+
+    Example:
+        >>> import mlnext
+        >>> import numpy as np
+        >>> point_adjust_metrics(
+        ...   np.array([0, 1, 1, 0]), np.array([0, 1, 1, 1]))
+             accuracy  precision    recall   f1   roc_auc
+        0        1.00        1.0  1.000000  1.0  1.000000
+        1        1.00        1.0  1.000000  1.0  1.000000
+        2        1.00        1.0  1.000000  1.0  1.000000
+        3        1.00        1.0  1.000000  1.0  1.000000
+        4        1.00        1.0  1.000000  1.0  1.000000
+        5        1.00        1.0  1.000000  1.0  1.000000
+        10       1.00        1.0  1.000000  1.0  1.000000
+        15       1.00        1.0  1.000000  1.0  1.000000
+        20       1.00        1.0  1.000000  1.0  1.000000
+        25       1.00        1.0  1.000000  1.0  1.000000
+        30       1.00        1.0  1.000000  1.0  1.000000
+        35       1.00        1.0  1.000000  1.0  1.000000
+        40       1.00        1.0  1.000000  1.0  1.000000
+        45       1.00        1.0  1.000000  1.0  1.000000
+        50       1.00        1.0  1.000000  1.0  1.000000
+        55       1.00        1.0  1.000000  1.0  1.000000
+        60       1.00        1.0  1.000000  1.0  1.000000
+        65       1.00        1.0  1.000000  1.0  1.000000
+        70       0.75        1.0  0.666667  0.8  0.833333
+        75       0.75        1.0  0.666667  0.8  0.833333
+        80       0.75        1.0  0.666667  0.8  0.833333
+        85       0.75        1.0  0.666667  0.8  0.833333
+        90       0.75        1.0  0.666667  0.8  0.833333
+        95       0.75        1.0  0.666667  0.8  0.833333
+        100      0.75        1.0  0.666667  0.8  0.833333
+    """
+    # k from 0..100
+    k = [*range(0, 5), *range(5, 101, 5)]
+
+    # adjust for each k
+    y_hat_adj = [apply_point_adjust(y_hat=y_hat, y=y, k=_k) for _k in k]
+    # calculate performance metrics for each k
+    metrics = [eval_metrics(y=y, y_hat=_y_hat) for _y_hat in y_hat_adj]
+
+    return pd.DataFrame(metrics, index=k)
+
+
+def auc_point_adjust_metrics(
+    *,
+    y_hat: np.ndarray,
+    y: np.ndarray
+) -> T.Dict[str, float]:
+    """Calculates the area under the curve for performance metrics with
+    point-adjusted predictions for values of ``k`` in [0,100].
+
+    Args:
+        y_hat (np.ndarray): Label predictions.
+        y (np.ndarray): Ground truth labels.
+
+    Returns:
+        T.Dict[str, float]: Returns a mapping from performance metric to auc.
+
+    Example:
+        >>> import mlnext
+        >>> import numpy as np
+        >>> auc_point_adjust(
+        ...   y_hat=np.array([0, 1, 1, 0]), y=np.array([0, 1, 1, 1]))
+        {'auc_accuracy': 0.91875,
+         'auc_precision': 1.0,
+         'auc_recall': 0.8916666666666666,
+         'auc_f1': 0.935,
+         'auc_roc_auc': 0.9458333333333333}
+    """
+    df = point_adjust_metrics(y_hat=y_hat, y=y)
+    return {
+        f'auc_{column}': auc(df.index, df[column]) / 100
+        for column in df
+    }
