@@ -195,7 +195,7 @@ def apply_point_adjust(
         [1, 0, 0, 1, 0, 0, 1, 1, 1]
 
     """
-    y, y_hat = y.squeeze(), y_hat.squeeze()
+    y, y_hat = np.array(y).squeeze(), np.array(y_hat).squeeze()
     check_ndim(y, y_hat, ndim=1)
 
     if y_hat.shape != y.shape:
@@ -263,7 +263,7 @@ def apply_point_adjust_score(
         ... k=40)
         [0.1, 0.4, 0.6, 0.7, 0.6, 0.2, 0.6, 0.6, 0.25]
     """
-    y, y_score = y.squeeze(), y_score.squeeze()
+    y, y_score = np.array(y).squeeze(), np.array(y_score).squeeze()
     check_ndim(y, y_score, ndim=1)
 
     if y_score.shape != y.shape:
@@ -289,6 +289,3 @@ def apply_point_adjust_score(
         y_score[s][mask] = score
 
     return y_score
-
-
-# TODO: implement AUC for k=[0, 100]

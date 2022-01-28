@@ -1,12 +1,16 @@
+import typing as T
 from dataclasses import fields
 from unittest import TestCase
 
 import numpy as np
+import pandas as pd
 import pytest
 import scipy.stats
 
 from mlnext import score
+from mlnext.score import auc_point_adjust_metrics
 from mlnext.score import kl_divergence
+from mlnext.score import point_adjust_metrics
 from mlnext.score import pr_curve
 from mlnext.score import PRCurve
 
@@ -190,7 +194,7 @@ class TestMetrics(TestCase):
         y_hat = [np.ones((10, 1)), np.zeros((10, 1))]
 
         expected = {'accuracy': 1.0, 'precision': 1.0,
-                    'recall': 1.0, 'f1': 1.0, 'auc': 1.0}
+                    'recall': 1.0, 'f1': 1.0, 'roc_auc': 1.0}
         result = score.eval_metrics_all(y, y_hat)
 
         self.assertDictEqual(result, expected)
@@ -201,7 +205,7 @@ class TestMetrics(TestCase):
         y_hat = [np.ones((11, 1)), np.zeros((12, 1))]
 
         expected = {'accuracy': 1.0, 'precision': 1.0,
-                    'recall': 1.0, 'f1': 1.0, 'auc': 1.0}
+                    'recall': 1.0, 'f1': 1.0, 'roc_auc': 1.0}
         result = score.eval_metrics_all(y, y_hat)
 
         self.assertDictEqual(result, expected)
@@ -212,7 +216,7 @@ class TestMetrics(TestCase):
         y_hat = [np.ones((11,)), np.zeros((12,))]
 
         expected = {'accuracy': 1.0, 'precision': 1.0,
-                    'recall': 1.0, 'f1': 1.0, 'auc': 1.0}
+                    'recall': 1.0, 'f1': 1.0, 'roc_auc': 1.0}
         result = score.eval_metrics_all(y, y_hat)
 
         self.assertDictEqual(result, expected)
@@ -320,3 +324,40 @@ def test_pr_curve(
         np.testing.assert_almost_equal(cm.recall, exp.recall[i], decimal=4)
         np.testing.assert_almost_equal(cm.f1, exp.f1[i], decimal=4)
         np.testing.assert_almost_equal(cm.accuracy, exp.accuracy[i], decimal=4)
+
+
+@pytest.mark.parametrize(
+    'y_hat,y',
+    [
+        ([0, 1, 1, 0], [0, 1, 1, 0])
+    ]
+)
+def test_point_adjust_metrics(
+    y_hat: np.ndarray,
+    y: np.ndarray,
+):
+    result = point_adjust_metrics(y_hat=np.array(y_hat), y=np.array(y))
+
+    assert isinstance(result, pd.DataFrame)
+
+
+@pytest.mark.parametrize(
+    'y_hat,y,exp',
+    [
+        ([0, 1, 1, 0], [0, 1, 1, 0],
+         {'auc_accuracy': 1.0,
+          'auc_precision': 1.0,
+          'auc_recall': 1.0,
+          'auc_f1': 1.0,
+          'auc_roc_auc': 1.0})
+    ]
+)
+def test_auc_point_adjust_metrics(
+    y_hat: np.ndarray,
+    y: np.ndarray,
+    exp: T.Dict[str, float]
+):
+    result = auc_point_adjust_metrics(y_hat=np.array(y_hat), y=np.array(y))
+
+    assert isinstance(result, dict)
+    np.testing.assert_equal(result, exp)
