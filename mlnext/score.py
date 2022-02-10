@@ -144,12 +144,13 @@ def kl_divergence(
     prior_std = np.ones(log_var.shape) * prior_std  # type:ignore
 
     # see https://stats.stackexchange.com/a/7443
-    # log(o_2 / o_1)
-    a = 0.5 * log_var - np.log(prior_std)
-    # o_1^2 + (mu_1 - mu_2)^2
-    b = np.square(prior_std) + np.square(prior_mean - mean)
-    # 2o_2^2
-    c = 2 * np.exp(log_var)
+    # KL(q || prior)
+    # log(o_p / o_q)
+    a = np.log(prior_std) - 0.5 * log_var
+    # o_q^2 + (mu_q - mu_p)^2
+    b = np.exp(log_var) + np.square(prior_mean - mean)
+    # 2o_p^2
+    c = 2 * np.square(prior_std)
 
     return a + (b / c) - 0.5
 
