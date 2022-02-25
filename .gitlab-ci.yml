@@ -53,12 +53,12 @@ publish_docs:
   script:
     - tox -e docs
     - mv docs/_build/html html
-    - mv docs/_build/rinoh pdf
+    # - mv docs/_build/rinoh pdf
   artifacts:
     name: "docs-$CI_COMMIT_REF_NAME"
     paths:
       - html
-      - pdf/mlnext.pdf
+      # - pdf/mlnext.pdf
   only:
     - main
     - tags
