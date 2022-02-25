@@ -106,7 +106,7 @@ def plot_error(
         ... )
 
     Expected result:
-        .. image:: ../_static/img/plot/plot_error.png
+        .. image:: ../images/plot_error.png
            :scale: 50 %
     """
     fig = plt.figure()
@@ -176,7 +176,7 @@ def plot_history(
         ...  history.history, filter=['val'], path='history.png')
 
     Expected result:
-        .. image:: ../_static/img/plot/plot_history.png
+        .. image:: ../images/plot_history.png
            :scale: 50 %
     """
     fig = plt.figure()
@@ -291,7 +291,7 @@ def plot_signals(
 
     Expected result:
 
-        .. image:: ../_static/img/plot/plot_signals.png
+        .. image:: ../images/plot_signals.png
            :scale: 50 %
     """
 
@@ -394,7 +394,7 @@ def plot_signals_norm(
 
     Expected result:
 
-        .. image:: ../_static/img/plot/plot_signals_norm.png
+        .. image:: ../images/plot_signals_norm.png
            :scale: 50 %
     """
     x_pred = _check_inputs(x_pred)
@@ -507,7 +507,7 @@ def plot_signals_binary(
 
     Expected result:
 
-        .. image:: ../_static/img/plot/plot_signals_binary.png
+        .. image:: ../images/plot_signals_binary.png
            :scale: 50 %
     """
 
@@ -622,7 +622,7 @@ def plot_rankings(
 
     Expected result:
 
-        .. image:: ../_static/img/plot/plot_rankings.png
+        .. image:: ../images/plot_rankings.png
            :scale: 50 %
     """
     error = detemporalize(error, verbose=False)
@@ -764,7 +764,7 @@ def plot_point_adjust_metrics(
 
     Expected result:
 
-    .. image:: ../_static/img/plot/plot_point_adjust_metrics.png
+    .. image:: ../images/plot_point_adjust_metrics.png
         :scale: 100 %
 
     """

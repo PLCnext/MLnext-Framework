@@ -15,7 +15,7 @@ from datetime import date
 sys.path.insert(0, os.path.abspath('../..'))
 
 
-if 'GITLABPAGES' in os.environ:
+if 'READTHEDOCS' in os.environ:
     import glob
 
     if glob.glob('../changelog/*.*.rst'):
@@ -26,6 +26,7 @@ if 'GITLABPAGES' in os.environ:
             ['towncrier', '--yes', '--date', 'not released yet'], cwd='..',
             check=True
         )
+
 
 import mlnext  # noqa
 
@@ -53,7 +54,8 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'sphinx_lfs_content'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -78,10 +80,10 @@ html_theme = 'furo'
 html_static_path = ['_static']
 
 html_theme_options = {
-    'light_logo': 'logos/digital-factory-logo.png',
-    'dark_logo': 'logos/digital-factory-dark-logo.png',
+    'light_logo': 'digital-factory-logo.png',
+    'dark_logo': 'digital-factory-dark-logo.png'
 }
-html_favicon = '_static/logos/favicon.ico'
+html_favicon = '_static/favicon.ico'
 
 html_show_sourcelink = False
 

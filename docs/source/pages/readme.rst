@@ -28,14 +28,12 @@ Example
    mlnext.plot_signals(x=X_test, y=y_test)
 
 
-.. image:: /img/output_0_1.png
-   :target: /img/output_0_1.png
+.. image:: /images/output_0_1.png
    :alt: png
 
 
 
-.. image:: /img/output_0_3.png
-   :target: img/output_0_3.png
+.. image:: /images/output_0_3.png
    :alt: png
 
 
@@ -77,8 +75,7 @@ Example
 
 
 
-.. image:: /img/output_1_1.png
-   :target: img/output_1_1.png
+.. image:: /images/output_1_1.png
    :alt: png
 
 
