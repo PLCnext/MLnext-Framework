@@ -7,25 +7,24 @@ from setuptools import setup
 
 ###############################################################################
 
-NAME = 'mlnext'
+NAME = 'mlnext_framework'
 PACKAGES = find_packages(where='.')
 HERE = os.path.abspath(os.path.dirname(__file__))
 META_PATH = os.path.join('mlnext', '__init__.py')
 KEYWORDS = ['mlnext', 'machine', 'learning', 'utilities']
 PROJECT_URLS = {
-    'Source Code': 'https://gitlab.phoenixcontact.com/vmm-factory-automation'
-    'digital-factory/data-collection-storage-evaluation/anomaly-detection/'
-    'mlnext_frameworks',
+    'Source Code': 'https://github.com/PLCnext/MLnext-Framework',
+    'Documentation': 'https://mlnext-framework.readthedocs.io/en/latest/'
 }
 CLASSIFIERS = [
-    'Intended Audience:: Developers',
+    'Intended Audience :: Developers',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Operating System :: OS Independent',
-    'Topic:: Scientific / Engineering:: Artificial Intelligence',
+    'Topic :: Scientific/Engineering :: Artificial Intelligence',
     'Topic :: Scientific/Engineering :: Visualization',
-    'Topic:: Software Development:: Libraries'
+    'Topic :: Software Development :: Libraries'
 ]
 
 with open(os.path.join(HERE, 'requirements.txt')) as f:
@@ -87,7 +86,7 @@ LONG = (
     + 'Release Information\n'
     + '===================\n\n'
     +
-    (changes.group(0)
+    (re.sub(r'`.*`__', '', changes.group(0))
      if (changes :=
          re.search(
              r'(\d+.\d.\d \(.*?\)\r?\n.*?)\r?\n\r?\n\r?\n----\r?\n\r?\n\r?\n',

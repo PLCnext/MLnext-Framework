@@ -62,3 +62,23 @@ publish_docs:
   only:
     - main
     - tags
+
+release-public-pypi:
+  stage: deploy
+  before_script:
+    - pip install twine
+  script:
+    - python setup.py sdist bdist_wheel
+    - >
+      python
+      -m twine upload
+      --verbose
+      --skip-existing
+      --repository-url ${PYPI_REPOSITORY_URL}
+      --cert ${PYPI_CERT}
+      -u ${PYPI_USER}
+      -p ${PYPI_TOKEN}
+      dist/*
+  only:
+    - pypi-release
+    - tags

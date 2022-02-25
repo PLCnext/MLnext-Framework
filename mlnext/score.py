@@ -647,7 +647,7 @@ def pr_curve(
         >>>    tf.summary.experimental.write_raw_pb(pr_curve_summary, step=1)
 
     Result:
-        .. image:: ../_static/img/plot/pr_curve.png
+        .. image:: ../images/pr_curve.png
            :scale: 50 %
     """  # noqa
 

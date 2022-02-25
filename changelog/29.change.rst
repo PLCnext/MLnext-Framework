@@ -1,1 +1,0 @@
-Added parameter ``k`` to ``mlnext.anomaly.apply_point_adjust`` from  https://arxiv.org/abs/2109.05257.
