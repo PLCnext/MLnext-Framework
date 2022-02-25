@@ -12,6 +12,37 @@ Changes for the upcoming release can be found in the `"changelog" directory <htt
 
 .. towncrier release notes start
 
+0.3.0 (2022-02-25)
+------------------
+
+
+Changes
+^^^^^^^
+
+- Changed `mlnext.score.apply_threshold` to being inclusive for the positive class.
+  `#24 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/24>`__
+- Cleaned ``mlnext`` namespace.
+  `#28 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/28>`__
+- Added parameter ``k`` to ``mlnext.anomaly.apply_point_adjust`` from  https://arxiv.org/abs/2109.05257.
+  `#29 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/29>`__
+- Remove size check of other dimensions in ``mlnext.utils.truncate``.
+  `#30 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/30>`__
+
+
+Features
+^^^^^^^^
+
+- Added ``mlnext.score.pr_curve``.
+  `#25 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/25>`__
+- Added adaptive ``marker_size`` to ``mlnext.plot_error``.
+  `#26 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/26>`__
+- Added ``stride`` to ``mlnext.temporalize`` and ``mlnext.detemporalize``.
+  `#27 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/27>`__
+
+
+----
+
+
 0.2.0 (2021-12-03)
 -----------------------
 

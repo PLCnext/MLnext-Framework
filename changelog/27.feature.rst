@@ -1,1 +1,0 @@
-Added ``stride`` to ``mlnext.temporalize`` and ``mlnext.detemporalize``.
