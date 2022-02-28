@@ -24,7 +24,7 @@
 
 *MLnext Framework* is an open source framework for hardware independent execution of machine learning using *Python* and *Docker*.
 It provides machine learning utilities.
-The corresponding *Python* package is called *mlnext*.
+The corresponding *Python* package is called *mlnext-framework*.
 MLnext Framework belongs to a solution portfolio for the Digital Factory now to realize Data collection, storage, and evaluation.
 
 Digitalization is posing numerous challenges for production – but above all, it provides countless opportunities for increasing productivity and system availability.
@@ -56,7 +56,7 @@ Install this package using ``pip``\ :
 
 .. code-block:: bash
 
-   pip install mlnext
+   pip install mlnext-framework
 
 Modules
 -------
