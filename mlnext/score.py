@@ -216,12 +216,18 @@ def eval_softmax(y: np.ndarray) -> np.ndarray:
     return np.argmax(y, axis=-1).reshape(-1, 1)
 
 
-def eval_sigmoid(y: np.ndarray, *, invert: bool = False) -> np.ndarray:
+def eval_sigmoid(
+    y: np.ndarray,
+    *,
+    invert: bool = False,
+    threshold: float = 0.5
+) -> np.ndarray:
     """Turns a binary-class sigmoid prediction into 0-1 class labels.
 
     Args:
         y (np.ndarray): Array with sigmoid probabilities
         invert (bool): Whether to invert the labels. (0->1, 1->0)
+        threshold (float): Threshold in [0, 1]. Default: 0.5
 
     Returns:
         np.ndarray: Returns the binary class labels.
@@ -230,12 +236,12 @@ def eval_sigmoid(y: np.ndarray, *, invert: bool = False) -> np.ndarray:
         >>> eval_sigmoid(y=np.array([0.1, 0.6, 0.8, 0.2]))
         np.ndarray([[0],[1],[1],[0]])
     """
-    y = (y > 0.5) * 1.
-    if not invert:
-        return y.reshape(-1, 1)
-    else:
-        return (1. - y).reshape(-1, 1)
-
+    return apply_threshold(
+        y,
+        threshold=threshold, 
+        pos_label=0 if invert else 1,
+        neg_label=1 if invert else 0     
+    ).reshape(-1, 1)
 
 def moving_average(x: np.ndarray, step: int = 10, mode='full') -> np.ndarray:
     """Calculates the moving average for X with stepsize `step`.
@@ -256,11 +262,11 @@ def moving_average(x: np.ndarray, step: int = 10, mode='full') -> np.ndarray:
 
 
 def eval_metrics(y: np.ndarray, y_hat: np.ndarray) -> Dict[str, float]:
-    """Calculates accuracy, f1, precision, recall and AUC scores.
+    """Calculates accuracy, f1, precision and recall.
 
     Arguments:
-        y (np.ndarray): Ground truth.
-        y_hat (np.ndarray): Predictions.
+        y (np.ndarray): Ground truth labels.
+        y_hat (np.ndarray): Predictions (0 or 1).
 
     Returns:
         Dict[str, float]: Returns a dict with all scores.
@@ -275,8 +281,7 @@ def eval_metrics(y: np.ndarray, y_hat: np.ndarray) -> Dict[str, float]:
         'accuracy': metrics.accuracy_score,
         'precision': metrics.precision_score,
         'recall': metrics.recall_score,
-        'f1': metrics.f1_score,
-        'roc_auc': metrics.roc_auc_score
+        'f1': metrics.f1_score
     }
 
     if y.shape != y_hat.shape:

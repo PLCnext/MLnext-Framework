@@ -116,41 +116,38 @@ class TestEval(TestCase):
 
         np.testing.assert_array_equal(result, expected)
 
-    def test_eval_sigmoid(self):
 
-        data = np.array([[0.2], [0.6]])
-        expected = np.array([[0], [1]])
+@pytest.mark.parametrize(
+    'y,invert,threshold,exp',
+    [
+        ([[0.2], [0.6]], False, 0.5, [[0], [1]]),
+        ([[[0.2], [0.6]]], False, 0.5, [[0], [1]]),
+        ([[0.2], [0.6]], True, 0.5, [[1], [0]]),
+        ([[[0.2], [0.6]]], True, 0.5, [[1], [0]]),
+        
+        (np.linspace(0, 1, 11), False, 0.5,
+         np.r_[np.zeros((5, 1)), np.ones((6, 1))]),
+        
+        (np.linspace(0, 1, 11), True, 0.5, np.r_[
+         np.ones((5, 1)), np.zeros((6, 1))])
+    ]
+)
+def test_eval_sigmoid(
+    y: T.List[float],
+    invert: bool,
+    threshold: float,
+    exp: T.List[float]
+):
 
-        result = score.eval_sigmoid(y=data)
+    print(y)
 
-        np.testing.assert_array_equal(result, expected)
+    result = score.eval_sigmoid(
+        np.array(y),
+        invert=invert,
+        threshold=threshold
+    )
 
-    def test_eval_sigmoid_3d(self):
-
-        data = np.array([[[0.2], [0.6]]])
-        expected = np.array([[0], [1]])
-
-        result = score.eval_sigmoid(y=data)
-
-        np.testing.assert_array_equal(result, expected)
-
-    def test_eval_sigmoid_invert(self):
-
-        data = np.array([[0.2], [0.6]])
-        expected = np.array([[1], [0]])
-
-        result = score.eval_sigmoid(y=data, invert=True)
-
-        np.testing.assert_array_equal(result, expected)
-
-    def test_eval_sigmoid_3d_invert(self):
-
-        data = np.array([[[0.2], [0.6]]])
-        expected = np.array([[1], [0]])
-
-        result = score.eval_sigmoid(y=data, invert=True)
-
-        np.testing.assert_array_equal(result, expected)
+    np.testing.assert_array_equal(result, exp)
 
 
 class TestMovingAverage(TestCase):
@@ -194,7 +191,7 @@ class TestMetrics(TestCase):
         y_hat = [np.ones((10, 1)), np.zeros((10, 1))]
 
         expected = {'accuracy': 1.0, 'precision': 1.0,
-                    'recall': 1.0, 'f1': 1.0, 'roc_auc': 1.0}
+                    'recall': 1.0, 'f1': 1.0}
         result = score.eval_metrics_all(y, y_hat)
 
         self.assertDictEqual(result, expected)
@@ -205,7 +202,7 @@ class TestMetrics(TestCase):
         y_hat = [np.ones((11, 1)), np.zeros((12, 1))]
 
         expected = {'accuracy': 1.0, 'precision': 1.0,
-                    'recall': 1.0, 'f1': 1.0, 'roc_auc': 1.0}
+                    'recall': 1.0, 'f1': 1.0}
         result = score.eval_metrics_all(y, y_hat)
 
         self.assertDictEqual(result, expected)
@@ -216,7 +213,7 @@ class TestMetrics(TestCase):
         y_hat = [np.ones((11,)), np.zeros((12,))]
 
         expected = {'accuracy': 1.0, 'precision': 1.0,
-                    'recall': 1.0, 'f1': 1.0, 'roc_auc': 1.0}
+                    'recall': 1.0, 'f1': 1.0}
         result = score.eval_metrics_all(y, y_hat)
 
         self.assertDictEqual(result, expected)
@@ -348,8 +345,7 @@ def test_point_adjust_metrics(
          {'auc_accuracy': 1.0,
           'auc_precision': 1.0,
           'auc_recall': 1.0,
-          'auc_f1': 1.0,
-          'auc_roc_auc': 1.0})
+          'auc_f1': 1.0})
     ]
 )
 def test_auc_point_adjust_metrics(
