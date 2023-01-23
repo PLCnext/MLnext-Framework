@@ -842,7 +842,7 @@ class ZeroVarianceDropper(BaseEstimator, TransformerMixin):
         """
         var = X.var()
         # get columns with zero variance
-        return [k for k, v in var.iteritems() if v == .0]
+        return [k for k, v in var.items() if v == .0]
 
     def fit(self, X, y=None):
         """Finds all columns with zero variance.

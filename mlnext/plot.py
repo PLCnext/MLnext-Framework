@@ -257,23 +257,24 @@ def _get_segments(x: pd.DataFrame, y: pd.DataFrame) -> List[int]:
 
 
 def plot_signals(
-    *,
     x: Union[np.ndarray, pd.DataFrame],
-    y: Union[np.ndarray, pd.DataFrame],
+    y: Union[np.ndarray, pd.DataFrame] = None,
+    *,
     x_pred: Optional[Union[np.ndarray, pd.DataFrame]] = None,
     path: Optional[str] = None,
     return_fig: bool = False
 ) -> Optional[Figure]:
-    """Plots the signal prediction `x_pred` in color of the label `y`.
-    Optionally, `x` is the ground truth.
+    """Plots the signal `x` in color of the label `y`.
+    Optionally, `x_pred` is signal prediction to be plotted.
 
     Args:
         y (Union[np.ndarray, pd.DataFrame]): Labels.
-        x (Union[np.ndarray, pd.DataFrame]): Ground truth.
-        x_pred (Union[np.ndarray, pd.DataFrame], optional): Prediction.
-        path (str, optional): Path to save fig to.
+        x (Union[np.ndarray, pd.DataFrame]): Ground truth. Default: None.
+        x_pred (Union[np.ndarray, pd.DataFrame], optional): Prediction. 
+          Default: None.
+        path (str, optional): Path to save fig to. Default: Optional.
         return_fig (bool): Whether to return the figure. Otherwise,
-          plt.show() is called.
+          plt.show() is called. Default: False.
 
     Returns:
         Optional[matplotlib.figure.Figure]: Returns the figure if return_fig
@@ -351,30 +352,31 @@ def plot_signals(
 
 
 def plot_signals_norm(
-    *,
     x: Union[np.ndarray, pd.DataFrame],
-    y: Union[np.ndarray, pd.DataFrame],
+    y: Union[np.ndarray, pd.DataFrame] = None,
+    *,
     x_pred: Union[np.ndarray, pd.DataFrame] = None,
     norm_mean: np.ndarray = None,
     norm_std: np.ndarray = None,
     path: str = None,
     return_fig: bool = False
 ) -> Optional[Figure]:
-    """Plots prediction `x_pred` in color of the labels `y`. `x` are the
-    inputs or ground truth. Additionally, with `norm_mean` and `norm_std`
-    a confidence interval can be plotted.
+    """Plots the signal `x` in color of the label `y`. Optionally, 
+    `x_pred` is signal prediction to be plotted. Additionally, with `norm_mean`
+    and `norm_std` a confidence interval can be plotted.
 
     Args:
         x_pred (Union[np.ndarray, pd.DataFrame]): Prediction.
-        y (Union[np.ndarray, pd.DataFrame]): Labels.
-        x (Union[np.ndarray, pd.DataFrame], optional): Ground truth.
+        y (Union[np.ndarray, pd.DataFrame]): Labels. Default: None.
+        x (Union[np.ndarray, pd.DataFrame], optional): Ground truth. 
+          Default: None.
         norm_mean (np.ndarray, optional): Mean of the underlying normal
           distribution.
         norm_std (np.ndarray, optional): Standard deviation of the underlying
           normal distribution.
-        path (str, optional): Path to save figure to.
+        path (str, optional): Path to save figure to. Default: None.
         return_fig (bool): Whether to return the figure. Otherwise,
-          plt.show() is called.
+          plt.show() is called. Default: False.
 
     Returns:
         Optional[matplotlib.figure.Figure]: Returns the figure if return_fig
@@ -468,27 +470,29 @@ def plot_signals_norm(
 
 
 def plot_signals_binary(
-    *,
     x: Union[np.ndarray, pd.DataFrame],
-    y: Union[np.ndarray, pd.DataFrame],
+    y: Union[np.ndarray, pd.DataFrame] = None,
+    *,
     x_pred: Union[np.ndarray, pd.DataFrame] = None,
     bern_mean: np.ndarray = None,
     path: str = None,
     return_fig: bool = False
 ) -> Optional[Figure]:
-    """Plots signal prediction `x_pred` in color of the labels `y`.
-    `x` are the inputs or ground truth. Additionally, with `bern_mean` the mean
-    of the underlying bernoulli distribution can be plotted.
+    """Plots the signal `x` in color of the label `y`. Optionally, `x_pred` is 
+    signal prediction to be plotted. `x` are the inputs or ground truth. 
+    Additionally, with `bern_mean` the mean of the underlying bernoulli 
+    distribution can be plotted.
 
     Args:
         x_pred (Union[np.ndarray, pd.DataFrame]): Prediction.
-        y (Union[np.ndarray, pd.DataFrame]): Labels.
-        x (Union[np.ndarray, pd.DataFrame], optional): Ground truth.
+        y (Union[np.ndarray, pd.DataFrame]): Labels. Default: None.
+        x (Union[np.ndarray, pd.DataFrame], optional): Ground truth. 
+          Default: None.
         bern_mean (np.ndarray, optional): Mean of the underlying bernoulli
-          distribution.
-        path (str, optional): Path to save figure to.
+          distribution. Default: None.
+        path (str, optional): Path to save figure to. Default: None.
         return_fig (bool): Whether to return the figure. Otherwise,
-          plt.show() is called.
+          plt.show() is called. Default: False.
 
     Returns:
         Optional[matplotlib.figure.Figure]: Returns the figure if return_fig
@@ -577,8 +581,8 @@ def plot_signals_binary(
 
 
 def plot_rankings(
-    *,
     error: np.ndarray,
+    *,
     y: np.ndarray,
     x: np.ndarray,
     x_pred: np.ndarray,
@@ -587,8 +591,9 @@ def plot_rankings(
     return_figs: bool = False
 ) -> Optional[List[Figure]]:
     """Plots the top k features (predictions `x_pred` and ground truth `x`)
-    with the biggest error for each anomaly found in `y`. With context
-    additional data points to the left and right of the anomaly will be shown.
+    with the biggest error for each anomaly found in the labels `y`. With 
+    context additional data points to the left and right of the anomaly will 
+    be shown.
 
     Args:
         error (np.ndarray): Feature-wise error (e.g. l2_norm with reduce=False
@@ -744,6 +749,7 @@ def _fmt(a: Iterable) -> List[str]:
 def plot_point_adjust_metrics(
     y_hat: np.ndarray,
     y: np.ndarray,
+    *,
     return_fig: bool = False
 ) -> Optional[Figure]:
     """Plots ``point_adjust_metrics``.
