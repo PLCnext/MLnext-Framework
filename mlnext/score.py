@@ -1,10 +1,13 @@
 """ Module for model evaluation.
 """
-import typing as T
 import warnings
 from dataclasses import dataclass
+from typing import Any
 from typing import Dict
+from typing import Iterator
 from typing import List
+from typing import Optional
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -238,10 +241,11 @@ def eval_sigmoid(
     """
     return apply_threshold(
         y,
-        threshold=threshold, 
+        threshold=threshold,
         pos_label=0 if invert else 1,
-        neg_label=1 if invert else 0     
+        neg_label=1 if invert else 0
     ).reshape(-1, 1)
+
 
 def moving_average(x: np.ndarray, step: int = 10, mode='full') -> np.ndarray:
     """Calculates the moving average for X with stepsize `step`.
@@ -425,11 +429,11 @@ class ConfusionMatrix:
         return ((2 * self.precision * self.recall) /
                 (self.precision + self.recall))
 
-    def metrics(self) -> T.Dict[str, float]:
+    def metrics(self) -> Dict[str, float]:
         """Returns all metrics.
 
         Returns:
-            T.Dict[str, float]: Returns an mapping of all performance metrics.
+            Dict[str, float]: Returns an mapping of all performance metrics.
         """
         return {
             'accuracy': self.accuracy,
@@ -523,11 +527,11 @@ class PRCurve:
         """
         return len(self.thresholds)
 
-    def __iter__(self) -> T.Iterator[ConfusionMatrix]:
+    def __iter__(self) -> Iterator[ConfusionMatrix]:
         """Creates an iterator over the curve.
 
         Yields:
-            T.Iterator[ConfusionMatrix]: Returns an iterator over the pr curve.
+            Iterator[ConfusionMatrix]: Returns an iterator over the pr curve.
             At index i, the iterator returns a ConfusionMatrix for the i-th
             threshold.
         """
@@ -566,12 +570,12 @@ class PRCurve:
         return ((2 * self.precision * self.recall) /
                 (self.precision + self.recall))
 
-    def to_tensorboard(self) -> T.Dict[str, T.Any]:
+    def to_tensorboard(self) -> Dict[str, Any]:
         """Converts the container to keyword arguments for Tensorboard.
         See https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/pr_curve/README.md.
 
         Returns:
-            T.Dict[str, T.Any]: Returns the pr-curve format expected for
+            Dict[str, Any]: Returns the pr-curve format expected for
             Tensorboard.
         """  # noqa
         return {
@@ -589,8 +593,8 @@ def pr_curve(
     y_true: np.ndarray,
     y_score: np.ndarray,
     *,
-    pos_label: T.Union[str, int] = None,
-    sample_weight: T.Union[T.List, np.ndarray] = None
+    pos_label: Optional[Union[str, int]] = None,
+    sample_weight: Optional[Union[List, np.ndarray]] = None
 ) -> PRCurve:
     """Computes precision-recall pairs for different probability thresholds for
     binary classification tasks.
@@ -610,7 +614,7 @@ def pr_curve(
           When pos_label=None, if y_true is in {-1, 1} or {0, 1},
           pos_label is set to 1, otherwise an error will be raised.
           Defaults to None.
-        sample_weight (T.Union[T.List, np.ndarray], optional): Sample weights.
+        sample_weight (Union[List, np.ndarray], optional): Sample weights.
           Defaults to None.
 
     Returns:
@@ -744,7 +748,7 @@ def auc_point_adjust_metrics(
     *,
     y_hat: np.ndarray,
     y: np.ndarray
-) -> T.Dict[str, float]:
+) -> Dict[str, float]:
     """Calculates the area under the curve for performance metrics with
     point-adjusted predictions for values of ``k`` in [0,100].
 
@@ -753,7 +757,7 @@ def auc_point_adjust_metrics(
         y (np.ndarray): Ground truth labels.
 
     Returns:
-        T.Dict[str, float]: Returns a mapping from performance metric to auc.
+        Dict[str, float]: Returns a mapping from performance metric to auc.
 
     Example:
         >>> import mlnext

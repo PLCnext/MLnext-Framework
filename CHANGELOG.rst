@@ -12,14 +12,13 @@ Changes for the upcoming release can be found in the `"changelog" directory <htt
 
 .. towncrier release notes start
 
-0.4.0 (2023-01-23)
+0.4.0 (2023-01-24)
 ------------------
-
-
 
 
 Changes
 ^^^^^^^
+
 
 - Updated the signature and docstrings of ``mlnext.plot.plot_signals``.
   `#32 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/32>`__
@@ -27,6 +26,8 @@ Changes
   `#33 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/33>`__
 - Removed ``roc_auc`` from ``mlnext.score.eval_metrics``.
   `#35 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/35>`__
+- Fixed inconsistent ``typing`` import.
+  `#38 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/38>`__
 
 
 ----

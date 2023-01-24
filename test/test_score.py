@@ -124,10 +124,10 @@ class TestEval(TestCase):
         ([[[0.2], [0.6]]], False, 0.5, [[0], [1]]),
         ([[0.2], [0.6]], True, 0.5, [[1], [0]]),
         ([[[0.2], [0.6]]], True, 0.5, [[1], [0]]),
-        
+
         (np.linspace(0, 1, 11), False, 0.5,
          np.r_[np.zeros((5, 1)), np.ones((6, 1))]),
-        
+
         (np.linspace(0, 1, 11), True, 0.5, np.r_[
          np.ones((5, 1)), np.zeros((6, 1))])
     ]
