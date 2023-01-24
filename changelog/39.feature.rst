@@ -1,1 +1,1 @@
-Added `mlnext.recall_anomalies` and integrations for `mlnext.eval_metrics`, `mlnext.pr_curve`.
+Added ``mlnext.recall_anomalies`` and integrations for ``mlnext.eval_metrics``, ``mlnext.pr_curve``.
