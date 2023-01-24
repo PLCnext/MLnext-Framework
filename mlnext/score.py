@@ -79,8 +79,8 @@ def norm_log_likelihood(
         mean: np.ndarray,
         log_var: np.ndarray
 ) -> np.ndarray:
-    """Calculates the negative log likelihood that `x` was drawn from a normal
-    gaussian distribution defined by `mean` and `log_var`.
+    """Calculates the negative log likelihood that ``x`` was drawn from a
+    normal gaussian distribution defined by ``mean`` and ``log_var``.
 
     .. math::
 
@@ -107,7 +107,7 @@ def norm_log_likelihood(
 
 def bern_log_likelihood(x: np.ndarray, mean: np.ndarray) -> np.ndarray:
     """Calculates the log likelihood of x being produced by a bernoulli
-    distribution parameterized by `mean`.
+    distribution parameterized by ``mean``.
 
     .. math::
 
@@ -134,9 +134,9 @@ def kl_divergence(
     prior_mean: float = 0.0,
     prior_std: float = 1.0
 ) -> np.ndarray:
-    """Calculates the kl divergence kld(q||p) between a normal gaussian `p`
-    (prior_mean, prior_std) and a normal distribution `q` parameterized
-    by `mean` and `log_var`.
+    """Calculates the kl divergence kld(q||p) between a normal gaussian ``p``
+    (prior_mean, prior_std) and a normal distribution ``q`` parameterized
+    by ``mean`` and ``log_var``.
 
     Args:
         mean (np.ndarray): Mean of q.
@@ -163,15 +163,15 @@ def kl_divergence(
     return a + (b / c) - 0.5
 
 
-def get_threshold(x: np.ndarray, p: float = 100) -> float:
-    """Returns the `perc`-th percentile of x.
+def get_threshold(x: np.ndarray, *, p: float = 100) -> float:
+    """Returns the ``perc``-th percentile of x.
 
     Arguments:
         x  (np.ndarray): Input
         p (float): Percentage (0-100).
 
     Returns:
-        float: Returns the threshold at the `perc`-th percentile of x.
+        float: Returns the threshold at the ``perc``-th percentile of x.
 
     Example:
         >>> get_threshold(np.ndarray([0.0, 1.0]), p=99)
@@ -183,20 +183,18 @@ def get_threshold(x: np.ndarray, p: float = 100) -> float:
 def apply_threshold(
     x: np.ndarray,
     *,
-    threshold: float,
-    pos_label: int = 1,
-    neg_label: int = 0,
+    threshold: float = 0.5,
+    pos_label: int = 1
 ) -> np.ndarray:
-    """Applies `threshold t` to `x`. Values that are greater than or equal
-    than the `threshold` are changed to `pos_label` and below to `neg_label`.
+    """Applies ``threshold t`` to ``x``. Values that are greater than or equal
+    than the ``threshold`` are changed to ``pos_label`` and below to
+    ``1 - pos_label``.
 
     Arguments:
         x (np.ndarray): Input array.
-        t (float): Threshold.
+        t (float): Threshold. Defaults to 0.5.
         pos_label (int): Label for the class above the threshold. Defaults to
-          1.
-        neg_label (int): Label fot the class below the threshold. Default to
-          0.
+          1. The other labels is ``1 - pos_label``. Should be either 1 or 0.
 
     Returns:
         np.ndarray: Returns the result of the threshold operation.
@@ -205,7 +203,8 @@ def apply_threshold(
         >>> apply_threshold(np.array([0.1, 0.4, 0.8, 1.0]), threshold=0.5)
         np.ndarray([0, 0, 0, 1, 1])
     """
-    return np.where(x >= threshold, pos_label, neg_label)
+    pos_label = int(pos_label)
+    return np.where(x >= threshold, pos_label, 1 - pos_label)
 
 
 def eval_softmax(y: np.ndarray) -> np.ndarray:
@@ -224,6 +223,13 @@ def eval_softmax(y: np.ndarray) -> np.ndarray:
     return np.argmax(y, axis=-1).reshape(-1, 1)
 
 
+@deprecated(
+    None,
+    deprecated_in='0.4',
+    remove_in='0.6',
+    template_mgs='`%(source_name)s` was deprecated in %(deprecated_in)s '
+    'and is removed in %(remove_in)s, use `apply_threshold` instead.'
+)
 def eval_sigmoid(
     y: np.ndarray,
     *,
@@ -247,13 +253,12 @@ def eval_sigmoid(
     return apply_threshold(
         y,
         threshold=threshold,
-        pos_label=0 if invert else 1,
-        neg_label=1 if invert else 0
+        pos_label=0 if invert else 1
     ).reshape(-1, 1)
 
 
 def moving_average(x: np.ndarray, step: int = 10, mode='full') -> np.ndarray:
-    """Calculates the moving average for X with stepsize `step`.
+    """Calculates the moving average for X with stepsize ``step``.
 
     Args:
         X (np.ndarray): 1-dimensional array.
@@ -354,7 +359,7 @@ def eval_metrics_all(
 
 @dataclass
 class ConfusionMatrix:
-    """`ConfusionMatrix` is a confusion matrix for a binary classification
+    """``ConfusionMatrix`` is a confusion matrix for a binary classification
     problem. See https://en.wikipedia.org/wiki/Confusion_matrix.
 
     Args:
@@ -409,7 +414,7 @@ class ConfusionMatrix:
 
     @property
     def accuracy(self) -> float:
-        """Calculates the accuracy `(TP + TN) / (TP + TN + FP + FN)`.
+        """Calculates the accuracy ``(TP + TN) / (TP + TN + FP + FN)``.
 
         Returns:
             np.ndarray: Returns the accuracy.
@@ -419,7 +424,7 @@ class ConfusionMatrix:
 
     @property
     def precision(self) -> float:
-        """Calculates the precision `TP / (TP + FP)`.
+        """Calculates the precision ``TP / (TP + FP)``.
 
         Returns:
             float: Returns the precision.
@@ -428,7 +433,7 @@ class ConfusionMatrix:
 
     @property
     def recall(self) -> float:
-        """Calculates the recall `TP / (TP + FN)`.
+        """Calculates the recall ``TP / (TP + FN)``.
 
         Returns:
             float: Returns the recall.
@@ -438,7 +443,7 @@ class ConfusionMatrix:
     @property
     def f1(self) -> float:
         """Calculates the F1-Score
-        `2 * (precision * recall) / (precision + recall)`.
+        ``2 * (precision * recall) / (precision + recall)``.
 
         Returns:
             np.ndarray: Returns the F1-score.
@@ -472,9 +477,9 @@ class ConfusionMatrix:
 
 @dataclass
 class PRCurve:
-    """Container for the result of `pr_curve`. Additionally computes the
+    """Container for the result of ``pr_curve``. Additionally computes the
     F1-score for each threshold. Can be indexed and returns a
-    `ConfusionMatrix` for the i-th threshold.
+    ``ConfusionMatrix`` for the i-th threshold.
 
     Args:
         tps (np.ndarray): An increasing count of true positives, at index i
@@ -761,7 +766,7 @@ def point_adjust_metrics(
         corresponding metrics for each k.
 
     See Also:
-        :meth:`mlnext.plot.plot_point_adjust_metrics`: For plotting the
+        :meth:``mlnext.plot.plot_point_adjust_metrics``: For plotting the
         results.
 
     Example:

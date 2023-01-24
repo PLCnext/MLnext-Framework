@@ -39,53 +39,44 @@ class TestL2Norm(TestCase):
         np.testing.assert_array_almost_equal(result, expected)
 
 
-class TestThreshold(TestCase):
+@pytest.mark.parametrize(
+    'p,exp',
+    [
+        (100, 1.),
+        (80, 0.8),
+        (50, 0.5),
+        (10, 0.1),
+        (0, 0.0)
+    ]
+)
+def test_get_threshold(p: float, exp: float):
 
-    def test_get_threshold_100(self):
+    result = score.get_threshold(np.array([0, 1]), p=p)
 
-        data = np.array([0, 1.])
+    assert result == exp
 
-        expected = 1.
-        result = score.get_threshold(x=data)
 
-        self.assertEqual(result, expected)
+@pytest.mark.parametrize(
+    'x,threshold,pos_label,exp',
+    [
+        ([0, 0.4, 0.6, 1.], 0.5, 1,  [0, 0, 1, 1]),
+        ([0, 0.4, 0.6, 1.], 0.5, 0,  [1, 1, 0, 0]),
+    ]
+)
+def test_apply_threshold(
+    x: T.List[float],
+    threshold: float,
+    pos_label: int,
+    exp: T.List[float]
+):
 
-    def test_get_threshold_50(self):
+    result = score.apply_threshold(
+        np.array(x),
+        threshold=threshold,
+        pos_label=pos_label
+    )
 
-        data = np.array([0, 1.])
-
-        expected = 0.5
-        result = score.get_threshold(x=data, p=50)
-
-        self.assertEqual(result, expected)
-
-    def test_get_threshold_80(self):
-
-        data = np.array([0, 1.])
-
-        expected = 0.8
-        result = score.get_threshold(x=data, p=80)
-
-        self.assertEqual(result, expected)
-
-    def test_apply_threshold(self):
-
-        data = np.array([0, 0.4, 0.6, 1.])
-        expected = np.array([0, 0, 1, 1])
-
-        result = score.apply_threshold(data, threshold=0.5)
-
-        np.testing.assert_array_equal(result, expected)
-
-    def test_apply_threshold_labels(self):
-
-        data = np.array([0, 0.4, 0.6, 1.])
-        expected = np.array([1, 1, 2, 2])
-
-        result = score.apply_threshold(
-            data, threshold=0.5, pos_label=2, neg_label=1)
-
-        np.testing.assert_array_equal(result, expected)
+    np.testing.assert_array_equal(result, exp)
 
 
 class TestEval(TestCase):
