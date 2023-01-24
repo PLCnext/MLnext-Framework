@@ -81,10 +81,12 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         pd.DataFrame({'a': [0]})
     """
 
-    def __init__(self,
-                 *,
-                 columns: Union[List[str], Set[str]],
-                 verbose: bool = False):
+    def __init__(
+        self,
+        *,
+        columns: Union[List[str], Set[str]],
+        verbose: bool = False
+    ):
         """Creates ColumnDropper.
         Transformer to drop a list of columns from the data frame.
 
@@ -207,11 +209,13 @@ class Clip(BaseEstimator, TransformerMixin):
 
 
 class ColumnTSMapper(BaseEstimator, TransformerMixin):
-    def __init__(self,
-                 cols: List[str],
-                 timedelta: pd.Timedelta = pd.Timedelta(250, 'ms'),
-                 classes: List[str] = None,
-                 verbose: bool = False):
+    def __init__(
+        self,
+        cols: List[str],
+        timedelta: pd.Timedelta = pd.Timedelta(250, 'ms'),
+        classes: Optional[List[str]] = None,
+        verbose: bool = False
+    ):
         """Creates ColumnTSMapper.
         Expects the timestamp column to be of type pd.Timestamp.
 
@@ -322,7 +326,7 @@ class DatetimeTransformer(BaseEstimator, TransformerMixin):
         dt    datetime64[ns]
     """
 
-    def __init__(self, *, columns: List[str], dt_format: str = None):
+    def __init__(self, *, columns: List[str], dt_format: Optional[str] = None):
         """Creates DatetimeTransformer.
         Parses a list of column to pd.Timestamp.
 
@@ -440,13 +444,15 @@ class TimeframeExtractor(BaseEstimator, TransformerMixin):
                       'values': [1]})
     """
 
-    def __init__(self,
-                 *,
-                 time_column: str,
-                 start_time: datetime.time,
-                 end_time: datetime.time,
-                 invert: bool = False,
-                 verbose: bool = False):
+    def __init__(
+        self,
+        *,
+        time_column: str,
+        start_time: datetime.time,
+        end_time: datetime.time,
+        invert: bool = False,
+        verbose: bool = False
+    ):
         """Creates TimeframeExtractor.
         Drops samples that are not in between `start_time` and  `end_time` in
         `time_column`.
@@ -520,13 +526,15 @@ class DateExtractor(BaseEstimator, TransformerMixin):
                         'values': [1]})
     """
 
-    def __init__(self,
-                 *,
-                 date_column: str,
-                 start_date: datetime.date,
-                 end_date: datetime.date,
-                 invert: bool = False,
-                 verbose: bool = False):
+    def __init__(
+        self,
+        *,
+        date_column: str,
+        start_date: datetime.date,
+        end_date: datetime.date,
+        invert: bool = False,
+        verbose: bool = False
+    ):
         """Initializes `DateExtractor`.
 
         Args:
@@ -589,11 +597,13 @@ class ValueMapper(BaseEstimator, TransformerMixin):
         pd.DataFrame({'a': [0.0, 1.0, 1.0]})
     """
 
-    def __init__(self,
-                 *,
-                 columns: List[str],
-                 classes: Dict,
-                 verbose: bool = False):
+    def __init__(
+        self,
+        *,
+        columns: List[str],
+        classes: Dict,
+        verbose: bool = False
+    ):
         """Initialize `ValueMapper`.
 
         Args:
@@ -640,11 +650,13 @@ class Sorter(BaseEstimator, TransformerMixin):
         pd.DataFrame({'a': [1, 0], 'b': [0, 1]})
     """
 
-    def __init__(self,
-                 *,
-                 columns: List[str],
-                 ascending: bool = True,
-                 axis: int = 0):
+    def __init__(
+        self,
+        *,
+        columns: List[str],
+        ascending: bool = True,
+        axis: int = 0
+    ):
         """Initialize `Sorter`.
 
         Args:
@@ -685,10 +697,12 @@ class Fill(BaseEstimator, TransformerMixin):
         pd.DataFrame({'a': [0.0, 1.0]})
     """
 
-    def __init__(self,
-                 *,
-                 value: Any,
-                 method: str = None):
+    def __init__(
+        self,
+        *,
+        value: Any,
+        method: Optional[str] = None
+    ):
         """Initialize `Fill`.
 
         Args:
@@ -769,11 +783,13 @@ class ConditionedDropper(BaseEstimator, TransformerMixin):
         pd.DataFrame({'a': [0.0, 0.5]})
     """
 
-    def __init__(self,
-                 *,
-                 column: str,
-                 threshold: float,
-                 invert: bool = False):
+    def __init__(
+            self,
+            *,
+            column: str,
+            threshold: float,
+            invert: bool = False
+    ):
         """Initializes `ConditionedDropper`.
 
         Args:
@@ -842,7 +858,7 @@ class ZeroVarianceDropper(BaseEstimator, TransformerMixin):
         """
         var = X.var()
         # get columns with zero variance
-        return [k for k, v in var.iteritems() if v == .0]
+        return [k for k, v in var.items() if v == .0]
 
     def fit(self, X, y=None):
         """Finds all columns with zero variance.
