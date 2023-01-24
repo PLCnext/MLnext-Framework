@@ -1,0 +1,1 @@
+Removed ``neg_label`` from ``score.apply_threshold``.
