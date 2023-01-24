@@ -1,6 +1,5 @@
 """Module with utility functions.
 """
-import collections
 import typing as T
 
 import numpy as np
