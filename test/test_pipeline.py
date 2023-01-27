@@ -1,8 +1,10 @@
 import datetime
+import typing as T
 from unittest import TestCase
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from mlnext import pipeline
 
@@ -19,7 +21,7 @@ class TestColumnSelector(TestCase):
         t = pipeline.ColumnSelector(keys=['a'])
 
         expected = self.df.loc[:, ['a']]
-        result = t.fit_transform(self.df)
+        result = t.fit_transform(self.df.copy())
 
         pd.testing.assert_frame_equal(result, expected)
 
@@ -505,3 +507,60 @@ class TestDifferentialCreator(TestCase):
 
         result = t.fit_transform(self.df_sel)
         pd.testing.assert_frame_equal(result, expected)
+
+
+@pytest.mark.parametrize(
+    'feature_range,clip,p,exp',
+    [
+        (
+            (0, 1.), None, 100,
+            pd.DataFrame({
+                'a': [-3., -2., -1., 0., 1., 2., 3.],
+                'b': [-3., -2., -1., 0., 1., 2., 3.]
+            })
+        ),
+        (
+            (0, .5), None, 100,
+            pd.DataFrame({
+                'a': [-1.5, -1., -.5, 0., .5, 1., 1.5],
+                'b': [-1.5, -1., -.5, 0., .5, 1., 1.5]
+            })
+        ),
+        (
+            (0, .5), (-1, 1.), 100,
+            pd.DataFrame({
+                'a': [-1., -1., -.5, 0., .5, 1., 1.],
+                'b': [-1., -1., -.5, 0., .5, 1., 1.]
+            })
+        ),
+        (
+            (0, .5), (0, 1.), 100,
+            pd.DataFrame({
+                'a': [0., 0., 0., 0., .5, 1., 1.],
+                'b': [0., 0., 0., 0., .5, 1., 1.]
+            })
+        )
+    ]
+)
+def test_ClippingMinMaxScaler(
+    feature_range: T.Tuple[float, float],
+    clip: T.Optional[T.Tuple[float, float]],
+    p: float,
+    exp: pd.DataFrame,
+):
+
+    scaler = pipeline.ClippingMinMaxScaler(
+        feature_range,
+        clip=clip,
+        p=p
+    )
+
+    df = pd.DataFrame({'a': [1, 2, 3, 4], 'b': [0, 1, 2, 3]})
+    scaler.fit_transform(df)
+
+    df = pd.DataFrame({
+        'a': [-8, -5, -2, 1, 4, 7, 10],
+        'b': [-9, -6, -3, 0, 3, 6, 9]
+    })
+    result = scaler.transform(df)
+    pd.testing.assert_frame_equal(result, exp)
