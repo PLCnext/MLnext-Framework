@@ -12,13 +12,12 @@ Changes for the upcoming release can be found in the `"changelog" directory <htt
 
 .. towncrier release notes start
 
-0.4.0 (2023-01-24)
+0.4.0 (2023-01-27)
 ------------------
 
 
 Changes
 ^^^^^^^
-
 
 - Updated the signature and docstrings of ``mlnext.plot.plot_signals``.
   `#32 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/32>`__
@@ -28,6 +27,26 @@ Changes
   `#35 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/35>`__
 - Fixed inconsistent ``typing`` import.
   `#38 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/38>`__
+- Removed ``neg_label`` from ``score.apply_threshold``.
+  `#40 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/40>`__
+
+
+Features
+^^^^^^^^
+
+- Added ``mlnext.pipeline.ClippingMinMaxScaler``.
+  `#37 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/37>`__
+- Added ``mlnext.recall_anomalies`` and integrations for ``mlnext.eval_metrics``, ``mlnext.pr_curve``.
+  `#39 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/39>`__
+
+
+Deprecations
+^^^^^^^^^^^^
+
+- Deprecated ``y_true`` in favor of ``y`` in ``mlnext.pr_curve``.
+  `#41 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/41>`__
+- ``score.apply_threshold`` superceedes the functionality of ``score.eval_sigmoid`` and is removed in 0.6.
+  `#42 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/42>`__
 
 
 ----
