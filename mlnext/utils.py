@@ -1,5 +1,6 @@
 """Module with utility functions.
 """
+import collections
 import typing as T
 
 import numpy as np
@@ -215,7 +216,7 @@ def flatten(
     items: T.List[T.Tuple[str, T.Any]] = []
     for k, v in mapping.items():
         key = f'{sep}'.join([prefix, k]) if prefix else k
-        if isinstance(v, T.Mapping):
+        if isinstance(v, collections.Mapping):
             items.extend(flatten(
                 v,
                 prefix=key,
