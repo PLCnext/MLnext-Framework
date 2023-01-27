@@ -1,12 +1,7 @@
 """ Module for data visualization.
 """
+import typing as T
 from itertools import product
-from typing import Any
-from typing import Dict
-from typing import Iterable
-from typing import List
-from typing import Optional
-from typing import Union
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -69,13 +64,13 @@ def _adaptive_makersize(num_points: int) -> float:
 
 def plot_error(
     X: np.ndarray,
-    y: Optional[np.ndarray] = None,
-    threshold: Optional[float] = None,
-    title: Optional[str] = None,
+    y: T.Optional[np.ndarray] = None,
+    threshold: T.Optional[float] = None,
+    title: T.Optional[str] = None,
     yscale: str = 'linear',
-    path: Optional[str] = None,
+    path: T.Optional[str] = None,
     return_fig: bool = False
-) -> Optional[Figure]:
+) -> T.Optional[Figure]:
     """Plots the error given by `x`. Label determines the color of the
     point. An anomaly threshold can be drawn with threshold.
 
@@ -90,7 +85,7 @@ def plot_error(
           plt.show() is called.
 
     Returns:
-        Optional[matplotlib.figure.Figure]: Returns the figure if return_fig
+        T.Optional[matplotlib.figure.Figure]: Returns the figure if return_fig
         is true.
 
     Example:
@@ -147,26 +142,26 @@ def plot_error(
 
 
 def plot_history(
-    history: Dict[str, Any],
-    filter: List[str] = ['loss'],
-    path: Optional[str] = None,
+    history: T.Dict[str, T.Any],
+    filter: T.List[str] = ['loss'],
+    path: T.Optional[str] = None,
     return_fig: bool = False
-) -> Optional[Figure]:
+) -> T.Optional[Figure]:
     """
     Plots the loss in regards to the epoch from the model training history.
     Use filter to plot metrics/losses that contain the filter words.
     Adapted from: https://keras.io/visualization/
 
     Arguments:
-        history (Dict[str, Any]): Training history of a model.
-        keywords (List[str]): Filters the history by a keyword.
+        history (T.Dict[str, T.Any]): Training history of a model.
+        keywords (T.List[str]): Filters the history by a keyword.
         path (str): Path to save figure to.
         return_fig (bool): Whether to return the figure. Otherwise,
           plt.show() is called.
 
     Returns:
-        Optional[matplotlib.figure.Figure]: Returns the figure if return_fig is
-        true.
+        T.Optional[matplotlib.figure.Figure]: Returns the figure if return_fig
+          is true.
 
     Example:
         >>> import numpy as np
@@ -202,12 +197,12 @@ def plot_history(
 
 
 def _check_inputs(
-    x: Optional[Union[np.ndarray, pd.DataFrame]]
-) -> Optional[pd.DataFrame]:
+    x: T.Optional[T.Union[np.ndarray, pd.DataFrame]]
+) -> T.Optional[pd.DataFrame]:
     """Transforms `x` into a dataframe.
 
     Args:
-        x (Union[np.ndarray, pd.DataFrame], optional): Input array.
+        x (T.Union[np.ndarray, pd.DataFrame], optional): Input array.
 
     Returns:
         pd.DataFrame: Returns a pd.DataFrame.
@@ -223,18 +218,18 @@ def _check_inputs(
     return pd.DataFrame(x)
 
 
-def _truncate_length(*dfs: Optional[pd.DataFrame]) -> List[pd.DataFrame]:
+def _truncate_length(*dfs: T.Optional[pd.DataFrame]) -> T.List[pd.DataFrame]:
     """Truncates the length of `dfs` to match the shortest in the list.
 
     Returns:
-        List[pd.DataFrame]: Returns a list of dataframe with equal length.
+        T.List[pd.DataFrame]: Returns a list of dataframe with equal length.
     """
     length = min([df.shape[0] for df in dfs if df is not None])
 
     return [df.iloc[:length, :] if df is not None else None for df in dfs]
 
 
-def _get_segments(x: pd.DataFrame, y: pd.DataFrame) -> List[int]:
+def _get_segments(x: pd.DataFrame, y: pd.DataFrame) -> T.List[int]:
     """Gets all indexes from `x` where transitions from 0-1 and 1-0 in `y`
     occur.
 
@@ -257,27 +252,27 @@ def _get_segments(x: pd.DataFrame, y: pd.DataFrame) -> List[int]:
 
 
 def plot_signals(
-    x: Union[np.ndarray, pd.DataFrame],
-    y: Optional[Union[np.ndarray, pd.DataFrame]] = None,
+    x: T.Union[np.ndarray, pd.DataFrame],
+    y: T.Optional[T.Union[np.ndarray, pd.DataFrame]] = None,
     *,
-    x_pred: Optional[Union[np.ndarray, pd.DataFrame]] = None,
-    path: Optional[str] = None,
+    x_pred: T.Optional[T.Union[np.ndarray, pd.DataFrame]] = None,
+    path: T.Optional[str] = None,
     return_fig: bool = False
-) -> Optional[Figure]:
+) -> T.Optional[Figure]:
     """Plots the signal `x` in color of the label `y`.
     Optionally, `x_pred` is signal prediction to be plotted.
 
     Args:
-        y (Union[np.ndarray, pd.DataFrame]): Labels.
-        x (Union[np.ndarray, pd.DataFrame]): Ground truth. Default: None.
-        x_pred (Union[np.ndarray, pd.DataFrame], optional): Prediction.
+        y (T.Union[np.ndarray, pd.DataFrame]): Labels.
+        x (T.Union[np.ndarray, pd.DataFrame]): Ground truth. Default: None.
+        x_pred (T.Union[np.ndarray, pd.DataFrame], optional): Prediction.
           Default: None.
-        path (str, optional): Path to save fig to. Default: Optional.
+        path (str, optional): Path to save fig to. Default: T.Optional.
         return_fig (bool): Whether to return the figure. Otherwise,
           plt.show() is called. Default: False.
 
     Returns:
-        Optional[matplotlib.figure.Figure]: Returns the figure if return_fig
+        T.Optional[matplotlib.figure.Figure]: Returns the figure if return_fig
         is true.
 
     Example:
@@ -352,23 +347,23 @@ def plot_signals(
 
 
 def plot_signals_norm(
-    x: Union[np.ndarray, pd.DataFrame],
-    y: Optional[Union[np.ndarray, pd.DataFrame]] = None,
+    x: T.Union[np.ndarray, pd.DataFrame],
+    y: T.Optional[T.Union[np.ndarray, pd.DataFrame]] = None,
     *,
-    x_pred: Optional[Union[np.ndarray, pd.DataFrame]] = None,
-    norm_mean: Optional[np.ndarray] = None,
-    norm_std: Optional[np.ndarray] = None,
-    path: Optional[str] = None,
+    x_pred: T.Optional[T.Union[np.ndarray, pd.DataFrame]] = None,
+    norm_mean: T.Optional[np.ndarray] = None,
+    norm_std: T.Optional[np.ndarray] = None,
+    path: T.Optional[str] = None,
     return_fig: bool = False
-) -> Optional[Figure]:
+) -> T.Optional[Figure]:
     """Plots the signal `x` in color of the label `y`. Optionally,
     `x_pred` is signal prediction to be plotted. Additionally, with `norm_mean`
     and `norm_std` a confidence interval can be plotted.
 
     Args:
-        x_pred (Union[np.ndarray, pd.DataFrame]): Prediction.
-        y (Union[np.ndarray, pd.DataFrame]): Labels. Default: None.
-        x (Union[np.ndarray, pd.DataFrame], optional): Ground truth.
+        x_pred (T.Union[np.ndarray, pd.DataFrame]): Prediction.
+        y (T.Union[np.ndarray, pd.DataFrame]): Labels. Default: None.
+        x (T.Union[np.ndarray, pd.DataFrame], optional): Ground truth.
           Default: None.
         norm_mean (np.ndarray, optional): Mean of the underlying normal
           distribution.
@@ -379,7 +374,7 @@ def plot_signals_norm(
           plt.show() is called. Default: False.
 
     Returns:
-        Optional[matplotlib.figure.Figure]: Returns the figure if return_fig
+        T.Optional[matplotlib.figure.Figure]: Returns the figure if return_fig
         is true.
 
     Example:
@@ -470,23 +465,23 @@ def plot_signals_norm(
 
 
 def plot_signals_binary(
-    x: Union[np.ndarray, pd.DataFrame],
-    y: Optional[Union[np.ndarray, pd.DataFrame]] = None,
+    x: T.Union[np.ndarray, pd.DataFrame],
+    y: T.Optional[T.Union[np.ndarray, pd.DataFrame]] = None,
     *,
-    x_pred: Optional[Union[np.ndarray, pd.DataFrame]] = None,
-    bern_mean: Optional[np.ndarray] = None,
-    path: Optional[str] = None,
+    x_pred: T.Optional[T.Union[np.ndarray, pd.DataFrame]] = None,
+    bern_mean: T.Optional[np.ndarray] = None,
+    path: T.Optional[str] = None,
     return_fig: bool = False
-) -> Optional[Figure]:
+) -> T.Optional[Figure]:
     """Plots the signal `x` in color of the label `y`. Optionally, `x_pred` is
     signal prediction to be plotted. `x` are the inputs or ground truth.
     Additionally, with `bern_mean` the mean of the underlying bernoulli
     distribution can be plotted.
 
     Args:
-        x_pred (Union[np.ndarray, pd.DataFrame]): Prediction.
-        y (Union[np.ndarray, pd.DataFrame]): Labels. Default: None.
-        x (Union[np.ndarray, pd.DataFrame], optional): Ground truth.
+        x_pred (T.Union[np.ndarray, pd.DataFrame]): Prediction.
+        y (T.Union[np.ndarray, pd.DataFrame]): Labels. Default: None.
+        x (T.Union[np.ndarray, pd.DataFrame], optional): Ground truth.
           Default: None.
         bern_mean (np.ndarray, optional): Mean of the underlying bernoulli
           distribution. Default: None.
@@ -495,7 +490,7 @@ def plot_signals_binary(
           plt.show() is called. Default: False.
 
     Returns:
-        Optional[matplotlib.figure.Figure]: Returns the figure if return_fig
+        T.Optional[matplotlib.figure.Figure]: Returns the figure if return_fig
         is true.
 
     Example:
@@ -589,7 +584,7 @@ def plot_rankings(
     k=3,
     context=10,
     return_figs: bool = False
-) -> Optional[List[Figure]]:
+) -> T.Optional[T.List[Figure]]:
     """Plots the top k features (predictions `x_pred` and ground truth `x`)
     with the biggest error for each anomaly found in the labels `y`. With
     context additional data points to the left and right of the anomaly will
@@ -608,7 +603,7 @@ def plot_rankings(
           is called.
 
     Returns:
-        Optional[matplotlib.figure.Figure]: Returns a list of the figures if
+        T.Optional[matplotlib.figure.Figure]: Returns a list of the figures if
         return_figs is true.
 
     Example:
@@ -734,14 +729,14 @@ def _share(a: np.ndarray) -> np.ndarray:
     return a / np.sum(a)
 
 
-def _fmt(a: Iterable) -> List[str]:
+def _fmt(a: T.Iterable) -> T.List[str]:
     """Formats each element in `a` into strings.
 
     Args:
-        a (Iterable): Iterable.
+        a (T.Iterable): T.Iterable.
 
     Returns:
-        List[str]: Returns a list with the formatted elements.
+        T.List[str]: Returns a list with the formatted elements.
     """
     return list(map(lambda a: f'{a:.3f}', a))
 
@@ -751,7 +746,7 @@ def plot_point_adjust_metrics(
     y: np.ndarray,
     *,
     return_fig: bool = False
-) -> Optional[Figure]:
+) -> T.Optional[Figure]:
     """Plots ``point_adjust_metrics``.
 
     Args:
@@ -760,7 +755,7 @@ def plot_point_adjust_metrics(
         return_fig (bool): Whether to return the figure (Default: False).
 
     Returns:
-        Optional[Figure]: Returns the figure if return_fig=True.
+        T.Optional[Figure]: Returns the figure if return_fig=True.
 
     Example:
         >>> import mlnext

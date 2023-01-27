@@ -1,14 +1,8 @@
 """ Module for data preprocessing.
 """
 import datetime
+import typing as T
 import warnings
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Set
-from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -47,12 +41,12 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         pd.DataFrame({'a': [0]})
     """
 
-    def __init__(self, keys: List[str]):
+    def __init__(self, keys: T.List[str]):
         """Creates ColumnSelector.
         Transformer to select a list of columns for further processing.
 
         Args:
-            keys (List[str]): List of columns to extract.
+            keys (T.List[str]): T.List of columns to extract.
         """
         self._keys = keys
 
@@ -84,14 +78,14 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
     def __init__(
         self,
         *,
-        columns: Union[List[str], Set[str]],
+        columns: T.Union[T.List[str], T.Set[str]],
         verbose: bool = False
     ):
         """Creates ColumnDropper.
         Transformer to drop a list of columns from the data frame.
 
         Args:
-            keys (list): List of columns names to drop.
+            keys (list): T.List of columns names to drop.
         """
         self.columns = set(columns)
         self.verbose = verbose
@@ -129,7 +123,7 @@ class ColumnRename(BaseEstimator, TransformerMixin):
         pd.DataFrame({'c': [0], 'f': [0]})
     """
 
-    def __init__(self, mapper: Callable[[str], str]):
+    def __init__(self, mapper: T.Callable[[str], str]):
         """Create ColumnRename.
         Transformer to rename columns by a mapper function.
 
@@ -211,19 +205,19 @@ class Clip(BaseEstimator, TransformerMixin):
 class ColumnTSMapper(BaseEstimator, TransformerMixin):
     def __init__(
         self,
-        cols: List[str],
+        cols: T.List[str],
         timedelta: pd.Timedelta = pd.Timedelta(250, 'ms'),
-        classes: Optional[List[str]] = None,
+        classes: T.Optional[T.List[str]] = None,
         verbose: bool = False
     ):
         """Creates ColumnTSMapper.
         Expects the timestamp column to be of type pd.Timestamp.
 
         Args:
-            cols (List[str]): names of [0] timestamp column, [1] sensor names,
-            [2] sensor values.
+            cols (T.List[str]): names of [0] timestamp column,
+              [1] sensor names, [2] sensor values.
             timedelta (pd.Timedelta): Timedelta to resample with.
-            classes (List[str]): List of sensor names.
+            classes (T.List[str]): T.List of sensor names.
             verbose (bool, optional): Whether to allow prints.
         """
         super().__init__()
@@ -326,13 +320,18 @@ class DatetimeTransformer(BaseEstimator, TransformerMixin):
         dt    datetime64[ns]
     """
 
-    def __init__(self, *, columns: List[str], dt_format: Optional[str] = None):
+    def __init__(
+        self,
+        *,
+        columns: T.List[str],
+        dt_format: T.Optional[str] = None
+    ):
         """Creates DatetimeTransformer.
         Parses a list of column to pd.Timestamp.
 
         Args:
-            columns (list): List of columns names.
-            dt_format (str): Optional format string.
+            columns (list): T.List of columns names.
+            dt_format (str): T.Optional format string.
         """
         super().__init__()
         self._columns = columns
@@ -382,14 +381,14 @@ class NumericTransformer(BaseEstimator, TransformerMixin):
         b    int64
     """
 
-    def __init__(self, *, columns: Optional[List[str]] = None):
+    def __init__(self, *, columns: T.Optional[T.List[str]] = None):
         """Creates NumericTransformer.
         Parses a list of column to numeric datatype. If None, all are
         attempted to be parsed.
 
         Args:
-            columns (list): List of columns names.
-            dt_format (str): Optional format string.
+            columns (list): T.List of columns names.
+            dt_format (str): T.Optional format string.
         """
         super().__init__()
         self._columns = columns
@@ -600,15 +599,15 @@ class ValueMapper(BaseEstimator, TransformerMixin):
     def __init__(
         self,
         *,
-        columns: List[str],
-        classes: Dict,
+        columns: T.List[str],
+        classes: T.Dict,
         verbose: bool = False
     ):
         """Initialize `ValueMapper`.
 
         Args:
-            columns (List[str]): Names of columns to remap.
-            classes (Dict): Dictionary of old and new value.
+            columns (T.List[str]): Names of columns to remap.
+            classes (T.Dict): Dictionary of old and new value.
             verbose (bool, optional): Whether to allow prints.
         """
         super().__init__()
@@ -653,14 +652,14 @@ class Sorter(BaseEstimator, TransformerMixin):
     def __init__(
         self,
         *,
-        columns: List[str],
+        columns: T.List[str],
         ascending: bool = True,
         axis: int = 0
     ):
         """Initialize `Sorter`.
 
         Args:
-            columns (List[str]): List of column names to sort by.
+            columns (T.List[str]): T.List of column names to sort by.
             ascending (bool): Whether to sort ascending.
             axis (int): Axis to sort by.
         """
@@ -700,13 +699,13 @@ class Fill(BaseEstimator, TransformerMixin):
     def __init__(
         self,
         *,
-        value: Any,
-        method: Optional[str] = None
+        value: T.Any,
+        method: T.Optional[str] = None
     ):
         """Initialize `Fill`.
 
         Args:
-            value (Any): Constant to fill NAs.
+            value (T.Any): Constant to fill NAs.
             method (str): method: 'ffill' or 'bfill'.
         """
         super().__init__()
@@ -741,12 +740,13 @@ class TimeOffsetTransformer(BaseEstimator, TransformerMixin):
         pd.DataFrame({'dates': datetime.datetime(2021, 07, 2, 17, 0, 0)})
     """
 
-    def __init__(self, *, time_columns: List[str], timedelta: pd.Timedelta):
+    def __init__(self, *, time_columns: T.List[str], timedelta: pd.Timedelta):
         """
         Initialize `TimeOffsetTransformer`.
 
         Args:
-            time_column (List[str]): List of names of columns with timestamps
+            time_column (T.List[str]): T.List of names of columns with
+              timestamps
             to offset.
             timedelta (pd.Timedelta): Offset.
         """
@@ -847,14 +847,14 @@ class ZeroVarianceDropper(BaseEstimator, TransformerMixin):
         super().__init__()
         self._verbose = verbose
 
-    def _get_zero_variance_columns(self, X: pd.DataFrame) -> List[str]:
+    def _get_zero_variance_columns(self, X: pd.DataFrame) -> T.List[str]:
         """Finds all columns with zero variance.
 
         Args:
             X (pd.DataFrame): Dataframe.
 
         Returns:
-            List[str]: Returns a list of column names.
+            T.List[str]: Returns a list of column names.
         """
         var = X.var()
         # get columns with zero variance
@@ -1035,11 +1035,11 @@ class DifferentialCreator(BaseEstimator, TransformerMixin):
         pd.DataFrame({'a': [1.0, 2.0, 1.0], 'a_dif': [1.0, -1.0, 0.0]})
     """
 
-    def __init__(self, *, columns: List[str]):
+    def __init__(self, *, columns: T.List[str]):
         """Initialize `DifferentialCreator`.
 
         Attributes:
-            keys: List[str]: Columns to create derivatives
+            keys: T.List[str]: Columns to create derivatives
         """
         super().__init__()
         self._columns = columns
