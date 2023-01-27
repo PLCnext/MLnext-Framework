@@ -1,10 +1,8 @@
 """ Module for data loading and manipulation.
 """
 import os
+import typing as T
 import warnings
-from typing import Any
-from typing import Dict
-from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -26,7 +24,7 @@ def load_data_3d(
     path: str,
     *,
     timesteps: int,
-    format: Dict[str, Any] = {},
+    format: T.Dict[str, T.Any] = {},
     verbose: bool = True
 ) -> np.ndarray:
     """Loads data from `path` and temporalizes it with `timesteps`.
@@ -34,7 +32,7 @@ def load_data_3d(
     Args:
         path (str): Path to file.
         timesteps (int): Widow size.
-        format (Dict[str, Any]): Format args for pd.read_csv.
+        format (T.Dict[str, T.Any]): Format args for pd.read_csv.
         verbose (bool): Whether to print status information.
 
     Returns:
@@ -56,7 +54,7 @@ def load_data(path: str, *, verbose: bool = True, **kwargs) -> pd.DataFrame:
 
     Args:
         path (str): Path to csv.
-        format (Dict[str, Any]): Keywords for pd.read_csv.
+        format (T.Dict[str, T.Any]): Keywords for pd.read_csv.
 
     Returns:
         pd.DataFrame: Returns the loaded data.
@@ -77,7 +75,7 @@ def load_data(path: str, *, verbose: bool = True, **kwargs) -> pd.DataFrame:
 
 
 def temporalize(
-    data: Union[pd.DataFrame, np.ndarray],
+    data: T.Union[pd.DataFrame, np.ndarray],
     *,
     timesteps: int,
     stride: int = 0,

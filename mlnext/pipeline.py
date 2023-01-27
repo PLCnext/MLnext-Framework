@@ -1,20 +1,16 @@
 """ Module for data preprocessing.
 """
 import datetime
+import typing as T
 import warnings
-from typing import Any
-from typing import Callable
-from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Set
-from typing import Union
 
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
+from sklearn.base import OneToOneFeatureMixin
 from sklearn.base import TransformerMixin
 from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import FLOAT_DTYPES
 
 __all__ = [
     'ColumnSelector',
@@ -34,7 +30,8 @@ __all__ = [
     'ZeroVarianceDropper',
     'SignalSorter',
     'ColumnSorter',
-    'DifferentialCreator'
+    'DifferentialCreator',
+    'ClippingMinMaxScaler'
 ]
 
 
@@ -47,12 +44,12 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         pd.DataFrame({'a': [0]})
     """
 
-    def __init__(self, keys: List[str]):
+    def __init__(self, keys: T.List[str]):
         """Creates ColumnSelector.
         Transformer to select a list of columns for further processing.
 
         Args:
-            keys (List[str]): List of columns to extract.
+            keys (T.List[str]): T.List of columns to extract.
         """
         self._keys = keys
 
@@ -81,15 +78,17 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         pd.DataFrame({'a': [0]})
     """
 
-    def __init__(self,
-                 *,
-                 columns: Union[List[str], Set[str]],
-                 verbose: bool = False):
+    def __init__(
+        self,
+        *,
+        columns: T.Union[T.List[str], T.Set[str]],
+        verbose: bool = False
+    ):
         """Creates ColumnDropper.
         Transformer to drop a list of columns from the data frame.
 
         Args:
-            keys (list): List of columns names to drop.
+            keys (list): T.List of columns names to drop.
         """
         self.columns = set(columns)
         self.verbose = verbose
@@ -127,7 +126,7 @@ class ColumnRename(BaseEstimator, TransformerMixin):
         pd.DataFrame({'c': [0], 'f': [0]})
     """
 
-    def __init__(self, mapper: Callable[[str], str]):
+    def __init__(self, mapper: T.Callable[[str], str]):
         """Create ColumnRename.
         Transformer to rename columns by a mapper function.
 
@@ -207,19 +206,21 @@ class Clip(BaseEstimator, TransformerMixin):
 
 
 class ColumnTSMapper(BaseEstimator, TransformerMixin):
-    def __init__(self,
-                 cols: List[str],
-                 timedelta: pd.Timedelta = pd.Timedelta(250, 'ms'),
-                 classes: List[str] = None,
-                 verbose: bool = False):
+    def __init__(
+        self,
+        cols: T.List[str],
+        timedelta: pd.Timedelta = pd.Timedelta(250, 'ms'),
+        classes: T.Optional[T.List[str]] = None,
+        verbose: bool = False
+    ):
         """Creates ColumnTSMapper.
         Expects the timestamp column to be of type pd.Timestamp.
 
         Args:
-            cols (List[str]): names of [0] timestamp column, [1] sensor names,
-            [2] sensor values.
+            cols (T.List[str]): names of [0] timestamp column,
+              [1] sensor names, [2] sensor values.
             timedelta (pd.Timedelta): Timedelta to resample with.
-            classes (List[str]): List of sensor names.
+            classes (T.List[str]): T.List of sensor names.
             verbose (bool, optional): Whether to allow prints.
         """
         super().__init__()
@@ -322,13 +323,18 @@ class DatetimeTransformer(BaseEstimator, TransformerMixin):
         dt    datetime64[ns]
     """
 
-    def __init__(self, *, columns: List[str], dt_format: str = None):
+    def __init__(
+        self,
+        *,
+        columns: T.List[str],
+        dt_format: T.Optional[str] = None
+    ):
         """Creates DatetimeTransformer.
         Parses a list of column to pd.Timestamp.
 
         Args:
-            columns (list): List of columns names.
-            dt_format (str): Optional format string.
+            columns (list): T.List of columns names.
+            dt_format (str): T.Optional format string.
         """
         super().__init__()
         self._columns = columns
@@ -378,14 +384,14 @@ class NumericTransformer(BaseEstimator, TransformerMixin):
         b    int64
     """
 
-    def __init__(self, *, columns: Optional[List[str]] = None):
+    def __init__(self, *, columns: T.Optional[T.List[str]] = None):
         """Creates NumericTransformer.
         Parses a list of column to numeric datatype. If None, all are
         attempted to be parsed.
 
         Args:
-            columns (list): List of columns names.
-            dt_format (str): Optional format string.
+            columns (list): T.List of columns names.
+            dt_format (str): T.Optional format string.
         """
         super().__init__()
         self._columns = columns
@@ -440,13 +446,15 @@ class TimeframeExtractor(BaseEstimator, TransformerMixin):
                       'values': [1]})
     """
 
-    def __init__(self,
-                 *,
-                 time_column: str,
-                 start_time: datetime.time,
-                 end_time: datetime.time,
-                 invert: bool = False,
-                 verbose: bool = False):
+    def __init__(
+        self,
+        *,
+        time_column: str,
+        start_time: datetime.time,
+        end_time: datetime.time,
+        invert: bool = False,
+        verbose: bool = False
+    ):
         """Creates TimeframeExtractor.
         Drops samples that are not in between `start_time` and  `end_time` in
         `time_column`.
@@ -520,13 +528,15 @@ class DateExtractor(BaseEstimator, TransformerMixin):
                         'values': [1]})
     """
 
-    def __init__(self,
-                 *,
-                 date_column: str,
-                 start_date: datetime.date,
-                 end_date: datetime.date,
-                 invert: bool = False,
-                 verbose: bool = False):
+    def __init__(
+        self,
+        *,
+        date_column: str,
+        start_date: datetime.date,
+        end_date: datetime.date,
+        invert: bool = False,
+        verbose: bool = False
+    ):
         """Initializes `DateExtractor`.
 
         Args:
@@ -589,16 +599,18 @@ class ValueMapper(BaseEstimator, TransformerMixin):
         pd.DataFrame({'a': [0.0, 1.0, 1.0]})
     """
 
-    def __init__(self,
-                 *,
-                 columns: List[str],
-                 classes: Dict,
-                 verbose: bool = False):
+    def __init__(
+        self,
+        *,
+        columns: T.List[str],
+        classes: T.Dict,
+        verbose: bool = False
+    ):
         """Initialize `ValueMapper`.
 
         Args:
-            columns (List[str]): Names of columns to remap.
-            classes (Dict): Dictionary of old and new value.
+            columns (T.List[str]): Names of columns to remap.
+            classes (T.Dict): Dictionary of old and new value.
             verbose (bool, optional): Whether to allow prints.
         """
         super().__init__()
@@ -640,15 +652,17 @@ class Sorter(BaseEstimator, TransformerMixin):
         pd.DataFrame({'a': [1, 0], 'b': [0, 1]})
     """
 
-    def __init__(self,
-                 *,
-                 columns: List[str],
-                 ascending: bool = True,
-                 axis: int = 0):
+    def __init__(
+        self,
+        *,
+        columns: T.List[str],
+        ascending: bool = True,
+        axis: int = 0
+    ):
         """Initialize `Sorter`.
 
         Args:
-            columns (List[str]): List of column names to sort by.
+            columns (T.List[str]): T.List of column names to sort by.
             ascending (bool): Whether to sort ascending.
             axis (int): Axis to sort by.
         """
@@ -685,14 +699,16 @@ class Fill(BaseEstimator, TransformerMixin):
         pd.DataFrame({'a': [0.0, 1.0]})
     """
 
-    def __init__(self,
-                 *,
-                 value: Any,
-                 method: str = None):
+    def __init__(
+        self,
+        *,
+        value: T.Any,
+        method: T.Optional[str] = None
+    ):
         """Initialize `Fill`.
 
         Args:
-            value (Any): Constant to fill NAs.
+            value (T.Any): Constant to fill NAs.
             method (str): method: 'ffill' or 'bfill'.
         """
         super().__init__()
@@ -727,12 +743,13 @@ class TimeOffsetTransformer(BaseEstimator, TransformerMixin):
         pd.DataFrame({'dates': datetime.datetime(2021, 07, 2, 17, 0, 0)})
     """
 
-    def __init__(self, *, time_columns: List[str], timedelta: pd.Timedelta):
+    def __init__(self, *, time_columns: T.List[str], timedelta: pd.Timedelta):
         """
         Initialize `TimeOffsetTransformer`.
 
         Args:
-            time_column (List[str]): List of names of columns with timestamps
+            time_column (T.List[str]): T.List of names of columns with
+              timestamps
             to offset.
             timedelta (pd.Timedelta): Offset.
         """
@@ -769,11 +786,13 @@ class ConditionedDropper(BaseEstimator, TransformerMixin):
         pd.DataFrame({'a': [0.0, 0.5]})
     """
 
-    def __init__(self,
-                 *,
-                 column: str,
-                 threshold: float,
-                 invert: bool = False):
+    def __init__(
+            self,
+            *,
+            column: str,
+            threshold: float,
+            invert: bool = False
+    ):
         """Initializes `ConditionedDropper`.
 
         Args:
@@ -831,18 +850,18 @@ class ZeroVarianceDropper(BaseEstimator, TransformerMixin):
         super().__init__()
         self._verbose = verbose
 
-    def _get_zero_variance_columns(self, X: pd.DataFrame) -> List[str]:
+    def _get_zero_variance_columns(self, X: pd.DataFrame) -> T.List[str]:
         """Finds all columns with zero variance.
 
         Args:
             X (pd.DataFrame): Dataframe.
 
         Returns:
-            List[str]: Returns a list of column names.
+            T.List[str]: Returns a list of column names.
         """
         var = X.var()
         # get columns with zero variance
-        return [k for k, v in var.iteritems() if v == .0]
+        return [k for k, v in var.items() if v == .0]
 
     def fit(self, X, y=None):
         """Finds all columns with zero variance.
@@ -1019,11 +1038,11 @@ class DifferentialCreator(BaseEstimator, TransformerMixin):
         pd.DataFrame({'a': [1.0, 2.0, 1.0], 'a_dif': [1.0, -1.0, 0.0]})
     """
 
-    def __init__(self, *, columns: List[str]):
+    def __init__(self, *, columns: T.List[str]):
         """Initialize `DifferentialCreator`.
 
         Attributes:
-            keys: List[str]: Columns to create derivatives
+            keys: T.List[str]: Columns to create derivatives
         """
         super().__init__()
         self._columns = columns
@@ -1045,3 +1064,123 @@ class DifferentialCreator(BaseEstimator, TransformerMixin):
                  .fillna(0)
                  .add_suffix('_dif'))
         return pd.concat([X, X_dif], axis=1)
+
+
+class ClippingMinMaxScaler(
+        OneToOneFeatureMixin, BaseEstimator, TransformerMixin):
+    """Normalizes the fitted data to the interval ``feature_range``. The
+    parameter ``p`` can be used to calculate the ``max`` value as the ``p``-th
+    percentile of the fitted data, i.e., ``p``% of the data is below.
+    Data which exceeds the limits of ``feature_range`` after the scaling can be
+    clipped to specific values via a ``clip`` range.
+
+    Example:
+        >>> data = pd.DataFrame({'a': [1, 2, 3, 4]})
+        >>> scaler = mlnext.ClippingMinMaxScaler(
+        ...     feature_range=(0, 0.5),
+        ...     clip=(0, 1))
+        >>> scaler.fit_transform(df)
+            a
+        0	0.000000
+        1	0.166667
+        2	0.333333
+        3	0.500000
+        >>> df2 =  pd.DataFrame({'a': [1, 4, 6, 8, 10]})
+                a
+        0	0.000000
+        1	0.500000
+        2	0.833333
+        3	1.000000
+        4	1.000000
+    """
+
+    _parameter_constraints: T.Dict[str, list] = {
+        'feature_range': [tuple, list],
+        'copy': ['boolean'],
+        'clip': [None, tuple, list],
+        'p': [int, float]
+    }
+
+    def __init__(
+        self,
+        feature_range: T.Tuple[float, float] = (0, 1),
+        *,
+        clip: T.Optional[T.Tuple[float, float]] = None,
+        p: float = 100.,
+        copy: bool = True
+    ):
+        """Initializes `ClippingMinMaxScaler`.
+
+        Args:
+            feature_range (T.Tuple[float, float]): New feature min and max.
+              Defaults to (0., 1.).
+            clip (T.Tuple[float, float]): Range to clip values. Defaults to
+              None.
+            p (float): Percentile of data that is used as data maximum.
+              Defaults to 100.
+            copy (bool, optional): Whether to create a copy. Defaults to True.
+        """
+
+        self.feature_range = feature_range
+        self.clip = clip
+        self.p = p
+        self.copy = copy
+
+    def fit(self, X, y=None):
+        """Fits the scaler to the data.
+
+        Args:
+            X (np.array): Data.
+            y ([type], optional): Unused.
+
+        Returns:
+            MinMaxScaler: Returns self.
+        """
+        # FIXME: hack to preserve output format
+        # update if output_format can be preserved through sklearn
+        if isinstance(X, pd.DataFrame):
+            self.set_output(transform='pandas')
+
+        self._validate_params()
+
+        X = self._validate_data(
+            X,
+            dtype=FLOAT_DTYPES,
+            reset=True
+        )
+
+        self.data_min_ = np.min(X, axis=0)
+        self.data_max_ = np.percentile(X, self.p, axis=0)
+        self.data_range_ = self.data_max_ - self.data_min_
+
+        f_range = self.feature_range
+        self.scale_ = (f_range[1] - f_range[0]) / self.data_range_
+        self.min_ = f_range[0] - self.data_min_ * self.scale_
+
+        return self
+
+    def transform(self, X) -> np.ndarray:
+        """Transforms ``X`` to the new feature range.
+
+        Args:
+            X (np.array): Data.
+
+        Returns:
+            np.array: Returns the scaled ``X``.
+        """
+        check_is_fitted(self)
+
+        X = self._validate_data(
+            X,
+            copy=self.copy,
+            dtype=FLOAT_DTYPES,
+            reset=False
+        )
+
+        X *= self.scale_
+        X += self.min_
+
+        if self.clip is not None:
+            X = np.clip(X, self.clip[0], self.clip[1])
+
+        return X

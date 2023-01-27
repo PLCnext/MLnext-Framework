@@ -8,7 +8,7 @@ from .plot import *  # noqa
 from .score import *  # noqa
 from .utils import *  # noqa
 
-__version__ = '0.3.1'
+__version__ = '0.4.0'
 
 __title__ = 'MLnext'
 __description__ = 'Machine learning utilities.'
