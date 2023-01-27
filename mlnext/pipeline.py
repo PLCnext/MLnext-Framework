@@ -7,8 +7,10 @@ import warnings
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
+from sklearn.base import OneToOneFeatureMixin
 from sklearn.base import TransformerMixin
 from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.validation import FLOAT_DTYPES
 
 __all__ = [
     'ColumnSelector',
@@ -28,7 +30,8 @@ __all__ = [
     'ZeroVarianceDropper',
     'SignalSorter',
     'ColumnSorter',
-    'DifferentialCreator'
+    'DifferentialCreator',
+    'ClippingMinMaxScaler'
 ]
 
 
@@ -1061,3 +1064,123 @@ class DifferentialCreator(BaseEstimator, TransformerMixin):
                  .fillna(0)
                  .add_suffix('_dif'))
         return pd.concat([X, X_dif], axis=1)
+
+
+class ClippingMinMaxScaler(
+        OneToOneFeatureMixin, BaseEstimator, TransformerMixin):
+    """Normalizes the fitted data to the interval ``feature_range``. The
+    parameter ``p`` can be used to calculate the ``max`` value as the ``p``-th
+    percentile of the fitted data, i.e., ``p``% of the data is below.
+    Data which exceeds the limits of ``feature_range`` after the scaling can be
+    clipped to specific values via a ``clip`` range.
+
+    Example:
+        >>> data = pd.DataFrame({'a': [1, 2, 3, 4]})
+        >>> scaler = mlnext.ClippingMinMaxScaler(
+        ...     feature_range=(0, 0.5),
+        ...     clip=(0, 1))
+        >>> scaler.fit_transform(df)
+            a
+        0	0.000000
+        1	0.166667
+        2	0.333333
+        3	0.500000
+        >>> df2 =  pd.DataFrame({'a': [1, 4, 6, 8, 10]})
+                a
+        0	0.000000
+        1	0.500000
+        2	0.833333
+        3	1.000000
+        4	1.000000
+    """
+
+    _parameter_constraints: T.Dict[str, list] = {
+        'feature_range': [tuple, list],
+        'copy': ['boolean'],
+        'clip': [None, tuple, list],
+        'p': [int, float]
+    }
+
+    def __init__(
+        self,
+        feature_range: T.Tuple[float, float] = (0, 1),
+        *,
+        clip: T.Optional[T.Tuple[float, float]] = None,
+        p: float = 100.,
+        copy: bool = True
+    ):
+        """Initializes `ClippingMinMaxScaler`.
+
+        Args:
+            feature_range (T.Tuple[float, float]): New feature min and max.
+              Defaults to (0., 1.).
+            clip (T.Tuple[float, float]): Range to clip values. Defaults to
+              None.
+            p (float): Percentile of data that is used as data maximum.
+              Defaults to 100.
+            copy (bool, optional): Whether to create a copy. Defaults to True.
+        """
+
+        self.feature_range = feature_range
+        self.clip = clip
+        self.p = p
+        self.copy = copy
+
+    def fit(self, X, y=None):
+        """Fits the scaler to the data.
+
+        Args:
+            X (np.array): Data.
+            y ([type], optional): Unused.
+
+        Returns:
+            MinMaxScaler: Returns self.
+        """
+        # FIXME: hack to preserve output format
+        # update if output_format can be preserved through sklearn
+        if isinstance(X, pd.DataFrame):
+            self.set_output(transform='pandas')
+
+        self._validate_params()
+
+        X = self._validate_data(
+            X,
+            dtype=FLOAT_DTYPES,
+            reset=True
+        )
+
+        self.data_min_ = np.min(X, axis=0)
+        self.data_max_ = np.percentile(X, self.p, axis=0)
+        self.data_range_ = self.data_max_ - self.data_min_
+
+        f_range = self.feature_range
+        self.scale_ = (f_range[1] - f_range[0]) / self.data_range_
+        self.min_ = f_range[0] - self.data_min_ * self.scale_
+
+        return self
+
+    def transform(self, X) -> np.ndarray:
+        """Transforms ``X`` to the new feature range.
+
+        Args:
+            X (np.array): Data.
+
+        Returns:
+            np.array: Returns the scaled ``X``.
+        """
+        check_is_fitted(self)
+
+        X = self._validate_data(
+            X,
+            copy=self.copy,
+            dtype=FLOAT_DTYPES,
+            reset=False
+        )
+
+        X *= self.scale_
+        X += self.min_
+
+        if self.clip is not None:
+            X = np.clip(X, self.clip[0], self.clip[1])
+
+        return X
