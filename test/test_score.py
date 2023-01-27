@@ -8,7 +8,6 @@ import pytest
 import scipy.stats
 
 from mlnext import score
-from mlnext.score import _recall_anomalies_curve
 from mlnext.score import auc_point_adjust_metrics
 from mlnext.score import kl_divergence
 from mlnext.score import point_adjust_metrics
@@ -39,44 +38,53 @@ class TestL2Norm(TestCase):
         np.testing.assert_array_almost_equal(result, expected)
 
 
-@pytest.mark.parametrize(
-    'p,exp',
-    [
-        (100, 1.),
-        (80, 0.8),
-        (50, 0.5),
-        (10, 0.1),
-        (0, 0.0)
-    ]
-)
-def test_get_threshold(p: float, exp: float):
+class TestThreshold(TestCase):
 
-    result = score.get_threshold(np.array([0, 1]), p=p)
+    def test_get_threshold_100(self):
 
-    assert result == exp
+        data = np.array([0, 1.])
 
+        expected = 1.
+        result = score.get_threshold(x=data)
 
-@pytest.mark.parametrize(
-    'x,threshold,pos_label,exp',
-    [
-        ([0, 0.4, 0.6, 1.], 0.5, 1,  [0, 0, 1, 1]),
-        ([0, 0.4, 0.6, 1.], 0.5, 0,  [1, 1, 0, 0]),
-    ]
-)
-def test_apply_threshold(
-    x: T.List[float],
-    threshold: float,
-    pos_label: int,
-    exp: T.List[float]
-):
+        self.assertEqual(result, expected)
 
-    result = score.apply_threshold(
-        np.array(x),
-        threshold=threshold,
-        pos_label=pos_label
-    )
+    def test_get_threshold_50(self):
 
-    np.testing.assert_array_equal(result, exp)
+        data = np.array([0, 1.])
+
+        expected = 0.5
+        result = score.get_threshold(x=data, p=50)
+
+        self.assertEqual(result, expected)
+
+    def test_get_threshold_80(self):
+
+        data = np.array([0, 1.])
+
+        expected = 0.8
+        result = score.get_threshold(x=data, p=80)
+
+        self.assertEqual(result, expected)
+
+    def test_apply_threshold(self):
+
+        data = np.array([0, 0.4, 0.6, 1.])
+        expected = np.array([0, 0, 1, 1])
+
+        result = score.apply_threshold(data, threshold=0.5)
+
+        np.testing.assert_array_equal(result, expected)
+
+    def test_apply_threshold_labels(self):
+
+        data = np.array([0, 0.4, 0.6, 1.])
+        expected = np.array([1, 1, 2, 2])
+
+        result = score.apply_threshold(
+            data, threshold=0.5, pos_label=2, neg_label=1)
+
+        np.testing.assert_array_equal(result, expected)
 
 
 class TestEval(TestCase):
@@ -108,38 +116,41 @@ class TestEval(TestCase):
 
         np.testing.assert_array_equal(result, expected)
 
+    def test_eval_sigmoid(self):
 
-@pytest.mark.parametrize(
-    'y,invert,threshold,exp',
-    [
-        ([[0.2], [0.6]], False, 0.5, [[0], [1]]),
-        ([[[0.2], [0.6]]], False, 0.5, [[0], [1]]),
-        ([[0.2], [0.6]], True, 0.5, [[1], [0]]),
-        ([[[0.2], [0.6]]], True, 0.5, [[1], [0]]),
+        data = np.array([[0.2], [0.6]])
+        expected = np.array([[0], [1]])
 
-        (np.linspace(0, 1, 11), False, 0.5,
-         np.r_[np.zeros((5, 1)), np.ones((6, 1))]),
+        result = score.eval_sigmoid(y=data)
 
-        (np.linspace(0, 1, 11), True, 0.5, np.r_[
-         np.ones((5, 1)), np.zeros((6, 1))])
-    ]
-)
-def test_eval_sigmoid(
-    y: T.List[float],
-    invert: bool,
-    threshold: float,
-    exp: T.List[float]
-):
+        np.testing.assert_array_equal(result, expected)
 
-    print(y)
+    def test_eval_sigmoid_3d(self):
 
-    result = score.eval_sigmoid(
-        np.array(y),
-        invert=invert,
-        threshold=threshold
-    )
+        data = np.array([[[0.2], [0.6]]])
+        expected = np.array([[0], [1]])
 
-    np.testing.assert_array_equal(result, exp)
+        result = score.eval_sigmoid(y=data)
+
+        np.testing.assert_array_equal(result, expected)
+
+    def test_eval_sigmoid_invert(self):
+
+        data = np.array([[0.2], [0.6]])
+        expected = np.array([[1], [0]])
+
+        result = score.eval_sigmoid(y=data, invert=True)
+
+        np.testing.assert_array_equal(result, expected)
+
+    def test_eval_sigmoid_3d_invert(self):
+
+        data = np.array([[[0.2], [0.6]]])
+        expected = np.array([[1], [0]])
+
+        result = score.eval_sigmoid(y=data, invert=True)
+
+        np.testing.assert_array_equal(result, expected)
 
 
 class TestMovingAverage(TestCase):
@@ -153,114 +164,62 @@ class TestMovingAverage(TestCase):
         np.testing.assert_array_equal(result, expected)
 
 
-@pytest.mark.parametrize(
-    'y,y_hat',
-    [
-        (np.ones(10), np.ones(10)),
-        (np.ones((10, 1)), np.ones((10, 1))),
-    ]
-)
-def test_eval_metrics(
-    y: np.ndarray,
-    y_hat: np.ndarray
-):
-    exp = {
-        'accuracy': 1.0,
-        'precision': 1.0,
-        'recall': 1.0,
-        'f1': 1.0,
-        'anomalies': 1.0
-    }
-    result = score.eval_metrics(y, y_hat)
+class TestMetrics(TestCase):
 
-    assert result == exp
+    def test_eval_metrics(self):
 
+        y = np.ones((10, 1))
+        y_hat = np.ones((10, 1))
 
-@pytest.mark.parametrize(
-    'y,y_hat',
-    [
-        (np.ones(10), np.ones(12)),
-        (np.ones(12), np.ones(10)),
-        (np.ones((10, 1)), np.ones((12, 1))),
-        (np.ones((12, 1)), np.ones((10, 1)))
-    ]
-)
-def test_eval_metrics_warns(
-    y: np.ndarray,
-    y_hat: np.ndarray
-):
-    with pytest.warns(UserWarning) as record:
-        score.eval_metrics(y, y_hat)
+        expected = {'accuracy': 1.0, 'precision': 1.0,
+                    'recall': 1.0, 'f1': 1.0}
+        result = score.eval_metrics(y, y_hat)
 
-    msg = f'Shapes unaligned y {y.shape} and y_hat {y_hat.shape}.'
-    assert record[0].message.args[0] == msg
+        self.assertDictEqual(result, expected)
 
+    def test_eval_metrics_uneven_length(self):
 
-@pytest.mark.parametrize(
-    'y,y_hat',
-    [
-        ([np.ones(10), np.zeros(10)], [np.ones(10), np.zeros(10)]),
-        ([np.ones((10, 1)), np.zeros(10)], [np.ones((10, 1)), np.zeros(10)]),
-        (
-            [np.ones(10), np.zeros(10), np.ones(10)],
-            [np.ones(10), np.zeros(10), np.ones(10)]
-        ),
-    ]
-)
-def test_eval_metrics_all(
-    y: np.ndarray,
-    y_hat: np.ndarray
-):
-    exp = {
-        'accuracy': 1.0,
-        'precision': 1.0,
-        'recall': 1.0,
-        'f1': 1.0,
-        'anomalies': 1.0
-    }
-    result = score.eval_metrics_all(y, y_hat)
+        y = np.ones((10, 1))
+        y_hat = np.ones((12, 1))
 
-    assert result == exp
+        expected = {'accuracy': 1.0, 'precision': 1.0,
+                    'recall': 1.0, 'f1': 1.0}
+        result = score.eval_metrics(y, y_hat)
 
+        self.assertDictEqual(result, expected)
 
-@pytest.mark.parametrize(
-    'y,y_hat,msg',
-    [
-        (
-            [np.ones(10), np.ones(10)], [np.ones(10)],
-            'y and y_hat must have the same number elements, '
-            'but found y=2 and y_hat=1.'
-        ),
-        (
-            [np.ones((10, 2))], [np.ones(10)],
-            'Expected axis 1 of array to be of size 1, '
-            'but got 2 for array at position 0.'
-        ),
-        (
-            [np.ones((10, 1))], [np.ones((10, 2))],
-            'Expected axis 1 of array to be of size 1, '
-            'but got 2 for array at position 0.'
-        ),
-        (
-            [np.ones((10, 1, 1))], [np.ones((10, 1))],
-            'Expected array of dimension 2, but got 3 for array at position 0.'
-        ),
-        (
-            [np.ones((10, 1))], [np.ones((10, 1, 1))],
-            'Expected array of dimension 2, but got 3 for array at position 0.'
-        ),
-    ]
-)
-def test_eval_metrics_all_raises(
-    y: np.ndarray,
-    y_hat: np.ndarray,
-    msg: str
-):
+    def test_eval_metrics_all(self):
 
-    with pytest.raises(ValueError) as exc_info:
-        score.eval_metrics_all(y, y_hat)
+        y = [np.ones((10, 1)), np.zeros((10, 1))]
+        y_hat = [np.ones((10, 1)), np.zeros((10, 1))]
 
-    assert exc_info.value.args[0] == msg
+        expected = {'accuracy': 1.0, 'precision': 1.0,
+                    'recall': 1.0, 'f1': 1.0, 'roc_auc': 1.0}
+        result = score.eval_metrics_all(y, y_hat)
+
+        self.assertDictEqual(result, expected)
+
+    def test_eval_metrics_all_uneven_length(self):
+
+        y = [np.ones((10, 1)), np.zeros((10, 1))]
+        y_hat = [np.ones((11, 1)), np.zeros((12, 1))]
+
+        expected = {'accuracy': 1.0, 'precision': 1.0,
+                    'recall': 1.0, 'f1': 1.0, 'roc_auc': 1.0}
+        result = score.eval_metrics_all(y, y_hat)
+
+        self.assertDictEqual(result, expected)
+
+    def test_eval_metrics_all_shapes(self):
+
+        y = [np.ones((10,)), np.zeros((8,))]
+        y_hat = [np.ones((11,)), np.zeros((12,))]
+
+        expected = {'accuracy': 1.0, 'precision': 1.0,
+                    'recall': 1.0, 'f1': 1.0, 'roc_auc': 1.0}
+        result = score.eval_metrics_all(y, y_hat)
+
+        self.assertDictEqual(result, expected)
 
 
 class TestNLL(TestCase):
@@ -321,8 +280,6 @@ def test_kl_divergence(
             fns=np.array([0., 1., 1.]),
             tns=np.array([1., 1., 2.]),
             fps=np.array([1., 1., 0.]),
-            das=np.array([1., 1., 1.]),
-            tas=np.array([1., 1., 1.]),
 
             precision=np.array([0.6667, 0.5000, 1.0000]),
             recall=np.array([1.0000, 0.5000, 0.5000]),
@@ -335,8 +292,6 @@ def test_kl_divergence(
             fns=np.array([0., 1., 1., 2.]),
             tns=np.array([1., 1., 2., 2.]),
             fps=np.array([1., 1., 0., 0.]),
-            das=np.array([1., 1., 1., 1.]),
-            tas=np.array([1., 1., 1., 1.]),
 
             precision=np.array([0.75, 0.6667, 1.0000, 1.0000]),
             recall=np.array([1.0000, 0.6667, 0.6667, 0.3333]),
@@ -389,16 +344,12 @@ def test_point_adjust_metrics(
 @pytest.mark.parametrize(
     'y_hat,y,exp',
     [
-        (
-            [0, 1, 1, 0], [0, 1, 1, 0],
-            {
-                'auc_accuracy': 1.0,
-                'auc_precision': 1.0,
-                'auc_recall': 1.0,
-                'auc_f1': 1.0,
-                'auc_anomalies': 1.0
-            }
-        )
+        ([0, 1, 1, 0], [0, 1, 1, 0],
+         {'auc_accuracy': 1.0,
+          'auc_precision': 1.0,
+          'auc_recall': 1.0,
+          'auc_f1': 1.0,
+          'auc_roc_auc': 1.0})
     ]
 )
 def test_auc_point_adjust_metrics(
@@ -410,39 +361,3 @@ def test_auc_point_adjust_metrics(
 
     assert isinstance(result, dict)
     np.testing.assert_equal(result, exp)
-
-
-@pytest.mark.parametrize(
-    'y_score,thresholds,pos_label,k,exp_tas,exp_das',
-    [
-        (
-            np.linspace(0, 1, 11), np.linspace(0, 1, 11), 1, 0,
-            4, np.array([4, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1])
-        ),
-        (
-            np.linspace(0, 1, 11), np.linspace(0, 1, 11), 0, 0,
-            3, np.array([3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 0])
-        )
-    ]
-)
-def test_recall_anomalies_curve(
-    y_score: np.ndarray,
-    thresholds: T.List[float],
-    pos_label: int,
-    k: float,
-    exp_tas: int,
-    exp_das: np.ndarray
-):
-    y = np.array([1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1])
-    exp_tas = np.ones(len(y)) * exp_tas
-
-    das, tas = _recall_anomalies_curve(
-        y,
-        y_score,
-        thresholds=thresholds,
-        pos_label=pos_label,
-        k=k
-    )
-
-    np.testing.assert_array_equal(exp_tas, tas)
-    np.testing.assert_array_equal(exp_das, das)

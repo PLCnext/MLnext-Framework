@@ -1,1 +1,0 @@
-Deprecated ``y_true`` in favor of ``y`` in ``mlnext.pr_curve``.

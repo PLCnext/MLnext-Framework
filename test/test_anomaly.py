@@ -7,7 +7,6 @@ from mlnext.anomaly import apply_point_adjust
 from mlnext.anomaly import apply_point_adjust_score
 from mlnext.anomaly import find_anomalies
 from mlnext.anomaly import rank_features
-from mlnext.anomaly import recall_anomalies
 from mlnext.score import apply_threshold
 
 
@@ -304,45 +303,3 @@ def test_apply_point_adjust_threshold_k_0_100(
     y_pred = apply_point_adjust(y_hat=y_pred, y=y, k=k)
 
     np.testing.assert_array_equal(y_score, y_pred)
-
-
-@pytest.mark.parametrize(
-    'y_hat,y,k,exp',
-    [
-        ([0, 1, 1, 1, 0, 0], [0, 0, 0, 1, 1, 0], 0, 1.0),
-        ([0, 1, 1, 1, 0, 0], [0, 0, 0, 1, 1, 0], 60, 0.0),
-        ([0, 1, 0, 0, 1, 1, 0, 0], [0, 1, 1, 0, 1, 1, 1, 0], 50, 1.0),
-        ([0, 1, 0, 0, 1, 1, 0, 0], [0, 1, 1, 0, 1, 1, 1, 0], 60, 0.5),
-        ([0, 1, 1, 0, 1, 1, 1, 0], [0, 1, 1, 0, 1, 1, 1, 0], 100, 1.0),
-    ]
-)
-def test_recall_anomalies(
-    y: np.ndarray,
-    y_hat: np.ndarray,
-    k: float,
-    exp: float
-):
-
-    result = recall_anomalies(y, y_hat, k=k)
-
-    assert result == exp
-
-
-@pytest.mark.parametrize(
-    'y_hat,y,k,msg',
-    [
-        ([0, 1], [0, 1], -1,  'k must be in [0, 100], got "-1".'),
-        ([0, 1], [0, 1], 101, 'k must be in [0, 100], got "101".'),
-    ]
-)
-def test_recall_anomalies_fails(
-    y: np.ndarray,
-    y_hat: np.ndarray,
-    k: float,
-    msg: str
-):
-
-    with pytest.raises(ValueError) as ex:
-        recall_anomalies(y, y_hat, k=k)
-
-    assert ex.value.args[0] == msg
