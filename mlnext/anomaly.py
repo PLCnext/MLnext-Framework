@@ -2,23 +2,19 @@
 """
 import typing as T
 import warnings
-from operator import ge
-from operator import gt
 
 import numpy as np
 import pandas as pd
 
 from .data import detemporalize
 from .utils import check_ndim
-from .utils import check_shape
 from .utils import truncate
 
 __all__ = [
     'find_anomalies',
-    'recall_anomalies',
     'rank_features',
     'apply_point_adjust',
-    'apply_point_adjust_score',
+    'apply_point_adjust_score'
 ]
 
 
@@ -55,69 +51,6 @@ def find_anomalies(
     start, end = np.flatnonzero(start), np.flatnonzero(end)
 
     return list(zip(start, end))
-
-
-def recall_anomalies(
-    y: np.ndarray,
-    y_hat: np.ndarray,
-    *,
-    k: float = 0
-) -> float:
-    """Calculates the percentage of anomaly segments that are correctly
-    detected. The parameter ``k`` [in %] controls how much of a segments needs
-    to be detected for it being counted as detected.
-
-    Args:
-        y (np.ndarray): Ground Truth.
-        y_hat (np.ndarray): Label predictions.
-        k (float): Percentage ([0, 100]) of points that need to be detected in
-          a segment for it to be counted. For K = 0, then at least one point
-          has to be detected. For K = 100, then every point in the segment has
-          to be correctly detected. Default: 0.
-
-    Returns:
-        float: Returns the fraction of detected anomaly segments.
-    """
-    y_hat, y = np.array(y_hat).squeeze(), np.array(y).squeeze()
-    check_ndim(y_hat, y, ndim=1), check_shape(y_hat, y)
-
-    if not (0 <= k <= 100):
-        raise ValueError(f'k must be in [0, 100], got "{k}".')
-
-    anomalies = find_anomalies(y)
-    detected = _recall_anomalies(anomalies, y_hat, k=k)
-
-    return detected / len(anomalies)
-
-
-def _recall_anomalies(
-    anomalies: T.List[T.Tuple[int, int]],
-    y_hat: np.ndarray,
-    *,
-    k: float = 0
-) -> int:
-    """Determines the number of detected segments for a given ``k``.
-
-    Args:
-        anomalies (T.List[T.Tuple[int, int]]): Start and end index of
-          anomalies.
-        y_hat (np.ndarray): Predictions.
-        k (float): Percentage ([0, 100]) of points that need to be detected in
-          a segment for it to be counted. For K = 0, then at least one point
-          has to be detected. For K = 100, then every point in the segment has
-          to be correctly detected. Default: 0.
-
-    Returns:
-        int: Returns the number of detected segments.
-    """
-    # determine operator: for k = 0 use > else >=
-    _op = gt if k == 0 else ge
-    detected = np.sum([
-        _op(np.sum(y_hat[s:(e + 1)]), ((k / 100) * (e + 1 - s)))
-        for s, e in anomalies
-    ])
-
-    return detected
 
 
 def rank_features(
