@@ -20,9 +20,7 @@ unittest:
     - tox -e coverage-report
   artifacts:
     reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: build/cobertura.xml
+      cobertura: coverage.xml
 
 docs:
   stage: documentation

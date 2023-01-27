@@ -1,1 +1,0 @@
-``score.apply_threshold`` superceedes the functionality of ``score.eval_sigmoid`` and is removed in 0.6.
