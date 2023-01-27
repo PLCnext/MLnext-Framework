@@ -1,14 +1,8 @@
 """ Module for model evaluation.
 """
+import typing as T
 import warnings
 from dataclasses import dataclass
-from typing import Any
-from typing import Dict
-from typing import Iterator
-from typing import List
-from typing import Optional
-from typing import Tuple
-from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -275,7 +269,7 @@ def moving_average(x: np.ndarray, step: int = 10, mode='full') -> np.ndarray:
     return np.convolve(x, np.ones((step,)) / step, mode=mode)
 
 
-def eval_metrics(y: np.ndarray, y_hat: np.ndarray) -> Dict[str, float]:
+def eval_metrics(y: np.ndarray, y_hat: np.ndarray) -> T.Dict[str, float]:
     """Calculates accuracy, f1, precision, recall and recall_anomalies.
 
     Arguments:
@@ -283,7 +277,7 @@ def eval_metrics(y: np.ndarray, y_hat: np.ndarray) -> Dict[str, float]:
         y_hat (np.ndarray): Predictions (0 or 1).
 
     Returns:
-        Dict[str, float]: Returns a dict with all scores.
+        T.Dict[str, float]: Returns a dict with all scores.
 
     Example:
         >>> y, y_hat = np.ones((10, 1)), np.ones((10, 1))
@@ -314,9 +308,9 @@ def eval_metrics(y: np.ndarray, y_hat: np.ndarray) -> Dict[str, float]:
 
 
 def eval_metrics_all(
-    y: List[np.ndarray],
-    y_hat: List[np.ndarray]
-) -> Dict[str, float]:
+    y: T.List[np.ndarray],
+    y_hat: T.List[np.ndarray]
+) -> T.Dict[str, float]:
     """Calculates combined accuracy, f1, precision, recall and AUC scores for
     multiple arrays. The arrays are shorted to the minimum length of the
     corresponding partner and stacked on top of each other to calculated the
@@ -327,7 +321,7 @@ def eval_metrics_all(
         y_hat (np.ndarray): Prediction.
 
     Returns:
-        Dict[str, float]: Returns a dict with all scores.
+        T.Dict[str, float]: Returns a dict with all scores.
 
     Example:
         >>> y = [np.ones((10, 1)), np.zeros((10, 1))]
@@ -460,11 +454,11 @@ class ConfusionMatrix:
         """
         return self.DA / self.TA
 
-    def metrics(self) -> Dict[str, float]:
+    def metrics(self) -> T.Dict[str, float]:
         """Returns all metrics.
 
         Returns:
-            Dict[str, float]: Returns an mapping of all performance metrics.
+            T.Dict[str, float]: Returns an mapping of all performance metrics.
         """
         return {
             'accuracy': self.accuracy,
@@ -571,11 +565,11 @@ class PRCurve:
         """
         return len(self.thresholds)
 
-    def __iter__(self) -> Iterator[ConfusionMatrix]:
+    def __iter__(self) -> T.Iterator[ConfusionMatrix]:
         """Creates an iterator over the curve.
 
         Yields:
-            Iterator[ConfusionMatrix]: Returns an iterator over the pr curve.
+            T.Iterator[ConfusionMatrix]: Returns an iterator over the pr curve.
             At index i, the iterator returns a ConfusionMatrix for the i-th
             threshold.
         """
@@ -623,12 +617,12 @@ class PRCurve:
         """
         return self.das / self.tas
 
-    def to_tensorboard(self) -> Dict[str, Any]:
+    def to_tensorboard(self) -> T.Dict[str, T.Any]:
         """Converts the container to keyword arguments for Tensorboard.
         See https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/pr_curve/README.md.
 
         Returns:
-            Dict[str, Any]: Returns the pr-curve format expected for
+            T.Dict[str, T.Any]: Returns the pr-curve format expected for
             Tensorboard.
         """  # noqa
         return {
@@ -652,9 +646,9 @@ def pr_curve(
     y: np.ndarray,
     y_score: np.ndarray,
     *,
-    y_true: Optional[np.ndarray] = None,
-    pos_label: Optional[Union[str, int]] = None,
-    sample_weight: Optional[Union[List, np.ndarray]] = None
+    y_true: T.Optional[np.ndarray] = None,
+    pos_label: T.Optional[T.Union[str, int]] = None,
+    sample_weight: T.Optional[T.Union[T.List, np.ndarray]] = None
 ) -> PRCurve:
     """Computes precision-recall pairs for different probability thresholds for
     binary classification tasks.
@@ -674,7 +668,7 @@ def pr_curve(
           When pos_label=None, if y is in {-1, 1} or {0, 1},
           pos_label is set to 1, otherwise an error will be raised.
           Defaults to None.
-        sample_weight (Union[List, np.ndarray], optional): Sample weights.
+        sample_weight (T.Union[T.List, np.ndarray], optional): Sample weights.
           Defaults to None.
 
     Returns:
@@ -816,7 +810,7 @@ def auc_point_adjust_metrics(
     *,
     y_hat: np.ndarray,
     y: np.ndarray
-) -> Dict[str, float]:
+) -> T.Dict[str, float]:
     """Calculates the area under the curve for performance metrics with
     point-adjusted predictions for values of ``k`` in [0,100].
 
@@ -825,7 +819,7 @@ def auc_point_adjust_metrics(
         y (np.ndarray): Ground truth labels.
 
     Returns:
-        Dict[str, float]: Returns a mapping from performance metric to auc.
+        T.Dict[str, float]: Returns a mapping from performance metric to auc.
 
     Example:
         >>> import mlnext
@@ -849,10 +843,10 @@ def _recall_anomalies_curve(
     y: np.ndarray,
     y_score: np.ndarray,
     *,
-    thresholds: List[float],
-    pos_label: Optional[Union[str, int]] = None,
+    thresholds: T.List[float],
+    pos_label: T.Optional[T.Union[str, int]] = None,
     k: float = 0
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> T.Tuple[np.ndarray, np.ndarray]:
     # determine positive and negative labels
     pos_label = 1 if pos_label is None else pos_label
     y = y == pos_label

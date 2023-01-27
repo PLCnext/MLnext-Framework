@@ -3,9 +3,7 @@
 import glob
 import json
 import os
-from typing import Any
-from typing import Dict
-from typing import List
+import typing as T
 
 import yaml
 from pydantic import BaseModel
@@ -22,11 +20,11 @@ __all__ = [
 ]
 
 
-def save_json(data: Dict[str, Any], *, name: str, folder: str = '.'):
+def save_json(data: T.Dict[str, T.Any], *, name: str, folder: str = '.'):
     """Saves `data` to a name.json in `folder`.
 
     Args:
-        data (Dict[str, Any]): Data to save.
+        data (T.Dict[str, T.Any]): Data to save.
         folder (str): Path to folder.
         name (str): Name of file.
 
@@ -48,14 +46,14 @@ def save_json(data: Dict[str, Any], *, name: str, folder: str = '.'):
         json.dump(data, file, indent=2)
 
 
-def load_json(path: str) -> Dict[str, Any]:
+def load_json(path: str) -> T.Dict[str, T.Any]:
     """Loads a `.json` file from `path`.
 
     Args:
         path (str): Path to file.
 
     Returns:
-        Dict[str, Any]: Returns the loaded json.
+        T.Dict[str, T.Any]: Returns the loaded json.
 
     Example:
         >>> # Load a json file
@@ -72,11 +70,11 @@ def load_json(path: str) -> Dict[str, Any]:
     return data
 
 
-def save_yaml(data: Dict[str, Any], *, name: str, folder: str = '.'):
+def save_yaml(data: T.Dict[str, T.Any], *, name: str, folder: str = '.'):
     """Saves `data` to a name.yaml in `folder`.
 
     Args:
-        data (Dict[str, Any]): Data to save.
+        data (T.Dict[str, T.Any]): Data to save.
         folder (str): Path to folder.
         name (str): Name of file.
 
@@ -98,14 +96,14 @@ def save_yaml(data: Dict[str, Any], *, name: str, folder: str = '.'):
         yaml.dump(data, file, indent=2, sort_keys=False)
 
 
-def load_yaml(path: str) -> Dict[str, Any]:
+def load_yaml(path: str) -> T.Dict[str, T.Any]:
     """Loads a `.yaml`/`.yml` file from `path`.
 
     Args:
         path (str): Path to file.
 
     Returns:
-        Dict[str, Any]: Returns the loaded yaml file.
+        T.Dict[str, T.Any]: Returns the loaded yaml file.
 
     Example:
         >>> # Load a yaml file
@@ -151,7 +149,7 @@ def save_config(config: BaseModel, *, name: str, folder: str = '.'):
     save_yaml(data=data, folder=folder, name=name)
 
 
-def load(path: str) -> Dict[str, Any]:
+def load(path: str) -> T.Dict[str, T.Any]:
     """Loads a file from `path` with the supported python parser.
 
     Args:
@@ -161,7 +159,7 @@ def load(path: str) -> Dict[str, Any]:
         ValueError: Raised if
 
     Returns:
-        Dict[str, Any]: Returns the content.
+        T.Dict[str, T.Any]: Returns the content.
 
     Example:
         >>> # Loads file from path
@@ -192,8 +190,8 @@ def get_files(
     name: str = '*',
     ext: str = '*',
     absolute: bool = False
-) -> List[str]:
-    """List all files in `path` with extension `ext`.
+) -> T.List[str]:
+    """T.List all files in `path` with extension `ext`.
 
     Args:
         path (str): Path of the directory.
@@ -206,7 +204,7 @@ def get_files(
         ValueError: Raised if `path` is not a directory.
 
     Returns:
-        List[str]: Returns a list of files with extension `ext` in `path`.
+        T.List[str]: Returns a list of files with extension `ext` in `path`.
 
     Example:
         >>> # lists all files in dir
@@ -238,7 +236,7 @@ def get_folders(
     *,
     filter: str = '',
     absolute: bool = False
-) -> List[str]:
+) -> T.List[str]:
     """Lists all folders in `folder`.
 
     Args:
@@ -251,7 +249,7 @@ def get_folders(
         ValueError: Raised if `folder` is not a directory.
 
     Returns:
-        List[str]: Returns a list of the names of the folders.
+        T.List[str]: Returns a list of the names of the folders.
 
     Example:
         >>> # list all folder in a directory
