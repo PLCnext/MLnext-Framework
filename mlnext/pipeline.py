@@ -702,14 +702,14 @@ class Fill(BaseEstimator, TransformerMixin):
     def __init__(
         self,
         *,
-        value: T.Any,
+        value: T.Optional[T.Any] = None,
         method: T.Optional[str] = None
     ):
         """Initialize `Fill`.
 
         Args:
-            value (T.Any): Constant to fill NAs.
-            method (str): method: 'ffill' or 'bfill'.
+            value (T.Any): Constant to fill NAs. Defaults to None.
+            method (str): method: 'ffill' or 'bfill'. Defaults to None.
         """
         super().__init__()
         self._value = value
