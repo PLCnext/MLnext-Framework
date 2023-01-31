@@ -309,19 +309,26 @@ class TestSorter(TestCase):
         pd.testing.assert_frame_equal(result, expected)
 
 
-class TestFill(TestCase):
+@pytest.mark.parametrize(
+    'value,method,exp',
+    [
+        (0.0, None, [0.0, 1.0, 0.2, 0.0, 0.0, 0.5]),
+        (1.0, None, [0.0, 1.0, 0.2, 1.0, 1.0, 0.5]),
+        (None, 'bfill', [0.0, 1.0, 0.2, 0.5, 0.5, 0.5]),
+        (None, 'ffill', [0.0, 1.0, 0.2, 0.2, 0.2, 0.5]),
+    ]
+)
+def test_fill(
+    value: T.Optional[T.Any],
+    method: T.Optional[str],
+    exp: T.List
+):
+    df = pd.DataFrame([0.0, 1.0, 0.2, np.nan, np.nan, 0.5])
+    scaler = pipeline.Fill(value=value, method=method)
 
-    def setUp(self):
-        self.df = pd.DataFrame([[0.0, 1.0, 0.2, pd.NA, 0.5]])
+    result = scaler.fit_transform(df)
 
-    def test_fill(self):
-
-        t = pipeline.Fill(value=1.0)
-        expected = pd.DataFrame([[0.0, 1.0, 0.2, 1.0, 0.5]])
-
-        result = t.fit_transform(self.df)
-
-        pd.testing.assert_frame_equal(result, expected)
+    pd.testing.assert_frame_equal(result, pd.DataFrame(exp))
 
 
 class TestTimeOffsetTransformer(TestCase):
