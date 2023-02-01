@@ -1,4 +1,4 @@
-include README.md CHANGELOG.rst requirements.txt
+include README.rst CHANGELOG.rst requirements.txt
 recursive-include mlnext *
 recursive-include test *
 recursive-include docs *
