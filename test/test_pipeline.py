@@ -98,153 +98,245 @@ class TestClip(TestCase):
         pd.testing.assert_frame_equal(result, expected)
 
 
-class TestDatetimeTransformer(TestCase):
-    # FIXME: fails in gitlab pipeline but succeeds locally
-    def test_datetime(self):
+@pytest.mark.parametrize(
+    'columns,lower,upper,exp',
+    [
+        (
+            None, 0.0, 0.5,
+            pd.DataFrame({'a': [0.0, 0.23, 0.5], 'b': [0.25, 0.5, 0.5]})
+        ),
+        (
+            ['a'], 0.0, 0.5,
+            pd.DataFrame({'a': [0.0, 0.23, 0.5], 'b': [0.25, 1.24, 0.68]})
+        ),
+        (
+            ['b'], 0.0, 0.5,
+            pd.DataFrame({'a': [-0.56, 0.23, 0.67], 'b': [0.25, 0.5, 0.5]})
+        )
+    ]
+)
+def test_clip(
+    columns: T.List[str],
+    lower: float,
+    upper: float,
+    exp: pd.DataFrame
+):
+    df = pd.DataFrame({'a': [-0.56, 0.23, 0.67], 'b': [0.25, 1.24, 0.68]})
+    t = pipeline.Clip(columns=columns, upper=upper, lower=lower)
 
-        t = pipeline.DatetimeTransformer(columns=['time'])
-        df = pd.DataFrame([['2021-01-04 14:12:31']], columns=['time'])
-        expected = pd.DataFrame([[datetime.datetime(2021, 1, 4, 14, 12, 31)]],
-                                columns=['time'])
+    result = t.fit_transform(df)
 
-        result = t.fit_transform(df)
-
-        pd.testing.assert_frame_equal(result, expected)
-
-    def test_datetime_missing_cols(self):
-
-        t = pipeline.DatetimeTransformer(columns=['t'])
-        df = pd.DataFrame([['2021-01-04 14:12:31']], columns=['time'])
-
-        with self.assertRaises(ValueError):
-            t.fit_transform(df)
-
-
-class TestNumericTransformer(TestCase):
-    # FIXME: fails in gitlab pipeline but succeeds locally
-    def test_numeric(self):
-
-        t = pipeline.NumericTransformer(columns=['1'])
-        df = pd.DataFrame([0, 1], columns=['1'], dtype=object)
-        expected = pd.DataFrame([0, 1], columns=['1'], dtype=np.int64)
-
-        result = t.fit_transform(df)
-
-        pd.testing.assert_frame_equal(result, expected)
-
-    def test_numeric_missing_column(self):
-
-        t = pipeline.NumericTransformer(columns=['2'])
-        df = pd.DataFrame([0, 1], columns=['1'], dtype=object)
-
-        with self.assertRaises(ValueError):
-            t.fit_transform(df)
-
-    def test_numeric_additional_column(self):
-
-        t = pipeline.NumericTransformer(columns=['2'])
-        df = pd.DataFrame([[0, 1]], columns=['1', '2'], dtype=object)
-        expected = pd.DataFrame([[0, 1]], columns=['1', '2'], dtype=object)
-        expected['2'] = expected['2'].apply(pd.to_numeric)
-        result = t.fit_transform(df)
-
-        pd.testing.assert_frame_equal(result, expected)
-
-    def test_numeric_multiple_column(self):
-
-        t = pipeline.NumericTransformer(columns=['1', '2'])
-        df = pd.DataFrame([[0, 1]], columns=['1', '2'], dtype=object)
-        expected = pd.DataFrame([[0, 1]], columns=['1', '2'])
-
-        result = t.fit_transform(df)
-
-        pd.testing.assert_frame_equal(result, expected)
-
-    def test_numeric_all_column(self):
-
-        t = pipeline.NumericTransformer()
-        df = pd.DataFrame([[0, 1]], columns=['1', '2'], dtype=object)
-        expected = pd.DataFrame([[0, 1]], columns=['1', '2'])
-
-        result = t.fit_transform(df)
-
-        pd.testing.assert_frame_equal(result, expected)
+    pd.testing.assert_frame_equal(result, exp)
 
 
-class TestTimeframeExtractor(TestCase):
-    def setUp(self):
+@pytest.mark.parametrize(
+    'columns,lower,upper,msg',
+    [
+        (
+            ['c'], 0.0, 0.5,
+            "Columns ['c'] not found in DataFrame with columns ['a', 'b']."
+        ),
+    ]
+)
+def test_clip_raises(
+    columns: T.List[str],
+    lower: float,
+    upper: float,
+    msg: str
+):
+    df = pd.DataFrame({'a': [-0.56, 0.23, 0.67], 'b': [0.25, 1.24, 0.68]})
+    t = pipeline.Clip(columns=columns, upper=upper, lower=lower)
 
-        self.dates = [datetime.datetime(2021, 10, 1, 9, 50, 0),
-                      datetime.datetime(2021, 10, 1, 10, 0, 0),
-                      datetime.datetime(2021, 10, 1, 11, 0, 0),
-                      datetime.datetime(2021, 10, 1, 12, 0, 0),
-                      datetime.datetime(2021, 10, 1, 12, 10, 0)]
-        self.values = np.arange(len(self.dates))
-        self.df = pd.DataFrame(zip(self.dates, self.values),
-                               columns=['time', 'value'])
+    with pytest.raises(ValueError) as exc_info:
+        t.fit_transform(df)
 
-    def test_timeframe_extractor(self):
-
-        t = pipeline.TimeframeExtractor(
-            time_column='time', start_time=datetime.time(10, 0, 0),
-            end_time=datetime.time(12, 0, 0), verbose=True)
-        expected = pd.DataFrame(zip(self.dates[1:-1], np.arange(1, 4)),
-                                columns=['time', 'value'])
-
-        result = t.fit_transform(self.df)
-
-        pd.testing.assert_frame_equal(result, expected)
-
-    def test_timeframe_extractor_invert(self):
-
-        t = pipeline.TimeframeExtractor(
-            time_column='time', start_time=datetime.time(10, 0, 0),
-            end_time=datetime.time(12, 0, 0), invert=True)
-        expected = pd.DataFrame(zip([self.dates[0], self.dates[-1]],
-                                    np.array([0, 4])),
-                                columns=['time', 'value'])
-
-        result = t.fit_transform(self.df)
-
-        pd.testing.assert_frame_equal(result, expected)
+    assert exc_info.value.args[0] == msg
 
 
-class TestDateExtractor(TestCase):
+@pytest.mark.parametrize(
+    'columns,dt_format,exp',
+    [
+        (
+            ['time'], None,
+            pd.DataFrame([[datetime.datetime(2021, 1, 4, 14, 12, 31)]],
+                         columns=['time'])
+        ),
+        (
+            ['time'], '%Y-%m-%d %H:%M:%S',
+            pd.DataFrame([[datetime.datetime(2021, 1, 4, 14, 12, 31)]],
+                         columns=['time'])
+        ),
 
-    def setUp(self):
-        self.dates = [datetime.datetime(2021, 10, 1, 9, 50, 0),
-                      datetime.datetime(2021, 10, 2, 10, 0, 0),
-                      datetime.datetime(2021, 10, 3, 11, 0, 0),
-                      datetime.datetime(2021, 10, 4, 12, 0, 0),
-                      datetime.datetime(2021, 10, 5, 12, 10, 0)]
-        self.values = np.arange(len(self.dates))
-        self.df = pd.DataFrame(zip(self.dates, self.values),
-                               columns=['date', 'value'])
+    ]
+)
+def test_datetime_transformer(
+    columns: T.List[str],
+    dt_format: T.Optional[str],
+    exp: pd.DataFrame
+):
+    df = pd.DataFrame([['2021-01-04 14:12:31']], columns=['time'])
+    t = pipeline.DatetimeTransformer(columns=columns, dt_format=dt_format)
 
-    def test_date_extractor(self):
+    result = t.fit_transform(df)
 
-        t = pipeline.DateExtractor(
-            date_column='date', start_date=datetime.date(2021, 10, 2),
-            end_date=datetime.date(2021, 10, 4), verbose=True)
-        expected = pd.DataFrame(zip(self.dates[1:-1], np.arange(1, 4)),
-                                columns=['date', 'value'])
+    pd.testing.assert_frame_equal(result, exp)
 
-        result = t.fit_transform(self.df)
 
-        pd.testing.assert_frame_equal(result, expected)
+@pytest.mark.parametrize(
+    'columns,dt_format,msg',
+    [
+        (
+            ['t'], None,
+            "Columns ['t'] not found in DataFrame with columns ['time']."
+        )
+    ]
+)
+def test_datetime_transformer_raises(
+    columns: T.List[str],
+    dt_format: T.Optional[str],
+    msg: str
+):
+    df = pd.DataFrame([['2021-01-04 14:12:31']], columns=['time'])
+    t = pipeline.DatetimeTransformer(columns=columns, dt_format=dt_format)
 
-    def test_date_extractor_invert(self):
+    with pytest.raises(ValueError) as exc_info:
+        t.fit_transform(df)
 
-        t = pipeline.DateExtractor(
-            date_column='date', start_date=datetime.date(2021, 10, 2),
-            end_date=datetime.date(2021, 10, 4), invert=True)
-        expected = pd.DataFrame(zip([self.dates[0], self.dates[-1]],
-                                    np.array([0, 4])),
-                                columns=['date', 'value'])
+    assert exc_info.value.args[0] == msg
 
-        result = t.fit_transform(self.df)
 
-        pd.testing.assert_frame_equal(result, expected)
+@pytest.mark.parametrize(
+    'columns,exp',
+    [
+        (['a'], pd.DataFrame({'a': [0, 1, 2], 'b': ['3', '4', 0]})),
+        (['a', 'b'], pd.DataFrame({'a': [0, 1, 2], 'b': [3, 4, 0]})),
+        (None, pd.DataFrame({'a': [0, 1, 2], 'b': [3, 4, 0]})),
+    ]
+)
+def test_numeric_transformer(
+    columns: T.Optional[T.List[str]],
+    exp: pd.DataFrame
+):
+    df = pd.DataFrame({'a': [0, '1', 2], 'b': ['3', '4', 0]})
+    t = pipeline.NumericTransformer(columns=columns)
+
+    result = t.fit_transform(df)
+
+    pd.testing.assert_frame_equal(result, exp)
+
+
+@pytest.mark.parametrize(
+    'columns,msg',
+    [
+        (
+            ['c'],
+            "Columns ['c'] not found in DataFrame with columns ['a', 'b']."
+        ),
+    ]
+)
+def test_numeric_transformer_raises(
+    columns: T.Optional[T.List[str]],
+    msg: str
+):
+    df = pd.DataFrame({'a': [0, '1', 2], 'b': ['3', '4', 0]})
+    t = pipeline.NumericTransformer(columns=columns)
+
+    with pytest.raises(ValueError) as exc_info:
+        t.fit_transform(df)
+
+    assert exc_info.value.args[0] == msg
+
+
+@pytest.mark.parametrize(
+    'time_column,start_time,end_time,invert,exp',
+    [
+        ('time', '10:00:00', '12:00:00', False, [1, 2, 3]),
+        (
+            'time', datetime.time(10, 0, 0), datetime.time(12, 0, 0),
+            False, [1, 2, 3]
+        ),
+        ('time', '10:00:00', '12:00:00', True, [0, 4]),
+        (
+            'time', datetime.time(10, 0, 0), datetime.time(12, 0, 0),
+            True, [0, 4]
+        ),
+    ]
+)
+def test_timeframe_extractor(
+    time_column: str,
+    start_time: T.Union[str, datetime.time],
+    end_time: T.Union[str, datetime.time],
+    invert: bool,
+    exp: T.List[int]
+):
+
+    dates = [
+        datetime.datetime(2021, 10, 1, 9, 50, 0),
+        datetime.datetime(2021, 10, 1, 10, 0, 0),
+        datetime.datetime(2021, 10, 1, 11, 0, 0),
+        datetime.datetime(2021, 10, 1, 12, 0, 0),
+        datetime.datetime(2021, 10, 1, 12, 10, 0)
+    ]
+    df = pd.DataFrame(
+        zip(dates, np.arange(len(dates))),
+        columns=['time', 'value']
+    )
+    t = pipeline.TimeframeExtractor(
+        time_column=time_column,
+        start_time=start_time,
+        end_time=end_time,
+        invert=invert
+    )
+
+    result = t.fit_transform(df)
+
+    pd.testing.assert_frame_equal(result, df.loc[exp].reset_index(drop=True))
+
+
+@pytest.mark.parametrize(
+    'date_column,start_date,end_date,invert,exp',
+    [
+        ('date', '2021-10-02', '2021-10-04', False, [1, 2, 3]),
+        (
+            'date', datetime.date(2021, 10, 2), datetime.date(2021, 10, 4),
+            False, [1, 2, 3]
+        ),
+        ('date', '2021-10-02', '2021-10-04', True, [0, 4]),
+        (
+            'date', datetime.date(2021, 10, 2), datetime.date(2021, 10, 4),
+            True, [0, 4]
+        ),
+    ]
+)
+def test_date_extractor(
+    date_column: str,
+    start_date: T.Union[str, datetime.date],
+    end_date: T.Union[str, datetime.date],
+    invert: bool,
+    exp: T.List[int]
+):
+
+    dates = [
+        datetime.datetime(2021, 10, 1, 9, 50, 0),
+        datetime.datetime(2021, 10, 2, 10, 0, 0),
+        datetime.datetime(2021, 10, 3, 11, 0, 0),
+        datetime.datetime(2021, 10, 4, 12, 0, 0),
+        datetime.datetime(2021, 10, 5, 12, 10, 0)
+    ]
+    df = pd.DataFrame(
+        zip(dates, np.arange(len(dates))),
+        columns=['date', 'value']
+    )
+    t = pipeline.DateExtractor(
+        date_column=date_column,
+        start_date=start_date,
+        end_date=end_date,
+        invert=invert
+    )
+
+    result = t.fit_transform(df)
+
+    pd.testing.assert_frame_equal(result, df.loc[exp].reset_index(drop=True))
 
 
 class TestValueMapper(TestCase):
