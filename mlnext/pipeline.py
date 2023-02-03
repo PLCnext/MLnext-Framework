@@ -36,7 +36,11 @@ __all__ = [
 
 
 class ColumnSelector(BaseEstimator, TransformerMixin):
-    """Transformer to select a list of columns by their name.
+    """Transformer to select a list of columns by their name for further
+    processing.
+
+    Args:
+        keys (T.List[str]): T.List of columns to extract.
 
     Example:
         >>> data = pd.DataFrame({'a': [0], 'b': [0]})
@@ -45,18 +49,12 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, keys: T.List[str]):
-        """Creates ColumnSelector.
-        Transformer to select a list of columns for further processing.
-
-        Args:
-            keys (T.List[str]): T.List of columns to extract.
-        """
         self._keys = keys
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y=None):
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame):
         """Extracts the columns from `X`.
 
         Args:
@@ -70,7 +68,10 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
 
 
 class ColumnDropper(BaseEstimator, TransformerMixin):
-    """Transformer to drop a list of columns by their name.
+    """Transformer to drop a list of ``columns`` by their name.
+
+    Args:
+        keys (list): T.List of columns names to drop.
 
     Example:
         >>> data = pd.DataFrame({'a': [0], 'b': [0]})
@@ -84,19 +85,13 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
         columns: T.Union[T.List[str], T.Set[str]],
         verbose: bool = False
     ):
-        """Creates ColumnDropper.
-        Transformer to drop a list of columns from the data frame.
-
-        Args:
-            keys (list): T.List of columns names to drop.
-        """
         self.columns = set(columns)
         self.verbose = verbose
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y=None):
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame):
         """Drops a list of columns of `X`.
 
         Args:
@@ -118,7 +113,10 @@ class ColumnDropper(BaseEstimator, TransformerMixin):
 
 
 class ColumnRename(BaseEstimator, TransformerMixin):
-    """Transformer to rename column with a function.
+    """Transformer to rename column with a ``mapper`` function.
+
+    Args:
+        mapper (lambda): Mapper rename function.
 
     Example:
         >>> data = pd.DataFrame({'a.b.c': [0], 'd.e.f': [0]})
@@ -127,23 +125,12 @@ class ColumnRename(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, mapper: T.Callable[[str], str]):
-        """Create ColumnRename.
-        Transformer to rename columns by a mapper function.
-
-        Args:
-            mapper (lambda): Mapper rename function.
-
-        Example:
-            Given column with name: a.b.c
-            lambda x: x.split('.')[-1]
-            Returns c
-        """
         self.mapper = mapper
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y=None):
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame):
         """Renames a columns in `X` with a mapper function.
 
         Args:
@@ -152,8 +139,6 @@ class ColumnRename(BaseEstimator, TransformerMixin):
         Returns:
             pd.DataFrame: Returns the dataframe with the renamed columns.
         """
-        # split the column name
-        # use the last item as new name
         return X.rename(columns=self.mapper)
 
 
@@ -169,15 +154,31 @@ class NaDropper(BaseEstimator, TransformerMixin):
     def __init__(self):
         pass
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y=None):
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Drops rows with na values.
+
+        Args:
+            X (pd.DataFrame): Dataframe.
+
+        Returns:
+            pd.DataFrame: Returns the new dataframe.
+        """
         return X.dropna()
 
 
 class Clip(BaseEstimator, TransformerMixin):
-    """Transformer that clips values by a lower and upper bound.
+    """Transformer that clips a ``columns`` to the treshold if the
+    threshold is exceeded. Works with an ``upper`` and ``lower`` threshold.
+    Wrapper for pd.DataFrame.clip.
+
+    Args:
+        columns (T.List[str], optional): Name of columns. If not provided,
+            all columns in the fitted dataframe are used.
+        lower (float, optional): lower limit. Defaults to 0.
+        upper (float, optional): upper limit. Defaults to 1.
 
     Example:
         >>> data = pd.DataFrame({'a': [-0.1, 1.2], 'b': [0.5, 0.6]})
@@ -185,24 +186,49 @@ class Clip(BaseEstimator, TransformerMixin):
         pd.DataFrame({'a': [0, 1], 'b': [0.5, 0.6]})
     """
 
-    def __init__(self, lower: float = 0.0, upper: float = 1.0):
-        """Creates Clip.
-        Transformer that clips a numeric column to the treshold if the
-        threshold is exceeded. Works with an upper and lower threshold. Wrapper
-        for pd.DataFrame.clip.
+    def __init__(
+        self,
+        *,
+        columns: T.Optional[T.List[str]] = None,
+        lower: T.Optional[float] = 0.0,
+        upper: T.Optional[float] = 1.0
+    ):
+        self._columns = columns
+        self._lower = lower
+        self._upper = upper
 
-        Args:
-            lower (float, optional): lower limit. Defaults to 0.
-            upper (float, optional): upper limit. Defaults to 1.
-        """
-        self.upper = upper
-        self.lower = lower
-
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y=None):
+        self.columns_ = (
+            self._columns if self._columns is not None
+            else X.columns
+        )
         return self
 
-    def transform(self, X):
-        return X.clip(lower=self.lower, upper=self.upper, axis=0)
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Clips columns to a lower and upper threshold.
+
+        Args:
+            X (pd.DataFrame): Dataframe.
+
+        Returns:
+            pd.DataFrame: Returns the new dataframe.
+        """
+        check_is_fitted(self, ['columns_'])
+        X = X.copy()
+
+        # check if columns in dataframe
+        if len(diff := set(self.columns_) - set(X.columns)):
+            raise ValueError(
+                f'Columns {list(diff)} not found in DataFrame with columns '
+                f'{X.columns.to_list()}.')
+
+        X[self.columns_] = X[self.columns_].clip(
+            lower=self._lower,
+            upper=self._upper,
+            axis=0
+        )
+
+        return X
 
 
 class ColumnTSMapper(BaseEstimator, TransformerMixin):
@@ -314,7 +340,11 @@ class ColumnTSMapper(BaseEstimator, TransformerMixin):
 
 
 class DatetimeTransformer(BaseEstimator, TransformerMixin):
-    """Transforms a list of columns to datetime.
+    """Transforms a list of columns to ``datetime``.
+
+    Args:
+        columns (list): List of columns names.
+        dt_format (str, optional): Optional format string.
 
     Example:
         >>> data = pd.DataFrame({'dt': ['2021-07-02 16:30:00']})
@@ -329,13 +359,6 @@ class DatetimeTransformer(BaseEstimator, TransformerMixin):
         columns: T.List[str],
         dt_format: T.Optional[str] = None
     ):
-        """Creates DatetimeTransformer.
-        Parses a list of column to pd.Timestamp.
-
-        Args:
-            columns (list): T.List of columns names.
-            dt_format (str): T.Optional format string.
-        """
         super().__init__()
         self._columns = columns
         self._format = dt_format
@@ -343,8 +366,8 @@ class DatetimeTransformer(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
-    def transform(self, X):
-        """Parses `columns` to datetime.
+    def transform(self, X: pd.DataFrame):
+        """Parses ``columns`` to datetime.
 
         Args:
             X (pd.DataFrame): Dataframe.
@@ -359,19 +382,21 @@ class DatetimeTransformer(BaseEstimator, TransformerMixin):
         # check if columns in dataframe
         if len(diff := set(self._columns) - set(X.columns)):
             raise ValueError(
-                f'Columns {diff} not found in DataFrame with columns'
+                f'Columns {list(diff)} not found in DataFrame with columns '
                 f'{X.columns.to_list()}.')
 
         # parse to pd.Timestamp
         X[self._columns] = X[self._columns].apply(
-            lambda x: pd.to_datetime(x, format=self._format), axis=0)
-        # column wise
+            lambda x: pd.to_datetime(x, format=self._format), axis=1)
 
         return X
 
 
 class NumericTransformer(BaseEstimator, TransformerMixin):
-    """Transforms a list of columns to numeric datatype.
+    """Transforms ``columns`` to numeric datatypes with ``pd.to_numeric``.
+
+    columns (list, optional): List of columns names. If None, then all columns
+      from the fitted dataframe are transformed.
 
     Example:
         >>> data = pd.DataFrame({'a': [0], 'b': ['1']})
@@ -385,18 +410,14 @@ class NumericTransformer(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, *, columns: T.Optional[T.List[str]] = None):
-        """Creates NumericTransformer.
-        Parses a list of column to numeric datatype. If None, all are
-        attempted to be parsed.
-
-        Args:
-            columns (list): T.List of columns names.
-            dt_format (str): T.Optional format string.
-        """
         super().__init__()
         self._columns = columns
 
     def fit(self, X, y=None):
+        self.columns_ = (
+            self._columns if self._columns is not None
+            else X.columns
+        )
         return self
 
     def transform(self, X):
@@ -411,26 +432,32 @@ class NumericTransformer(BaseEstimator, TransformerMixin):
         Returns:
             pd.DataFrame: Returns the dataframe with datetime columns.
         """
+        check_is_fitted(self, ['columns_'])
         X = X.copy()
-        # transform all columns
-        if self._columns is None:
-            columns = X.columns.to_list()
-        else:
-            columns = self._columns
 
-        if len((diff := list(set(columns) - set(cols := X.columns)))):
-            raise ValueError(f'Columns found: {cols.to_list()}. '
-                             f'Columns missing: {diff}.')
+        # check if columns in dataframe
+        if len(diff := set(self.columns_) - set(X.columns)):
+            raise ValueError(
+                f'Columns {list(diff)} not found in DataFrame with columns '
+                f'{X.columns.to_list()}.')
 
         # parse to numeric
-        # column wise
-        X[columns] = X[columns].apply(pd.to_numeric, axis=0)
+        X[self.columns_] = X[self.columns_].apply(pd.to_numeric, axis=1)
+
         return X
 
 
 class TimeframeExtractor(BaseEstimator, TransformerMixin):
-    """Drops sampes that are not between a given start and end time.
-    Limits are inclusive.
+    """Drops samples that are not between a given ``start_time`` and
+    ``end_time``. Limits are inclusive.
+
+    Args:
+        time_column (str): Column name of the datetime column.
+        start_time (str, datetime.time): Start time. Can be parsed from a str.
+        end_time (str, datetime.time): End time. Can be parsed from a str.
+        invert(bool): Whether to invert the range. If True, then rows between
+          ``start_time`` and ``end_time`` are removed.
+        verbose (bool, optional): Whether to be verbose.
 
     Example:
         >>> data = pd.DataFrame(
@@ -450,33 +477,29 @@ class TimeframeExtractor(BaseEstimator, TransformerMixin):
         self,
         *,
         time_column: str,
-        start_time: datetime.time,
-        end_time: datetime.time,
+        start_time: T.Union[str, datetime.time],
+        end_time: T.Union[str, datetime.time],
         invert: bool = False,
         verbose: bool = False
     ):
-        """Creates TimeframeExtractor.
-        Drops samples that are not in between `start_time` and  `end_time` in
-        `time_column`.
-
-        Args:
-            time_column (str): Column name of the timestamp column.
-            start_time (datetime.time): Start time.
-            end_time (datetime.time): End time.
-            invert(bool): Whether to invert the range.
-            verbose (bool, optional): Whether to allow prints.
-        """
         super().__init__()
+        if isinstance(start_time, str):
+            start_time = pd.to_datetime(start_time).time()
+
+        if isinstance(end_time, str):
+            end_time = pd.to_datetime(end_time).time()
+
         self._start = start_time
         self._end = end_time
+
         self._column = time_column
         self._negate = invert
         self._verbose = verbose
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y=None):
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame):
         """Drops rows from the dataframe if they are not in between
         `start_time` and `end_time`. Limits are inclusive. Reindexes the
         dataframe.
@@ -515,6 +538,15 @@ class DateExtractor(BaseEstimator, TransformerMixin):
     """ Drops rows that are not between a start and end date.
     Limits are inclusive.
 
+    Args:
+        date_column (str): Column name of the datetime column.
+        start_date (str, datetime.date): Start date. Can be parsed from a
+          str.
+        end_date (str, datetime.date): End date. Can be parsed from a str.
+        invert(bool): Whether to invert the range. If True, then rows between
+          ``start_date`` and ``end_date`` are removed.
+        verbose (bool, optional): Whether to be verbose.
+
     Example:
         >>> data = pd.DataFrame(
                 {'dates': [datetime.datetime(2021, 7, 1, 9, 50, 0),
@@ -524,7 +556,7 @@ class DateExtractor(BaseEstimator, TransformerMixin):
         >>> DateExtractor(date_column='dates',
                           start_date=datetime.date(2021, 7, 2),
                           end_date=datetime.date(2021, 7, 2)).transform(data)
-        pd.DataFrame({'dates': datetime.datetime(2021, 07, 2, 11, 0, 0),
+        pd.DataFrame({'dates': datetime.datetime(2021, 7, 2, 11, 0, 0),
                         'values': [1]})
     """
 
@@ -532,8 +564,8 @@ class DateExtractor(BaseEstimator, TransformerMixin):
         self,
         *,
         date_column: str,
-        start_date: datetime.date,
-        end_date: datetime.date,
+        start_date: T.Union[str, datetime.date],
+        end_date: T.Union[str, datetime.date],
         invert: bool = False,
         verbose: bool = False
     ):
@@ -547,16 +579,22 @@ class DateExtractor(BaseEstimator, TransformerMixin):
             verbose (bool, optional): Whether to allow prints.
         """
         super().__init__()
+        if isinstance(start_date, str):
+            start_date = pd.to_datetime(start_date).date()
+
+        if isinstance(end_date, str):
+            end_date = pd.to_datetime(end_date).date()
+
         self._start = start_date
         self._end = end_date
         self._column = date_column
         self._negate = invert
         self._verbose = verbose
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y=None):
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame):
         """Drops rows which date is not between `start` and end date.
         Bounds are inclusive. Dataframe is reindexed.
 
@@ -590,8 +628,13 @@ class DateExtractor(BaseEstimator, TransformerMixin):
 
 
 class ValueMapper(BaseEstimator, TransformerMixin):
-    """Maps values in `column` according to `classes`. Wrapper for
+    """Maps values in ``columns`` according to ``classes``. Wrapper for
     pd.DataFrame.replace.
+
+    Args:
+        columns (T.List[str]): Names of columns to remap.
+        classes (T.Dict): Dictionary of old and new value.
+        verbose (bool, optional): Whether to allow prints.
 
     Example:
         >>> data = pd.DataFrame({'a': [0.0, 1.0, 2.0]})
@@ -606,22 +649,15 @@ class ValueMapper(BaseEstimator, TransformerMixin):
         classes: T.Dict,
         verbose: bool = False
     ):
-        """Initialize `ValueMapper`.
-
-        Args:
-            columns (T.List[str]): Names of columns to remap.
-            classes (T.Dict): Dictionary of old and new value.
-            verbose (bool, optional): Whether to allow prints.
-        """
         super().__init__()
         self._columns = columns
         self._classes = classes
         self._verbose = verbose
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y=None):
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame):
         """Remaps values in `column` according to `classes`.
         Gives UserWarning if unmapped values are found.
 
@@ -646,6 +682,11 @@ class Sorter(BaseEstimator, TransformerMixin):
     """Sorts the dataframe by a list of columns. Wrapper for
     pd.DataFrame.sort_values.
 
+    Args:
+        columns (T.List[str]): List of column names to sort by.
+        ascending (bool): Whether to sort ascending. Defaults to True.
+        axis (int): Axis to sort by.
+
     Example:
         >>> data = pd.DataFrame({'a': [0, 1], 'b': [1, 0]})
         >>> Sorter(columns=['b'], ascending=True).transform(data)
@@ -659,23 +700,16 @@ class Sorter(BaseEstimator, TransformerMixin):
         ascending: bool = True,
         axis: int = 0
     ):
-        """Initialize `Sorter`.
-
-        Args:
-            columns (T.List[str]): T.List of column names to sort by.
-            ascending (bool): Whether to sort ascending.
-            axis (int): Axis to sort by.
-        """
         super().__init__()
         self._columns = columns
         self._ascending = ascending
         self._axis = axis
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y=None):
         return self
 
-    def transform(self, X):
-        """Sorts `X` by `columns`.
+    def transform(self, X: pd.DataFrame):
+        """Sorts ``X`` by ``columns``.
 
         Args:
             X (pd.DataFrame): Dataframe.
@@ -684,14 +718,20 @@ class Sorter(BaseEstimator, TransformerMixin):
             pd.DataFrame: Returns the sorted Dataframe.
         """
         X = X.copy()
-        return X.sort_values(by=self._columns,
-                             ascending=self._ascending,
-                             axis=self._axis)
+        return X.sort_values(
+            by=self._columns,
+            ascending=self._ascending,
+            axis=self._axis
+        )
 
 
 class Fill(BaseEstimator, TransformerMixin):
     """Fills NA values with a constant or 'bfill' / 'ffill'.
     Wrapper for df.fillna.
+
+    Args:
+        value (T.Any): Constant to fill NAs. Defaults to None.
+        method (str): method: 'ffill' or 'bfill'. Defaults to None.
 
     Example:
         >>> data = pd.DataFrame({'a': [0.0, np.nan]})
@@ -705,20 +745,14 @@ class Fill(BaseEstimator, TransformerMixin):
         value: T.Optional[T.Any] = None,
         method: T.Optional[str] = None
     ):
-        """Initialize `Fill`.
-
-        Args:
-            value (T.Any): Constant to fill NAs. Defaults to None.
-            method (str): method: 'ffill' or 'bfill'. Defaults to None.
-        """
         super().__init__()
         self._value = value
         self._method = method
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y=None):
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame):
         """Fills NAs.
 
         Args:
@@ -732,7 +766,13 @@ class Fill(BaseEstimator, TransformerMixin):
 
 
 class TimeOffsetTransformer(BaseEstimator, TransformerMixin):
-    """`TimeOffsetTransformer` offsets a datetime by `timedelta`.
+    """Transformer that offsets a datetimes in ``time_colum`` by a given
+    ``timedelta``.
+
+    Args:
+        time_column (T.List[str]): List of names of columns with
+          timestamps to offset.
+        timedelta (pd.Timedelta): Offset.
 
     Example:
         >>> data = pd.DataFrame(
@@ -744,24 +784,16 @@ class TimeOffsetTransformer(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, *, time_columns: T.List[str], timedelta: pd.Timedelta):
-        """
-        Initialize `TimeOffsetTransformer`.
 
-        Args:
-            time_column (T.List[str]): T.List of names of columns with
-              timestamps
-            to offset.
-            timedelta (pd.Timedelta): Offset.
-        """
         super().__init__()
         self._time_columns = time_columns
         self._timedelta = timedelta
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y=None):
         return self
 
-    def transform(self, X):
-        """Offsets the timestamps in `time_columns` by `timedelta`-
+    def transform(self, X: pd.DataFrame):
+        """Offsets the timestamps in ``time_columns`` by ``timedelta``.
 
         Args:
             X (pd.DataFrame): Dataframe.
@@ -776,9 +808,15 @@ class TimeOffsetTransformer(BaseEstimator, TransformerMixin):
 
 
 class ConditionedDropper(BaseEstimator, TransformerMixin):
-    """Module to drop rows in `column` that contain numeric values and are
-    above `threshold`. If `inverted` is true, values below `threshold` are
-    dropped.
+    """Module to drop rows in ``column`` that contain numeric values and are
+    above ``threshold``. If ``inverted`` is True, values below ``threshold``
+    are dropped.
+
+    Args:
+        column (str): Column to match condition in.
+        threshold (float): Threshold.
+        inverted (bool, optional): If false, all values below ``threshold``
+          are dropped, otherwise all values above are dropped.
 
     Example:
         >>> data = pd.DataFrame({'a': [0.0, 1.2, 0.5]})
@@ -793,23 +831,15 @@ class ConditionedDropper(BaseEstimator, TransformerMixin):
             threshold: float,
             invert: bool = False
     ):
-        """Initializes `ConditionedDropper`.
-
-        Args:
-            column (str): Column to match condition in.
-            threshold (float): Threshold.
-            inverted (bool, optional): If false, all values below `threshold`
-            are dropped, otherwise all values above are dropped.
-        """
         super().__init__()
         self.column = column
         self.threshold = threshold
         self.inverted = invert
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y=None):
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame):
         """Drops rows if below or above a threshold.
 
         Args:
@@ -825,28 +855,24 @@ class ConditionedDropper(BaseEstimator, TransformerMixin):
         else:
             X = X.drop(X[X[self.column] < self.threshold].index)
 
-        X.index = pd.RangeIndex(X.shape[0])
-
-        return X
+        return X.reset_index(drop=True)
 
 
 class ZeroVarianceDropper(BaseEstimator, TransformerMixin):
-    """Removes all columns that are numeric and have zero variance.
-       Needs to be fitted first. Gives a warning if a column that was
-       registered as zero variance deviates.
+    """Removes all columns that are numeric and have zero variance. Gives a
+    warning if a column that was  registered as zero variance deviates during
+    transform.
 
-       Example:
-            >>> data = pd.DataFrame({'a': [0.0, 0.0], 'b': [1.0, 0.0]})
-            >>> ZeroVarianceDropper().fit_transform(data)
-            pd.DataFrame({'b': [1.0, 0.0]})
+    Args:
+        verbose (bool, optional): Whether to print status messages.
+
+    Example:
+        >>> data = pd.DataFrame({'a': [0.0, 0.0], 'b': [1.0, 0.0]})
+        >>> ZeroVarianceDropper().fit_transform(data)
+        pd.DataFrame({'b': [1.0, 0.0]})
     """
 
     def __init__(self, verbose: bool = False):
-        """Initialize `ZeroVarianceDropper`.
-
-        Args:
-            verbose (bool, optional): Whether to print status messages.
-        """
         super().__init__()
         self._verbose = verbose
 
@@ -863,7 +889,7 @@ class ZeroVarianceDropper(BaseEstimator, TransformerMixin):
         # get columns with zero variance
         return [k for k, v in var.items() if v == .0]
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y=None):
         """Finds all columns with zero variance.
 
         Args:
@@ -880,7 +906,7 @@ class ZeroVarianceDropper(BaseEstimator, TransformerMixin):
                 f'({self.columns_}).')
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame):
         """Drops all columns found by fit with zero variance.
 
         Args:
@@ -911,6 +937,9 @@ class SignalSorter(BaseEstimator, TransformerMixin):
     """Sorts the signals into continuous and binary signals. First the
     continuous, then the binary signals.
 
+    Args:
+        verbose (bool, optional): Whether to print status.
+
     Example:
         >>> data = pd.DataFrame({'a': [0.0, 1.0], 'b': [0.0, 0.2]})
         >>> SignalSorter().fit_transform(data)
@@ -918,12 +947,6 @@ class SignalSorter(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, verbose: bool = False):
-        """Initialize `SignalSorter`.
-
-        Args:
-            False: [binary, continuous]
-            verbose (bool, optional): Whether to print status.
-        """
         super().__init__()
         self.verbose = verbose
 
@@ -943,7 +966,7 @@ class SignalSorter(BaseEstimator, TransformerMixin):
             X (pd.Series): Column of a data frame.
 
         Returns:
-            bool: Whether `x` is a binary series.
+            bool: Whether ``X`` is a binary series.
         """
         unique = X.unique()
 
@@ -961,8 +984,8 @@ class SignalSorter(BaseEstimator, TransformerMixin):
         except Exception:
             return False
 
-    def transform(self, X):
-        """Sorts `x` into to a block of continuous and binary signals.
+    def transform(self, X: pd.DataFrame):
+        """Sorts ``X`` into to a block of continuous and binary signals.
 
         Args:
             X (pd.DataFrame): Dataframe.
@@ -978,6 +1001,11 @@ class SignalSorter(BaseEstimator, TransformerMixin):
 class ColumnSorter(BaseEstimator, TransformerMixin):
     """Sorts the dataframe in the same order as the fitted dataframe.
 
+    Attributes:
+        raise_on_error (bool): Whether to raise an exception if additional
+        columns that were not fitted are found.
+        verbose (bool): Whether to print the status.
+
     Example:
         >>> data = pd.DataFrame({'a': [0.0, 1.0], 'b': [0.0, 0.2]})
         >>> (sorter := ColumnSorter()).fit(data)
@@ -986,13 +1014,6 @@ class ColumnSorter(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, *, raise_on_error: bool = True, verbose: bool = False):
-        """Initialize `ColumnSorter`.
-
-        Attributes:
-            raise_on_error (bool): Whether to raise an exception if additional
-            columns that were not fitted are found.
-            verbose (bool): Whether to print the status.
-        """
         super().__init__()
         self.raise_on_error = raise_on_error
         self.verbose = verbose
@@ -1005,7 +1026,7 @@ class ColumnSorter(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X):
-        """Sorts `X` by `columns`.
+        """Sorts ``X`` by ``columns``.
 
         Args:
             X (pd.DataFrame): Dataframe.
@@ -1029,7 +1050,11 @@ class ColumnSorter(BaseEstimator, TransformerMixin):
 
 class DifferentialCreator(BaseEstimator, TransformerMixin):
     """Calculates signal differences between subsequent time points.
-    Concatenates the new information with the dataframe.
+    Concatenates the new information with the dataframe and adds "_dif" as
+    suffix to the created columns.
+
+    Args:
+        keys: T.List[str]: Columns to create derivatives from.
 
     Example:
         >>> data = pd.DataFrame({'a': [1.0, 2.0, 1.0]})
@@ -1039,18 +1064,13 @@ class DifferentialCreator(BaseEstimator, TransformerMixin):
     """
 
     def __init__(self, *, columns: T.List[str]):
-        """Initialize `DifferentialCreator`.
-
-        Attributes:
-            keys: T.List[str]: Columns to create derivatives
-        """
         super().__init__()
         self._columns = columns
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.DataFrame, y=None):
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame):
         """Calculate differences between subsequent points. Fill NaN with zero.
 
         Args:
@@ -1059,10 +1079,12 @@ class DifferentialCreator(BaseEstimator, TransformerMixin):
         Returns:
             pd.DataFrame: Returns the concatenated DataFrame.
         """
-        X_dif = (X[self._columns]
-                 .diff(axis=0)
-                 .fillna(0)
-                 .add_suffix('_dif'))
+        X_dif = (
+            X[self._columns]
+            .diff(axis=0)
+            .fillna(0)
+            .add_suffix('_dif')
+        )
         return pd.concat([X, X_dif], axis=1)
 
 
@@ -1073,6 +1095,15 @@ class ClippingMinMaxScaler(
     percentile of the fitted data, i.e., ``p``% of the data is below.
     Data which exceeds the limits of ``feature_range`` after the scaling can be
     clipped to specific values via a ``clip`` range.
+
+    Args:
+        feature_range (T.Tuple[float, float]): New feature min and max.
+            Defaults to (0., 1.).
+        clip (T.Tuple[float, float]): Range to clip values. Defaults to
+            None.
+        p (float): Percentile of data that is used as data maximum.
+            Defaults to 100.
+        copy (bool, optional): Whether to create a copy. Defaults to True.
 
     Example:
         >>> data = pd.DataFrame({'a': [1, 2, 3, 4]})
@@ -1096,7 +1127,6 @@ class ClippingMinMaxScaler(
 
     _parameter_constraints: T.Dict[str, list] = {
         'feature_range': [tuple, list],
-        'copy': ['boolean'],
         'clip': [None, tuple, list],
         'p': [int, float]
     }
@@ -1106,25 +1136,11 @@ class ClippingMinMaxScaler(
         feature_range: T.Tuple[float, float] = (0, 1),
         *,
         clip: T.Optional[T.Tuple[float, float]] = None,
-        p: float = 100.,
-        copy: bool = True
+        p: float = 100.
     ):
-        """Initializes `ClippingMinMaxScaler`.
-
-        Args:
-            feature_range (T.Tuple[float, float]): New feature min and max.
-              Defaults to (0., 1.).
-            clip (T.Tuple[float, float]): Range to clip values. Defaults to
-              None.
-            p (float): Percentile of data that is used as data maximum.
-              Defaults to 100.
-            copy (bool, optional): Whether to create a copy. Defaults to True.
-        """
-
         self.feature_range = feature_range
         self.clip = clip
         self.p = p
-        self.copy = copy
 
     def fit(self, X, y=None):
         """Fits the scaler to the data.
@@ -1172,7 +1188,7 @@ class ClippingMinMaxScaler(
 
         X = self._validate_data(
             X,
-            copy=self.copy,
+            copy=True,
             dtype=FLOAT_DTYPES,
             reset=False
         )
