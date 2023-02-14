@@ -10,7 +10,9 @@ __all__ = [
     'check_ndim',
     'check_size',
     'rename_keys',
-    'RangeDict'
+    'RangeDict',
+    'flatten',
+    'convert_sequences'
 ]
 
 
@@ -236,6 +238,35 @@ def flatten(
             items.append((key, v))
 
     return dict(items)
+
+
+def convert_sequences(mapping: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
+    """Converts sequences in ``mapping`` to a dict by the index.
+
+    Args:
+        mapping (T.Dict[str, T.Any]): Input dict.
+
+    Returns:
+        T.Dict[str, T.Any]: Returns the new dict.
+
+    Example:
+        >>> mapping = {'a': {'b':[{'c': 0, 'd': {'e': 1}},'f']}}
+        >>> convert_sequence(mapping)
+            {'a': {'b': {'0': {'c': 0, 'd': {'e': 1}}, '1': 'f'}}}
+    """
+    new_mapping: T.Dict[str, T.Any] = {}
+    for k, v in mapping.items():
+        if isinstance(v, dict):
+            new_mapping[k] = convert_sequences(v)
+        elif isinstance(v, T.Sequence) and not isinstance(v, str):
+            new_mapping[k] = convert_sequences({
+                str(i): v
+                for i, v in enumerate(v)
+            })
+        else:
+            new_mapping[k] = v
+
+    return new_mapping
 
 
 class RangeDict(dict):
