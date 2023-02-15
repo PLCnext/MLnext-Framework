@@ -240,11 +240,15 @@ def flatten(
     return dict(items)
 
 
-def convert_sequences(mapping: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
+def convert_sequences(
+    mapping: T.Dict[str, T.Any],
+    ignore_sequence_types: T.Tuple[T.Type, ...] = tuple()
+) -> T.Dict[str, T.Any]:
     """Converts sequences in ``mapping`` to a dict by the index.
 
     Args:
         mapping (T.Dict[str, T.Any]): Input dict.
+        ignore_sequence_types: Sequence types to leave as-is.
 
     Returns:
         T.Dict[str, T.Any]: Returns the new dict.
@@ -257,12 +261,13 @@ def convert_sequences(mapping: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
     new_mapping: T.Dict[str, T.Any] = {}
     for k, v in mapping.items():
         if isinstance(v, dict):
-            new_mapping[k] = convert_sequences(v)
-        elif isinstance(v, T.Sequence) and not isinstance(v, str):
+            new_mapping[k] = convert_sequences(v, ignore_sequence_types)
+        elif (isinstance(v, T.Sequence) and
+              not isinstance(v, (str, *ignore_sequence_types))):
             new_mapping[k] = convert_sequences({
                 str(i): v
                 for i, v in enumerate(v)
-            })
+            }, ignore_sequence_types)
         else:
             new_mapping[k] = v
 

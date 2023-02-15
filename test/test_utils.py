@@ -343,18 +343,18 @@ def test_rangedict_fails(mapping: T.Dict, check: int):
 
 
 @pytest.mark.parametrize(
-    'mapping,exp',
+    'mapping,ignore_sequence_types,exp',
     [
         (
-            {'a': {'b': [{'c': 0, 'd': {'e': 1}}, 'f']}},
+            {'a': {'b': [{'c': 0, 'd': {'e': 1}}, 'f']}}, (str,),
             {'a': {'b': {'0': {'c': 0, 'd': {'e': 1}}, '1': 'f'}}}
         ),
         (
-            {'a': {'b': [{'c': ['g'], 'd': {'e': 1}}, 'f']}},
+            {'a': {'b': [{'c': ['g'], 'd': {'e': 1}}, 'f']}}, (str,),
             {'a': {'b': {'0': {'c': {'0': 'g'}, 'd': {'e': 1}}, '1': 'f'}}}
         ),
         (
-            {'a': {'b': [{'c': [['g'], ['h']], 'd': {'e': 1}}, 'f']}},
+            {'a': {'b': [{'c': [['g'], ['h']], 'd': {'e': 1}}, 'f']}}, (str,),
             {'a':
                 {
                     'b':
@@ -369,20 +369,33 @@ def test_rangedict_fails(mapping: T.Dict, check: int):
              }
         ),
         (
-            {'a': {'b': ({'c': 0, 'd': {'e': 1}}, 'f')}},
+            {'a': {'b': ({'c': 0, 'd': {'e': 1}}, 'f')}}, (str,),
             {'a': {'b': {'0': {'c': 0, 'd': {'e': 1}}, '1': 'f'}}}
         ),
         (
-            {'a': {'b': '1'}},
+            {'a': {'b': '1'}}, (str,),
             {'a': {'b': '1'}}
+        ),
+        (
+            {'a': {'b': '1'}}, (str,),
+            {'a': {'b': '1'}}
+        ),
+        (
+            {'a': {'b': ['1']}}, (list,),
+            {'a': {'b': ['1']}}
+        ),
+        (
+            {'a': {'b': ['1', '2']}}, (list,),
+            {'a': {'b': ['1', '2']}}
         )
     ]
 )
 def test_convert_sequences(
     mapping: T.Dict[str, T.Any],
+    ignore_sequence_types: T.Tuple[T.Type, ...],
     exp: T.Dict[str, T.Any]
 ):
 
-    result = convert_sequences(mapping)
+    result = convert_sequences(mapping, ignore_sequence_types)
 
     assert result == exp
