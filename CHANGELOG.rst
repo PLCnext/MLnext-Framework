@@ -12,6 +12,22 @@ Changes for the upcoming release can be found in the `"changelog" directory <htt
 
 .. towncrier release notes start
 
+0.4.1 (2023-05-12)
+------------------
+
+
+
+
+Features
+^^^^^^^^
+
+- fixed ``mlnext.find_anomalies`` for scalar inputs (every dimension 1)
+  `#52 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/52>`__
+
+
+----
+
+
 0.4.0 (2023-01-27)
 ------------------
 
