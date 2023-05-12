@@ -1,0 +1,1 @@
+fixed ``mlnext.find_anomalies`` for scalar inputs (every dimension 1)
