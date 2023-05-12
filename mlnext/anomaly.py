@@ -41,7 +41,7 @@ def find_anomalies(
         [(1, 2), (4, 4), (6, 7)]
     """
 
-    y = np.array(y).squeeze()
+    y = np.atleast_1d(np.array(y).squeeze())
     check_ndim(y, ndim=1)
 
     y = pd.Series(y)
