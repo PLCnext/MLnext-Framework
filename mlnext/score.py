@@ -35,7 +35,7 @@ __all__ = [
     'PRCurve',
     'pr_curve',
     'auc_point_adjust_metrics',
-    'point_adjust_metrics'
+    'point_adjust_metrics',
 ]
 
 
