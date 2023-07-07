@@ -43,7 +43,7 @@ with open(os.path.join(HERE, 'docs/requirements.txt')) as f:
     EXTRAS_REQUIRE['docs'] = f.read().splitlines()
 
 EXTRAS_REQUIRE['dev'] = (
-    EXTRAS_REQUIRE['tests'] + EXTRAS_REQUIRE['docs'] + ['pre-commit']
+    EXTRAS_REQUIRE['tests'] + EXTRAS_REQUIRE['docs'] + ['pre-commit', 'tox']
 )
 
 ###############################################################################
