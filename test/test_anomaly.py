@@ -6,6 +6,7 @@ import pytest
 from mlnext.anomaly import apply_point_adjust
 from mlnext.anomaly import apply_point_adjust_score
 from mlnext.anomaly import find_anomalies
+from mlnext.anomaly import hit_rate_at_p
 from mlnext.anomaly import rank_features
 from mlnext.anomaly import recall_anomalies
 from mlnext.score import apply_threshold
@@ -346,3 +347,35 @@ def test_recall_anomalies_fails(
         recall_anomalies(y, y_hat, k=k)
 
     assert ex.value.args[0] == msg
+
+
+@pytest.mark.parametrize(('p'), (100, 150))
+@pytest.mark.parametrize(
+    ('dims', 'ranking', 'exp'),
+    (
+        ([2], [1, 3, 6, 2, 5, 4], [0.0, 0.0]),
+        ([2], [2, 3, 6, 1, 5, 4], [1.0, 1.0]),
+        ([2, 6], [5, 3, 1, 4, 2, 6], [0.0, 0.0]),
+        ([3, 6], [5, 2, 3, 4, 1, 6], [0.0, 0.5]),
+        ([6, 2], [6, 5, 1, 4, 3, 2], [0.5, 0.5]),
+        ([2, 6], [2, 6, 4, 1, 2, 3], [1.0, 1.0]),
+        ([1, 6, 4], [3, 8, 7, 2, 1, 6, 5, 4], [0.0, 0.0]),
+        ([3, 4, 8], [4, 6, 1, 2, 7, 8, 5, 3], [0.33, 0.33]),
+        ([3, 4, 8], [4, 6, 1, 8, 7, 2, 5, 3], [0.33, 0.66]),
+        ([1, 6, 4], [4, 6, 1, 2, 7, 8, 5, 3], [1.0, 1.0]),
+        ([], [2, 3, 1, 4], [0.0, 0.0]),
+        ([2, 3, 1, 4], [2, 3, 1, 4], [1.0, 1.0]),
+        ([2, 3, 1, 4], [2, 3, 1], [0.75, 0.75]),
+    ),
+)
+def test_hit_rate_at_p(
+    dims: np.ndarray,
+    ranking: np.ndarray,
+    p: T.Literal[100, 150],
+    exp: T.List[float]
+):
+    expected: float = exp[0] if p == 100 else exp[1]
+
+    result = hit_rate_at_p(dims, ranking, p=p)
+
+    np.testing.assert_almost_equal(result, expected, decimal=2)

@@ -19,6 +19,7 @@ __all__ = [
     'rank_features',
     'apply_point_adjust',
     'apply_point_adjust_score',
+    'hit_rate_at_p',
 ]
 
 
@@ -356,3 +357,49 @@ def apply_point_adjust_score(
         y_score[s][mask] = score
 
     return y_score
+
+
+def hit_rate_at_p(
+    dims: T.List[float],
+    ranking: T.List[float],
+    *,
+    p: T.Literal[100, 150] = 100
+) -> float:
+    """Equals the percentage of overlapping dimensions between ``dims`` and
+    the top contributing dimensions in the ``ranking`` suggested by
+    `OmniAnomaly <https://dl.acm.org/doi/10.1145/3292500.3330672>`_.
+
+    Args:
+        dims (T.List[float]): (Ground truth) Array which contains the
+          dimensions indeed contributing to a given anomaly.
+        ranking (T.List[float]): Array of all dimensions ordered by their
+          contributions.
+        p (literal): Number of dimensions (``len(dims) * p/100``) looked up in
+          ``ranking``.
+
+    Returns:
+        float: Returns the HitRate@P.
+
+    Example:
+        >>> import mlnext
+        >>> mlnext.hit_rate_at_p([6, 2], [6, 5, 1, 4, 3, 2], p=100)
+        0.5
+    """
+    dims, ranking = np.array(dims), np.array(ranking)
+    check_ndim(dims, ranking, ndim=1, strict=True)
+
+    i: int = 0
+    hit: int = 0
+    length: int = min(len(ranking), int(np.floor(len(dims) * p/100)))
+
+    if length <= 0:
+        return 0
+
+    while i < length:
+        if ranking[i] in dims:
+            hit += 1
+        i += 1
+
+    hit_p: float = hit / len(dims)
+
+    return hit_p
