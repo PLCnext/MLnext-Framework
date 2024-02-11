@@ -155,7 +155,8 @@ class TestSplit(TestCase):
         label = pd.DataFrame(np.zeros(5), columns=['Label'])
         result = add_noise(data, label, 3)
 
-        pd.testing.assert_frame_equal(result, expected)
+        pd.testing.assert_frame_equal(result['data'], expected['data'])
+        pd.testing.assert_frame_equal(result['label'], expected['label'])
 
 
 @pytest.fixture
