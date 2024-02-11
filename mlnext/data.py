@@ -1,11 +1,11 @@
 """ Module for data loading and manipulation.
 """
-from math import floor
 import os
-from random import randrange
 import random
 import typing as T
 import warnings
+from math import floor
+from random import randrange
 
 import numpy as np
 import pandas as pd
@@ -338,7 +338,7 @@ def sample_bernoulli(mean: np.ndarray) -> np.ndarray:
 
 
 def train_val_test_split(
-    data: pd.DataFrame, 
+    data: pd.DataFrame,
     test_size: float = 0.25,
     val_size: float = 0.25,
     random_state: int = 0,
@@ -349,31 +349,30 @@ def train_val_test_split(
     anomaly_length_max: int = 2,
     variance: float = 0.1
 ) -> T.Dict[str, pd.DataFrame]:
-    
-    """Splits data into three data sets for training, validation and test 
+    """Splits data into three data sets for training, validation and test
     while adding anomalies in the test set. For continous features, Gaussian
     noise with mean 0 and parametrized varance is added. For boolean features,
     an anomaly represents a value flipping.
 
      Args:
         data (pd.DataFrame): Data to split and manipulate.
-        test_size (float): Should be between 0.0 and 1.0 and represent the 
+        test_size (float): Should be between 0.0 and 1.0 and represent the
           proportion of the dataset to include in the test set.
-        val_size (float): Should be between 0.0 and 1.0 and represent the 
+        val_size (float): Should be between 0.0 and 1.0 and represent the
           proportion of the dataset to include in the validation set.
-        random_state (int): Controls the shuffling applied to the data before 
-          applying the split. Pass an int for reproducible output across 
+        random_state (int): Controls the shuffling applied to the data before
+          applying the split. Pass an int for reproducible output across
           multiple function calls.
-        shuffle (bool): Whether or not to shuffle the data before splitting.    
+        shuffle (bool): Whether or not to shuffle the data before splitting.
         anomaly_density (float): Should be between 0.0 and 1.0 and represent
-          the number of chunks for anomalies in the test set. At 0.0, only one 
+          the number of chunks for anomalies in the test set. At 0.0, only one
           anomaly chunk is created. At 1.0, the maximum amound of possible
           anomaly chunks is created.
         anomaly_proba (float): Probaility of a chunk containing an anomaly.
         anomaly_length_min (int): Minimum size of an anomaly.
         anomaly_length_max (int): Maximum size of an anomaly.
         variance (float): Variance used for the Gaussian noise.
-        
+
     Returns:
          T.Dict[str, pd.DataFrame]:  Returns a dict with data sets and labels.
 
@@ -397,27 +396,27 @@ def train_val_test_split(
         0     0
         1     1
         2     2
-        3     3, 
-        
+        3     3,
+
         'X_val':data
         4     4
-        5     5, 
-        
+        5     5,
+
         'X_test':data
         6  6.477456
         7  7.000000
-        8  8.000000, 
+        8  8.000000,
 
         'y_train':Label
         0    0.0
         1    0.0
         2    0.0
-        3    0.0, 
-        
+        3    0.0,
+
         'y_val':Label
         0    0.0
-        1    0.0, 
-        
+        1    0.0,
+
         'y_test':Label
         0    1.0
         1    0.0
@@ -427,13 +426,13 @@ def train_val_test_split(
     # disable chained assignment warning since behaviour is intended
     pd.options.mode.chained_assignment = None
     # split the data into train, validation, and test sets
-    X_train, X_test = train_test_split(data, 
-                                       test_size=test_size, 
-                                       random_state=random_state, 
+    X_train, X_test = train_test_split(data,
+                                       test_size=test_size,
+                                       random_state=random_state,
                                        shuffle=shuffle)
-    X_train, X_val = train_test_split(X_train, 
-                                      test_size=val_size, 
-                                      random_state=random_state, 
+    X_train, X_val = train_test_split(X_train,
+                                      test_size=val_size,
+                                      random_state=random_state,
                                       shuffle=shuffle)
     # create labels
     y_train = pd.DataFrame(np.zeros(len(X_train)), columns=['Label'])
@@ -445,7 +444,7 @@ def train_val_test_split(
     num_chunks = int(max(1, num_possible_chunks * anomaly_density))
     # calculate the size per chunk
     chunk_size = int(X_test.shape[0]/num_chunks)
-   
+
     for i in range(num_chunks):
         # draw if anomaly exists in chunk
         if random.random() < anomaly_proba:
@@ -455,14 +454,14 @@ def train_val_test_split(
             start = chunk_size * i
             end = start + chunk_size
             #  manipulate the data
-            anomaly = add_noise(X_test.iloc[start:end,:],
-                                y_test.iloc[start:end,:], 
-                                anomaly_size, 
+            anomaly = add_noise(X_test.iloc[start:end, :],
+                                y_test.iloc[start:end, :],
+                                anomaly_size,
                                 variance)
             # insert anomalous data
-            X_test.iloc[start:end,:]  = anomaly['data']
-            y_test.iloc[start:end,:]  = anomaly['label']
-            
+            X_test.iloc[start:end, :] = anomaly['data']
+            y_test.iloc[start:end, :] = anomaly['label']
+
     data = {'X_train': X_train,
             'X_val': X_val,
             'X_test': X_test,
@@ -475,13 +474,12 @@ def train_val_test_split(
 
 
 def add_noise(
-        data: pd.DataFrame, 
-        label: pd.DataFrame, 
-        length: int = 1, 
+        data: pd.DataFrame,
+        label: pd.DataFrame,
+        length: int = 1,
         variance: float = 1.0
-        ) -> T.Dict[str, pd.DataFrame]:
-    
-    """Splits data into three data sets for training, validation and test 
+) -> T.Dict[str, pd.DataFrame]:
+    """Splits data into three data sets for training, validation and test
     while adding anomalies in the test set. For continous features, Gaussian
     noise with mean 0 and parametrized varance is added. For boolean features,
     an anomaly represents a value flipping.
@@ -491,7 +489,7 @@ def add_noise(
         data (pd.DataFrame): Label to indicate anomaly position.
         length (int): Length of the anomly.
         variance (float): Variance used for the Gaussian noise.
-        
+
     Returns:
          T.Dict[str, pd.DataFrame]: Returns the manipulated data and labels.
 
@@ -520,7 +518,7 @@ def add_noise(
         1  1.214670
         2  3.406815
         3  3.000000
-        4  4.000000, 
+        4  4.000000,
         'label':    Label
         0    1.0
         1    1.0
@@ -528,7 +526,7 @@ def add_noise(
         3    0.0
         4    0.0}
     """
-    
+
     for col in data:
         # create random noise for continous features
         if len(np.unique(data[col])) > 2:
@@ -537,8 +535,9 @@ def add_noise(
             data[col][0:length] = data[col][0:length] + noise
             label['Label'][0:length] = 1
         # switch labels for bollean features
-        else:         
-            data[col][0:length] = data[col][0:length] * - 1 + sum(np.unique(data[col]))
+        else:
+            data[col][0:length] = data[col][0:length] * - \
+                1 + sum(np.unique(data[col]))
             label['Label'][0:length] = 1
 
-    return {'data':data, 'label':label}
+    return {'data': data, 'label': label}
