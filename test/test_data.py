@@ -1,9 +1,11 @@
 import os
 from unittest import TestCase
+from mlnext.data import add_noise, train_val_test_split
 
 import numpy as np
 import pandas as pd
 import pytest
+from scipy.signal import square
 from testfixtures import TempDirectory
 
 import mlnext
@@ -110,6 +112,53 @@ class TestSample(TestCase):
 
         self.assertEqual(result, expected)
 
+class TestSplit(TestCase):
+
+    def test_train_val_test_split(self):
+
+        np.random.seed(0)
+
+        resolution = 1000 
+        length = np.pi * 2 * 4
+
+        wave = ((np.sin(np.arange(0, length, length / resolution))) + 1 ) / 2
+        bool = ((square(np.arange(0, length, length / resolution))) + 1 ) / 2
+
+        data = {'sin': wave, 'bool': bool}
+
+        data = pd.DataFrame(data)
+
+        result = train_val_test_split(data,
+                                      test_size= 0.99,
+                                      anomaly_density=1.0, 
+                                      anomaly_proba=1.0, 
+                                      anomaly_length_min=50, 
+                                      anomaly_length_max=100,
+                                      variance= 0.005)
+        
+    def test_add_noise(self):
+
+        np.random.seed(0)
+
+        expected = {'data': pd.DataFrame([1.764052, 
+                                          1.400157, 
+                                          2.978738, 
+                                          3.000000, 
+                                          4.000000], 
+                                          columns=['data']),
+                    'label':pd.DataFrame([1.0, 
+                                          1.0, 
+                                          1.0, 
+                                          0.0, 
+                                          0.0],
+                                          columns=['Label']),
+                    }
+
+        data = pd.DataFrame(np.arange(0,5), columns=['data'])
+        label = pd.DataFrame(np.zeros(5), columns=['Label'])
+        result = add_noise(data, label, 3)
+
+        self.assertEqual(result, expected)
 
 @pytest.fixture
 def data(request) -> np.ndarray:
