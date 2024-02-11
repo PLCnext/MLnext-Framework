@@ -56,6 +56,9 @@ def l2_norm(
         np.ndarray: Returns the l2-norm between x and x_hat.
 
     Example:
+        >>> import numpy as np
+        >>> import mlnext
+        >>> # Calculate L2 Norm
         >>> l2_norm(np.array([0.1, 0.2]), np.array([0.14, 0.2]))
         np.ndarray([[0.04]])
         >>> l2_norm(np.array([0.1, 0.2]), np.array([0.14, 0.2]), reduce=False)
@@ -92,6 +95,20 @@ def norm_log_likelihood(
 
     Returns:
         np.ndarray: Returns the negative log likelihood.
+
+    Example:
+        >>> import numpy as np
+        >>> import math
+        >>> import mlnext
+        >>> # Create random distribution
+        >>> x = np.random.rand(3)
+        >>> # Calculate mean and log variance
+        >>> mean = x.mean()
+        >>> log_var = math.log(x.var())
+        >>> # Calculate the normal log likelihood
+        >>> result = norm_log_likelihood(x, mean, log_var)
+        >>> print(result)
+        [-0.93036    -0.64362393 -1.49469021]
     """
     a = np.log(2. * np.pi) * np.ones(np.shape(x)) + log_var
     b = (x - mean)**2 / (np.exp(log_var) + 1e-10)
@@ -114,8 +131,18 @@ def bern_log_likelihood(x: np.ndarray, mean: np.ndarray) -> np.ndarray:
 
     Returns:
         np.ndarray: Returns the negative log likelihood.
-    """
 
+    Example:
+        >>> import numpy as np
+        >>> # Create boolean array
+        >>> x = np.array([0,0,1])
+        >>> # Calculate mean
+        >>> mean = x.mean()
+        >>> # Calculate the bernoulli log likelihood
+        >>> result = bern_log_likelihood(x, mean)
+        >>> print(result)
+        [0.40546511 0.40546511 1.09861229]
+    """
     a = x * np.log(mean + 1e-10)
     b = (1 - x) * np.log(1 - mean + 1e-10)
 
@@ -140,6 +167,17 @@ def kl_divergence(
 
     Returns:
         np.ndarray: Returns the kl divergence between two normal distributions.
+
+    Example:
+        >>> import numpy as np
+        >>> # Determine mean and log variance
+        >>> mean = np.array(0.2)
+        >>> log_var = np.array(1.0)
+        >>> # Calculate the kl divergence
+        >>> result = kl_divergence(x, mean, prior_mean, prior_std)
+        >>> print(result)
+        [0.01070138 0.01070138 0.51070138]
+
     """
 
     prior_mean = np.ones(mean.shape) * prior_mean  # type:ignore
