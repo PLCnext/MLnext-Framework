@@ -6,5 +6,4 @@ For technical support please contact your local Phoenix Contact agency at `phoen
 
 | Owner:
 | Phoenix Contact Electronics GmbH
-| Industry Management and Automation
 | Vertical Market Management Factory Automation
