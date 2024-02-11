@@ -112,6 +112,7 @@ class TestSample(TestCase):
 
         self.assertEqual(result, expected)
 
+
 class TestSplit(TestCase):
 
     def test_train_val_test_split(self):
@@ -120,12 +121,9 @@ class TestSplit(TestCase):
 
         resolution = 1000 
         length = np.pi * 2 * 4
-
         wave = ((np.sin(np.arange(0, length, length / resolution))) + 1 ) / 2
         bool = ((square(np.arange(0, length, length / resolution))) + 1 ) / 2
-
         data = {'sin': wave, 'bool': bool}
-
         data = pd.DataFrame(data)
 
         result = train_val_test_split(data,
@@ -159,6 +157,7 @@ class TestSplit(TestCase):
         result = add_noise(data, label, 3)
 
         self.assertEqual(result, expected)
+        
 
 @pytest.fixture
 def data(request) -> np.ndarray:
