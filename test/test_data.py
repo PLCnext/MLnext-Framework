@@ -4,7 +4,6 @@ from unittest import TestCase
 import numpy as np
 import pandas as pd
 import pytest
-from scipy.signal import square
 from testfixtures import TempDirectory
 
 import mlnext
@@ -123,8 +122,7 @@ class TestSplit(TestCase):
         resolution = 1000
         length = np.pi * 2 * 4
         wave = ((np.sin(np.arange(0, length, length / resolution))) + 1) / 2
-        bool = ((square(np.arange(0, length, length / resolution))) + 1) / 2
-        data = {'sin': wave, 'bool': bool}
+        data = {'sin': wave}
         data = pd.DataFrame(data)
 
         train_val_test_split(data,
@@ -157,7 +155,7 @@ class TestSplit(TestCase):
         label = pd.DataFrame(np.zeros(5), columns=['Label'])
         result = add_noise(data, label, 3)
 
-        self.assertEqual(result, expected)
+        pd.testing.assert_frame_equal(result, expected)
 
 
 @pytest.fixture
