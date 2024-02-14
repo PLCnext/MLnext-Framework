@@ -446,7 +446,7 @@ def train_val_test_split(
                                  anomaly_size,
                                  variance=variance)
             # insert anomalous data
-            X_test.iloc[start:end, X_test.columns] = anomaly[0]
+            X_test.iloc[start:end, :] = anomaly[0]
             y_test.iloc[start:end, :] = anomaly[1]
 
     splits = DataSplits(X_train=X_train,

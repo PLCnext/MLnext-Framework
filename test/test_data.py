@@ -152,7 +152,7 @@ class TestSplit(TestCase):
 
         data = pd.DataFrame(np.arange(0, 5), columns=['data'])
         label = pd.DataFrame(np.zeros(5), columns=['Label'])
-        result = _add_noise(data, label, 3)
+        result = _add_noise(data, data.columns, label, 3)
 
         pd.testing.assert_frame_equal(result['data'], expected['data'])
         pd.testing.assert_frame_equal(result['label'], expected['label'])
