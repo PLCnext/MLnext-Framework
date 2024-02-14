@@ -341,14 +341,14 @@ def train_val_test_split(
     data: pd.DataFrame,
     test_size: float = 0.25,
     val_size: float = 0.25,
-    random_state: int = 0,
+    random_state: T.Optional[int] = 0,
     shuffle: bool = False,
-    anomaly_density: float = 0.5,
-    anomaly_proba: float = 0.5,
-    anomaly_length_min: int = 1,
-    anomaly_length_max: int = 2,
+    anomaly_density: float = 0.1,
+    anomaly_proba: float = 0.1,
+    anomaly_length: T.Tuple[int, int] = (1, 2),
+    num_cols: T.Tuple[int, int] = (0, 1),
     variance: float = 0.1
-) -> T.Dict[str, pd.DataFrame]:
+) -> T.NamedTuple:
     """Splits data into three data sets for training, validation and test
     while adding anomalies in the test set. For continous features, Gaussian
     noise with mean 0 and parametrized varance is added. For boolean features,
@@ -364,17 +364,20 @@ def train_val_test_split(
           applying the split. Pass an int for reproducible output across
           multiple function calls.
         shuffle (bool): Whether or not to shuffle the data before splitting.
+        For time series, shuffle should be avoided to keep the time relation.
         anomaly_density (float): Should be between 0.0 and 1.0 and represent
           the number of chunks for anomalies in the test set. At 0.0, only one
           anomaly chunk is created. At 1.0, the maximum amound of possible
           anomaly chunks is created.
         anomaly_proba (float): Probaility of a chunk containing an anomaly.
-        anomaly_length_min (int): Minimum size of an anomaly.
-        anomaly_length_max (int): Maximum size of an anomaly.
+        anomaly_length (Tuple[int, int]): Minimum and maximum size of an
+          anomaly created.
+        num_cols (Tuple[int, int]): Minimum and maximum number of affected
+          columns per anomaly.
         variance (float): Variance used for the Gaussian noise.
 
     Returns:
-         T.Dict[str, pd.DataFrame]:  Returns a dict with data sets and labels.
+         T.NamedTuple:  Returns a named tuple with data sets and labels.
 
     Example:
         >>> # Create data sets for training, validation and testing
@@ -392,35 +395,14 @@ def train_val_test_split(
         8     8
         >>> result = train_val_test_split(data)
         >>> print(result)
-        {'X_train':data
-        0     0
-        1     1
-        2     2
-        3     3,
-
-        'X_val':data
-        4     4
-        5     5,
-
-        'X_test':data
-        6  6.477456
-        7  7.000000
-        8  8.000000,
-
-        'y_train':Label
-        0    0.0
-        1    0.0
-        2    0.0
-        3    0.0,
-
-        'y_val':Label
-        0    0.0
-        1    0.0,
-
-        'y_test':Label
-        0    1.0
-        1    0.0
-        2    0.0}
+        {
+            'X_train': pd.DataFrame({'data': [0, 1, 2, 3]}),
+            'y_train': pd.DataFrame({'label': [0, 0, 0, 0]}),
+            'X_val': pd.DataFrame({'data': [4, 5]}),
+            'y_val': pd.DataFrame({'label': [0, 0]}),
+            'X_test': pd.DataFrame({'data': [6.477456, 7, 8]}),
+            'y_test': pd.DataFrame({'label': [1, 0, 0]})
+        }
     """
 
     # disable chained assignment warning since behaviour is intended
@@ -439,7 +421,7 @@ def train_val_test_split(
     y_val = pd.DataFrame(np.zeros(len(X_val)), columns=['Label'])
     y_test = pd.DataFrame(np.zeros(len(X_test)), columns=['Label'])
     # calculate number of possible chunks
-    num_possible_chunks = floor(X_test.shape[0] / anomaly_length_max)
+    num_possible_chunks = floor(X_test.shape[0] / anomaly_length[1])
     # calculate number of chunks in which the data is distributed
     num_chunks = int(max(1, num_possible_chunks * anomaly_density))
     # calculate the size per chunk
@@ -448,37 +430,51 @@ def train_val_test_split(
     for i in range(num_chunks):
         # draw if anomaly exists in chunk
         if random.random() < anomaly_proba:
+            # draw how many colums are affected
+            cols_num = randrange(num_cols[0], num_cols[1])
+            # sample data frame with random columns to get column names
+            X_test_cols = X_test.sample(n=cols_num, axis='columns').columns
             # generate random anomaly size
-            anomaly_size = randrange(anomaly_length_min, anomaly_length_max)
+            anomaly_size = randrange(anomaly_length[0], anomaly_length[1])
             #  define start and end of chunk piece
             start = chunk_size * i
             end = start + chunk_size
             #  manipulate the data
-            anomaly = add_noise(X_test.iloc[start:end, :],
-                                y_test.iloc[start:end, :],
-                                anomaly_size,
-                                variance)
+            anomaly = _add_noise(X_test.iloc[start:end, :],
+                                 X_test_cols,
+                                 y_test.iloc[start:end, :],
+                                 anomaly_size,
+                                 variance=variance)
             # insert anomalous data
-            X_test.iloc[start:end, :] = anomaly['data']
-            y_test.iloc[start:end, :] = anomaly['label']
+            X_test.iloc[start:end, X_test.columns] = anomaly[0]
+            y_test.iloc[start:end, :] = anomaly[1]
 
-    data = {'X_train': X_train,
-            'X_val': X_val,
-            'X_test': X_test,
-            'y_train': y_train,
-            'y_val': y_val,
-            'y_test': y_test
-            }
+    splits = DataSplits(X_train=X_train,
+                        X_val=X_val,
+                        X_test=X_test,
+                        y_train=y_train,
+                        y_val=y_val,
+                        y_test=y_test)
 
-    return data
+    return splits
 
 
-def add_noise(
+class DataSplits(T.NamedTuple):
+    X_train: pd.DataFrame
+    y_train: pd.DataFrame
+    X_test: pd.DataFrame
+    y_test: pd.DataFrame
+    X_val: pd.DataFrame
+    y_val: pd.DataFrame
+
+
+def _add_noise(
         data: pd.DataFrame,
-        label: pd.DataFrame,
+        columns: T.List[str],
+        lable: pd.DataFrame,
         length: int = 1,
         variance: float = 1.0
-) -> T.Dict[str, pd.DataFrame]:
+) -> T.Tuple[pd.DataFrame, pd.DataFrame]:
     """Splits data into three data sets for training, validation and test
     while adding anomalies in the test set. For continous features, Gaussian
     noise with mean 0 and parametrized varance is added. For boolean features,
@@ -486,12 +482,13 @@ def add_noise(
 
      Args:
         data (pd.DataFrame): Data to manipulate.
-        data (pd.DataFrame): Label to indicate anomaly position.
+        columns (List[str]): List of column names to manipulate.
+        lable (pd.DataFrame): Lable to indicate anomaly position.
         length (int): Length of the anomly.
         variance (float): Variance used for the Gaussian noise.
 
     Returns:
-         T.Dict[str, pd.DataFrame]: Returns the manipulated data and labels.
+         T.Tuple[pd.DataFrame, pd.DataFrame]: Returns the anomalous data.
 
     Example:
         >>> # Manipluate the data and set the corresponding labels
@@ -506,11 +503,11 @@ def add_noise(
         >>> label = pd.DataFrame(np.zeros(5), columns=['Label'])
         >>> print(label)
             Label
-        0    0.0
-        1    0.0
-        2    0.0
-        3    0.0
-        4    0.0
+        0    False
+        1    False
+        2    False
+        3    False
+        4    False
         >>> result = add_noise(data, label, 3)
         >>> print(result)
         {'data':        data
@@ -520,24 +517,29 @@ def add_noise(
         3  3.000000
         4  4.000000,
         'label':    Label
-        0    1.0
-        1    1.0
-        2    1.0
-        3    0.0
-        4    0.0}
+        0    True
+        1    True
+        2    True
+        3    False
+        4    False}
     """
 
-    for col in data:
+    for col in columns:
         # create random noise for continous features
         if len(np.unique(data[col])) > 2:
             size = data[col][0:length].size
             noise = np.random.normal(0, variance, size=size)
             data[col][0:length] = data[col][0:length] + noise
-            label['Label'][0:length] = 1
+            lable['Label'][0:length] = 1
         # switch labels for bollean features
         else:
             data[col][0:length] = data[col][0:length] * - \
                 1 + sum(np.unique(data[col]))
-            label['Label'][0:length] = 1
+            lable['Label'][0:length] = 1
 
-    return {'data': data, 'label': label}
+    return DataLabel(data=data, lable=lable)
+
+
+class DataLabel(T.NamedTuple):
+    data: pd.DataFrame
+    lable: pd.DataFrame

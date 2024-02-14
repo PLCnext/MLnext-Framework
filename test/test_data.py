@@ -7,7 +7,7 @@ import pytest
 from testfixtures import TempDirectory
 
 import mlnext
-from mlnext.data import add_noise
+from mlnext.data import _add_noise
 from mlnext.data import train_val_test_split
 
 
@@ -129,8 +129,7 @@ class TestSplit(TestCase):
                              test_size=0.99,
                              anomaly_density=1.0,
                              anomaly_proba=1.0,
-                             anomaly_length_min=50,
-                             anomaly_length_max=100,
+                             anomaly_length=[50, 100],
                              variance=0.005)
 
     def test_add_noise(self):
@@ -153,7 +152,7 @@ class TestSplit(TestCase):
 
         data = pd.DataFrame(np.arange(0, 5), columns=['data'])
         label = pd.DataFrame(np.zeros(5), columns=['Label'])
-        result = add_noise(data, label, 3)
+        result = _add_noise(data, label, 3)
 
         pd.testing.assert_frame_equal(result['data'], expected['data'])
         pd.testing.assert_frame_equal(result['label'], expected['label'])
