@@ -4,7 +4,7 @@ stages:
   - documentation
   - deploy
 
-image: python:3.8
+image: python:3.10
 before_script:
   - pip install tox
 
