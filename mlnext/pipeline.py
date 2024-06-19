@@ -774,10 +774,10 @@ class Fill(BaseEstimator, TransformerMixin):
         """
         X = X.copy()
 
-        methods: dict[T.Optional[str], T.Callable[..., pd.DataFrame]] = {
+        methods: T.Dict[T.Optional[str], T.Callable[..., pd.DataFrame]] = {
             'ffill': X.ffill,
             'bfill': X.bfill,
-            None: partial(X.fillna, value=self._value), # type: ignore
+            None: partial(X.fillna, value=self._value),  # type: ignore
         }
         return methods[self._method]()
 

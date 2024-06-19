@@ -347,8 +347,8 @@ def apply_point_adjust_score(
 
 
 def hit_rate_at_p(
-    dims: T.List[float] | npt.NDArray,
-    ranking: T.List[float] | npt.NDArray,
+    dims: T.Union[T.List[float], npt.NDArray],
+    ranking: T.Union[T.List[float], npt.NDArray],
     *,
     p: T.Literal[100, 150] = 100,
 ) -> float:
