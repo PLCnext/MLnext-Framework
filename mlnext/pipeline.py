@@ -2,6 +2,7 @@
 import datetime
 import typing as T
 import warnings
+from functools import partial
 
 import numpy as np
 import pandas as pd
@@ -755,8 +756,8 @@ class Fill(BaseEstimator, TransformerMixin):
         super().__init__()
         self._value = value
 
-        if method not in ['ffill', 'bfill']:
-            raise ValueError(f'Invalid method {method}.')
+        if method not in [None, 'ffill', 'bfill']:
+            raise ValueError(f'Invalid method "{method}".')
         self._method = method
 
     def fit(self, X: pd.DataFrame, y=None):
@@ -772,9 +773,13 @@ class Fill(BaseEstimator, TransformerMixin):
             pd.DataFrame: Returns the filled dataframe.
         """
         X = X.copy()
-        methods = {'ffill': X.ffill, 'bfill': X.bfill}
 
-        return methods[self._method](self._value)  # type: ignore
+        methods: dict[T.Optional[str], T.Callable[..., pd.DataFrame]] = {
+            'ffill': X.ffill,
+            'bfill': X.bfill,
+            None: partial(X.fillna, value=self._value), # type: ignore
+        }
+        return methods[self._method]()
 
 
 class TimeOffsetTransformer(BaseEstimator, TransformerMixin):
