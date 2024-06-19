@@ -1,11 +1,11 @@
-"""Module for analyzing anomalies.
-"""
+"""Module for analyzing anomalies."""
 import typing as T
 import warnings
 from operator import ge
 from operator import gt
 
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 from .data import detemporalize
@@ -24,7 +24,7 @@ __all__ = [
 
 
 def find_anomalies(
-    y: T.Union[np.ndarray, pd.DataFrame]
+    y: T.Union[np.ndarray, pd.DataFrame],
 ) -> T.List[T.Tuple[int, int]]:
     """Finds continuous segments of anomalies and returns a list of tuple with
     the start end end index of each anomaly.
@@ -48,9 +48,9 @@ def find_anomalies(
     y = pd.Series(y)
 
     # true for index i when y[i - 1] = 0 and y[i] = 1
-    start = (y > y.shift(1, fill_value=0))
+    start = y > y.shift(1, fill_value=0)
     # true for index i when y[i] = 1 and y[i + 1] = 0
-    end = (y > y.shift(-1, fill_value=0))
+    end = y > y.shift(-1, fill_value=0)
 
     # get indices where true
     start, end = np.flatnonzero(start), np.flatnonzero(end)
@@ -59,10 +59,7 @@ def find_anomalies(
 
 
 def recall_anomalies(
-    y: np.ndarray,
-    y_hat: np.ndarray,
-    *,
-    k: float = 0
+    y: np.ndarray, y_hat: np.ndarray, *, k: float = 0
 ) -> float:
     """Calculates the percentage of anomaly segments that are correctly
     detected. The parameter ``k`` [in %] controls how much of a segments needs
@@ -92,10 +89,7 @@ def recall_anomalies(
 
 
 def _recall_anomalies(
-    anomalies: T.List[T.Tuple[int, int]],
-    y_hat: np.ndarray,
-    *,
-    k: float = 0
+    anomalies: T.List[T.Tuple[int, int]], y_hat: np.ndarray, *, k: float = 0
 ) -> int:
     """Determines the number of detected segments for a given ``k``.
 
@@ -113,18 +107,18 @@ def _recall_anomalies(
     """
     # determine operator: for k = 0 use > else >=
     _op = gt if k == 0 else ge
-    detected = np.sum([
-        _op(np.sum(y_hat[s:(e + 1)]), ((k / 100) * (e + 1 - s)))
-        for s, e in anomalies
-    ])
+    detected = np.sum(
+        [
+            _op(np.sum(y_hat[s : (e + 1)]), ((k / 100) * (e + 1 - s)))
+            for s, e in anomalies
+        ]
+    )
 
     return detected
 
 
 def rank_features(
-    *,
-    error: np.ndarray,
-    y: np.ndarray
+    *, error: np.ndarray, y: np.ndarray
 ) -> T.Tuple[T.List[T.Tuple[int, int]], np.ndarray, np.ndarray]:
     """Finds the anomalies in y and calculates the feature-wise error for
     each anomaly. Each feature is ranked accordingly to their mean error
@@ -167,7 +161,7 @@ def rank_features(
     if (e_len := error.shape[0]) != (y_len := y.shape[0]):
         warnings.warn(f'Length misaligned, got {e_len} and {y_len}.')
 
-    (error, y), = truncate((error, y))
+    ((error, y),) = truncate((error, y))
 
     if error.shape[-1] < 2:
         raise ValueError('Expected at least 2 features.')
@@ -190,8 +184,7 @@ def rank_features(
 
 
 def _sort_features(
-        error: np.ndarray,
-        idx: T.Tuple[int, int]
+    error: np.ndarray, idx: T.Tuple[int, int]
 ) -> T.List[T.Tuple[int, float]]:
     """Calculates the mean error per feature for an anomaly.
 
@@ -206,21 +199,18 @@ def _sort_features(
     """
 
     # calculate error by feature
-    mean_err = np.mean(error[idx[0]:(idx[1] + 1)], axis=0)
+    mean_err = np.mean(error[idx[0] : (idx[1] + 1)], axis=0)
 
     # rank error (tuple of (idx, mean_err))
-    rank_err = sorted(enumerate(mean_err),
-                      key=lambda item: item[1],
-                      reverse=True)
+    rank_err = sorted(
+        enumerate(mean_err), key=lambda item: item[1], reverse=True
+    )
 
     return rank_err
 
 
 def apply_point_adjust(
-    *,
-    y_hat: np.ndarray,
-    y: np.ndarray,
-    k: float = 0
+    *, y_hat: np.ndarray, y: np.ndarray, k: float = 0
 ) -> np.ndarray:
     """Implements the point-adjust approach from
     https://arxiv.org/abs/1802.03903 and its variation from
@@ -269,14 +259,14 @@ def apply_point_adjust(
     if y_hat.shape != y.shape:
         warnings.warn(f'Shapes unaligned {y_hat.shape} and {y.shape}.')
 
-    (y_hat, y), = truncate((y_hat, y))
+    ((y_hat, y),) = truncate((y_hat, y))
     y_hat = np.copy(y_hat)
 
     if k < 0 or k > 100:
         raise ValueError(f'Parameter k must be in [0, 100], but got: {k}.')
 
-    for (start, end) in find_anomalies(y):
-        s = np.s_[start: (end + 1)]
+    for start, end in find_anomalies(y):
+        s = np.s_[start : (end + 1)]
 
         # check if more than %k points of that segment are anomalous
         # otherwise the label is left as is
@@ -287,10 +277,7 @@ def apply_point_adjust(
 
 
 def apply_point_adjust_score(
-    *,
-    y_score: np.ndarray,
-    y: np.ndarray,
-    k: float = 0
+    *, y_score: np.ndarray, y: np.ndarray, k: float = 0
 ) -> np.ndarray:
     """Implements the point-adjust approach from
     https://arxiv.org/pdf/1802.03903.pdf  and its variation from
@@ -337,14 +324,14 @@ def apply_point_adjust_score(
     if y_score.shape != y.shape:
         warnings.warn(f'Shapes unaligned {y_score.shape} and {y.shape}.')
 
-    (y_score, y), = truncate((y_score, y))
+    ((y_score, y),) = truncate((y_score, y))
     y_score = np.copy(y_score)
 
     if k < 0 or k > 100:
         raise ValueError(f'Parameter k must be in [0, 100], but got: {k}.')
 
-    for (start, end) in find_anomalies(y):
-        s = np.s_[start: (end + 1)]
+    for start, end in find_anomalies(y):
+        s = np.s_[start : (end + 1)]
 
         # find the index of the element that fulfills the condition:
         # at least %k points are above a threshold
@@ -360,10 +347,10 @@ def apply_point_adjust_score(
 
 
 def hit_rate_at_p(
-    dims: T.List[float],
-    ranking: T.List[float],
+    dims: T.List[float] | npt.NDArray,
+    ranking: T.List[float] | npt.NDArray,
     *,
-    p: T.Literal[100, 150] = 100
+    p: T.Literal[100, 150] = 100,
 ) -> float:
     """Equals the percentage of overlapping dimensions between ``dims`` and
     the top contributing dimensions in the ``ranking`` suggested by
@@ -390,7 +377,7 @@ def hit_rate_at_p(
 
     i: int = 0
     hit: int = 0
-    length: int = min(len(ranking), int(np.floor(len(dims) * p/100)))
+    length: int = min(len(ranking), int(np.floor(len(dims) * p / 100)))
 
     if length <= 0:
         return 0
