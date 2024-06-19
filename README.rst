@@ -81,3 +81,20 @@ The *MLnext Framework* consists of 7 modules:
 
    # hint: all functions can also be accessed from the root module
    import mlnext
+
+
+Development
+-----------
+
+MLnext uses `rye <https://rye.astral.sh/>`_ to manage the development environment.
+Install rye by following the instructions on their website and run `rye sync` to setup the development environment.
+
+Furthermore, we use black and ruff to enforce style standards on the codebase.
+The formatting is done for you via pre-commit, and is enforced via the tox -e lint build.
+Run `pre-commit install` to set up the git hooks;
+subsequently, when you git commit, the formatter will be run. If the
+changed files are not conformant, the hook will have reformatted them and
+you may need to run pre-commit again. You can run `pre-commit run --all-files`
+to manually run the formatters.
+
+Build the documentation by running `tox -e docs`.
