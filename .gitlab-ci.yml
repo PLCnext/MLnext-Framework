@@ -15,14 +15,27 @@ lint:
 
 unittest:
   stage: test
+  image: python:$IMAGE
   script:
-    - tox -e py38
+    - tox -e $ENV
     - tox -e coverage-report
   artifacts:
     reports:
       coverage_report:
         coverage_format: cobertura
         path: build/cobertura.xml
+  parallel:
+    matrix:
+      - ENV: py38
+        IMAGE_VER: 3.8
+      - ENV: py39
+        IMAGE_VER: 3.9
+      - ENV: py310
+        IMAGE_VER: 3.10
+      - ENV: py311
+        IMAGE_VER: 3.11
+      - ENV: py312
+        IMAGE_VER: 3.12
 
 docs:
   stage: documentation
