@@ -15,7 +15,7 @@ lint:
 
 unittest:
   stage: test
-  image: python:$IMAGE
+  image: python:$PYTHON_VER
   script:
     - tox -e $ENV
     - tox -e coverage-report
@@ -27,15 +27,15 @@ unittest:
   parallel:
     matrix:
       - ENV: py38
-        IMAGE_VER: "3.8"
+        PYTHON_VER: "3.8"
       - ENV: py39
-        IMAGE_VER: "3.9"
+        PYTHON_VER: "3.9"
       - ENV: py310
-        IMAGE_VER: "3.10"
+        PYTHON_VER: "3.10"
       - ENV: py311
-        IMAGE_VER: "3.11"
+        PYTHON_VER: "3.11"
       - ENV: py312
-        IMAGE_VER: "3.12"
+        PYTHON_VER: "3.12"
 
 docs:
   stage: documentation
