@@ -23,7 +23,7 @@
    :alt: License
 
 .. |Digital Factory Now| image:: https://img.shields.io/badge/Digital%20Factory-Now-blue.svg
-   :target:https://www.phoenixcontact.com/online/portal/pi?1dmy&urile=wcm:path:/pien/web/offcontext/insite_landing_pages/176a6497-e932-4acc-87bc-798c7a9f8aad/176a6497-e932-4acc-87bc-798c7a9f8aad
+   :target: https://www.phoenixcontact.com/online/portal/pi?1dmy&urile=wcm:path:/pien/web/offcontext/insite_landing_pages/176a6497-e932-4acc-87bc-798c7a9f8aad/176a6497-e932-4acc-87bc-798c7a9f8aad
 
 .. |docs| image:: https://readthedocs.org/projects/mlnext-framework/badge/?version=latest
    :target: https://mlnext-framework.readthedocs.io/en/latest/?badge=latest
