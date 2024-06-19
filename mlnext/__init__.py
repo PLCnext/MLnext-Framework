@@ -16,4 +16,4 @@ __description__ = 'Machine learning utilities.'
 __author__ = 'Phoenix Contact Electronics GmbH'
 __email__ = 'digitalfactorynow@phoenixcontact.com'
 
-__copyright__ = 'Copyright (c) 2023 Phoenix Contact Electronics GmbH'
+__copyright__ = 'Copyright (c) 2024 Phoenix Contact Electronics GmbH'
