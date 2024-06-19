@@ -64,7 +64,7 @@ def load_json(path: str) -> T.Dict[str, T.Any]:
     if not os.path.isfile(path):
         raise FileNotFoundError(f'Path {path} invalid.')
 
-    with open(path, 'r') as file:
+    with open(path) as file:
         data = json.load(file)
 
     return data
@@ -114,7 +114,7 @@ def load_yaml(path: str) -> T.Dict[str, T.Any]:
     if not os.path.isfile(path):
         raise FileNotFoundError(f'Path {path} invalid.')
 
-    with open(path, 'r') as file:
+    with open(path) as file:
         data = yaml.safe_load(file)
 
     return data

@@ -1,5 +1,4 @@
-"""Module with utility functions.
-"""
+"""Module with utility functions."""
 import typing as T
 
 import numpy as np
@@ -12,13 +11,12 @@ __all__ = [
     'rename_keys',
     'RangeDict',
     'flatten',
-    'convert_sequences'
+    'convert_sequences',
 ]
 
 
 def truncate(
-    *arrays: T.Tuple[np.ndarray, ...],
-    axis: int = 0
+    *arrays: T.Tuple[np.ndarray, ...], axis: int = 0
 ) -> T.Iterator[T.Tuple[np.ndarray, ...]]:
     """Truncates the arrays in each tuple to the minimum length of an array in
      the that tuple.
@@ -40,7 +38,8 @@ def truncate(
         if not isinstance(array, tuple):
             raise ValueError(
                 f'Expected tuple or list but got {type(array)} for array at '
-                f'position {i}.')
+                f'position {i}.'
+            )
 
         # find minimum length in tuple
         length = min(map(lambda x: np.shape(x)[axis], array))
@@ -51,7 +50,7 @@ def truncate(
 def check_shape(
     *arrays: np.ndarray,
     shape: T.Optional[T.Tuple[int, ...]] = None,
-    exclude_axis: T.Optional[int] = None
+    exclude_axis: T.Optional[int] = None,
 ):
     """Checks the shape of one or more arrays. If `shape` is not None, all
     arrays must match `shape`. Otherwise `shape` is set to the shape of the
@@ -73,23 +72,28 @@ def check_shape(
     """
     shapes = list(map(lambda x: x.shape, arrays))
     if exclude_axis is not None:
-        shapes = list(map(lambda x: tuple(np.delete(x, exclude_axis)), shapes))
+        shapes = list(
+            map(
+                lambda x: tuple(
+                    np.delete(x, exclude_axis).astype('int').tolist()
+                ),
+                shapes,
+            )
+        )
 
     if shape is None:
         shape = shapes[0]
 
     for i, shape_ in enumerate(shapes):
+        print(shape_, type(shape_))
         if shape_ != shape:
             raise ValueError(
                 f'Expected shape {shape} but got shape {shape_} for array at '
-                f'position {i} (exclude_axis: {exclude_axis}).')
+                f'position {i} (exclude_axis: {exclude_axis}).'
+            )
 
 
-def check_ndim(
-    *arrays: np.ndarray,
-    ndim: int,
-    strict: bool = True
-):
+def check_ndim(*arrays: np.ndarray, ndim: int, strict: bool = True):
     """Checks whether each passed array has exactly `ndim` number of
     dimensions, if strict is false then the number of dimensions must be at
     most `ndim`.
@@ -111,15 +115,11 @@ def check_ndim(
         if arr.ndim > ndim or (strict and arr.ndim < ndim):
             raise ValueError(
                 f'Expected array of dimension {ndim}, but got {arr.ndim} for '
-                f'array at position {i}.')
+                f'array at position {i}.'
+            )
 
 
-def check_size(
-    *arrays: np.ndarray,
-    size: int,
-    axis: int,
-    strict: bool = True
-):
+def check_size(*arrays: np.ndarray, size: int, axis: int, strict: bool = True):
     """Checks whether each array has exactly `size` elements along `axis`,
     if strict is false then it must be at most `size` elements. If strict is
     false and the axis is missing, then the array is ignored.
@@ -142,21 +142,23 @@ def check_size(
         if arr.ndim - 1 < axis:
             if strict:
                 raise ValueError(
-                    f'Array at position {i} is missing axis {axis}.')
+                    f'Array at position {i} is missing axis {axis}.'
+                )
             else:
                 continue
 
         if (shape := arr.shape[axis]) > size or (strict and shape < size):
             raise ValueError(
                 f'Expected axis {axis} of array to be of size {size}, but got '
-                f'{shape} for array at position {i}.')
+                f'{shape} for array at position {i}.'
+            )
 
 
 def rename_keys(
     mapping: T.Dict[str, T.Any],
     *,
     prefix: T.Optional[str] = None,
-    suffix: T.Optional[str] = None
+    suffix: T.Optional[str] = None,
 ) -> T.Dict[str, T.Any]:
     """Renames every key in `mapping` with a `prefix` and/or `suffix`.
 
@@ -169,10 +171,7 @@ def rename_keys(
         T.Dict: Returns the updated mapping.
     """
 
-    return {
-        f'{prefix or ""}{k}{suffix or ""}': v
-        for k, v in mapping.items()
-    }
+    return {f'{prefix or ""}{k}{suffix or ""}': v for k, v in mapping.items()}
 
 
 def flatten(
@@ -180,7 +179,7 @@ def flatten(
     *,
     prefix: str = '',
     sep: str = '.',
-    flatten_list: bool = True
+    flatten_list: bool = True,
 ) -> T.Mapping[str, T.Any]:
     """Turns a nested mapping into a flattened mapping.
 
@@ -218,21 +217,22 @@ def flatten(
     for k, v in mapping.items():
         key = f'{sep}'.join([prefix, k]) if prefix else k
         if isinstance(v, T.Mapping):
-            items.extend(flatten(
-                v,
-                prefix=key,
-                sep=sep,
-                flatten_list=flatten_list
-            ).items())
+            items.extend(
+                flatten(
+                    v, prefix=key, sep=sep, flatten_list=flatten_list
+                ).items()
+            )
 
         elif isinstance(v, list) and flatten_list:
             for i, v in enumerate(v):
-                items.extend(flatten(
-                    {str(i): v},
-                    prefix=key,
-                    sep=sep,
-                    flatten_list=flatten_list
-                ).items())
+                items.extend(
+                    flatten(
+                        {str(i): v},
+                        prefix=key,
+                        sep=sep,
+                        flatten_list=flatten_list,
+                    ).items()
+                )
 
         else:
             items.append((key, v))
@@ -242,7 +242,7 @@ def flatten(
 
 def convert_sequences(
     mapping: T.Dict[str, T.Any],
-    ignore_sequence_types: T.Tuple[T.Type, ...] = tuple()
+    ignore_sequence_types: T.Tuple[T.Type, ...] = tuple(),
 ) -> T.Dict[str, T.Any]:
     """Converts sequences in ``mapping`` to a dict by the index.
 
@@ -262,12 +262,12 @@ def convert_sequences(
     for k, v in mapping.items():
         if isinstance(v, dict):
             new_mapping[k] = convert_sequences(v, ignore_sequence_types)
-        elif (isinstance(v, T.Sequence) and
-              not isinstance(v, (str, *ignore_sequence_types))):
-            new_mapping[k] = convert_sequences({
-                str(i): v
-                for i, v in enumerate(v)
-            }, ignore_sequence_types)
+        elif isinstance(v, T.Sequence) and not isinstance(
+            v, (str, *ignore_sequence_types)
+        ):
+            new_mapping[k] = convert_sequences(
+                {str(i): v for i, v in enumerate(v)}, ignore_sequence_types
+            )
         else:
             new_mapping[k] = v
 
@@ -275,8 +275,7 @@ def convert_sequences(
 
 
 class RangeDict(dict):
-    """Dictionary that accepts range keys.
-    """
+    """Dictionary that accepts range keys."""
 
     def __getitem__(self, k__: int) -> T.Any:
         """Gets an item by key `k__` if it is in range of a key.

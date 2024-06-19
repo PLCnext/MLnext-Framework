@@ -3,19 +3,30 @@
 
 .. |MLnext| image:: https://media.githubusercontent.com/media/PLCnext/MLnext-Framework/main/docs/source/_static/mlnext.png
 
-|pypi|_ |license|_ |Digital Factory Now|_ |docs|_
+|pypi| |python| |mypy| |license| |Digital Factory Now| |docs|
+
 
 .. |pypi| image:: https://badge.fury.io/py/mlnext-framework.svg
-.. _pypi: https://pypi.org/project/mlnext-framework/
+   :target: https://pypi.org/project/mlnext-framework/
+   :alt: Latest Version
+
+.. |python| image:: https://img.shields.io/pypi/pyversions/mlnext-framework
+    :target: https://www.python.org/
+    :alt: Supported Python Versions
+
+.. |mypy| image:: http://www.mypy-lang.org/static/mypy_badge.svg
+    :target: http://mypy-lang.org/
+    :alt: MyPy checked
 
 .. |license| image:: https://img.shields.io/github/license/PLCnext/MLnext-Framework.svg
-.. _license: https://github.com/PLCnext/MLnext-Framework/blob/master/LICENSE
+   :target: https://github.com/PLCnext/MLnext-Framework/blob/master/LICENSE
+   :alt: License
 
 .. |Digital Factory Now| image:: https://img.shields.io/badge/Digital%20Factory-Now-blue.svg
-.. _`Digital Factory Now`: https://www.phoenixcontact.com/online/portal/pi?1dmy&urile=wcm:path:/pien/web/offcontext/insite_landing_pages/176a6497-e932-4acc-87bc-798c7a9f8aad/176a6497-e932-4acc-87bc-798c7a9f8aad
+   :target:https://www.phoenixcontact.com/online/portal/pi?1dmy&urile=wcm:path:/pien/web/offcontext/insite_landing_pages/176a6497-e932-4acc-87bc-798c7a9f8aad/176a6497-e932-4acc-87bc-798c7a9f8aad
 
 .. |docs| image:: https://readthedocs.org/projects/mlnext-framework/badge/?version=latest
-.. _docs: https://mlnext-framework.readthedocs.io/en/latest/?badge=latest
+   :target: https://mlnext-framework.readthedocs.io/en/latest/?badge=latest
 
 *MLnext Framework* is an open source framework for hardware independent execution of machine learning using *Python* and *Docker*.
 It provides machine learning utilities.
