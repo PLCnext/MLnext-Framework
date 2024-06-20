@@ -93,7 +93,11 @@ def check_shape(
             )
 
 
-def check_ndim(*arrays: np.ndarray, ndim: int, strict: bool = True):
+def check_ndim(
+    *arrays: np.ndarray,
+    ndim: int,
+    strict: bool = True,
+):
     """Checks whether each passed array has exactly `ndim` number of
     dimensions, if strict is false then the number of dimensions must be at
     most `ndim`.
@@ -119,7 +123,12 @@ def check_ndim(*arrays: np.ndarray, ndim: int, strict: bool = True):
             )
 
 
-def check_size(*arrays: np.ndarray, size: int, axis: int, strict: bool = True):
+def check_size(
+    *arrays: np.ndarray,
+    size: int,
+    axis: int,
+    strict: bool = True,
+):
     """Checks whether each array has exactly `size` elements along `axis`,
     if strict is false then it must be at most `size` elements. If strict is
     false and the axis is missing, then the array is ignored.
