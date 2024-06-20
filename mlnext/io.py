@@ -5,6 +5,7 @@ import os
 import typing as T
 
 import yaml
+from deprecate import deprecated
 from pydantic import BaseModel
 
 __all__ = [
@@ -128,7 +129,13 @@ def load_yaml(path: str) -> T.Dict[str, T.Any]:
 
     return data
 
-
+@deprecated(
+    None,
+    deprecated_in='0.5',
+    remove_in='0.7',
+    template_mgs='`%(source_name)s` was deprecated in %(deprecated_in)s '
+    'and is removed in %(remove_in)s.',
+)
 def save_config(
     config: BaseModel,
     *,
@@ -136,6 +143,9 @@ def save_config(
     folder: str = '.',
 ):
     """Saves a `pydantic.BaseModel` to `yaml`.
+
+    ..deprecated:: 0.5.0
+        Will be removed in 0.7.0.
 
     Args:
         model (BaseModel): Basemodel to save
