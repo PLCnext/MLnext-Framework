@@ -53,7 +53,9 @@ Deprecations
   `#59 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/59>`__
 
 
-----0.4.1 (2023-05-12)
+----
+
+0.4.1 (2023-05-12)
 ------------------
 
 
