@@ -1,5 +1,4 @@
-""" Module for data loading and manipulation.
-"""
+"""Module for data loading and manipulation."""
 import os
 import typing as T
 import warnings
@@ -16,7 +15,7 @@ __all__ = [
     'temporalize',
     'detemporalize',
     'sample_normal',
-    'sample_bernoulli'
+    'sample_bernoulli',
 ]
 
 
@@ -25,7 +24,7 @@ def load_data_3d(
     *,
     timesteps: int,
     format: T.Dict[str, T.Any] = {},
-    verbose: bool = True
+    verbose: bool = True,
 ) -> np.ndarray:
     """Loads data from `path` and temporalizes it with `timesteps`.
 
@@ -79,7 +78,7 @@ def temporalize(
     *,
     timesteps: int,
     stride: int = 0,
-    verbose: bool = False
+    verbose: bool = False,
 ) -> np.ndarray:
     """Transforms a 2 dimensional array (rows, features) into a 3 dimensional
     array of shape (new_rows, timesteps, features). The step size along axis 0
@@ -152,7 +151,8 @@ def temporalize(
     if stride > timesteps:
         warnings.warn(
             f'Reversion with mlnext.detemporalize will result in a loss of '
-            f'rows (stride: {stride} larger than timesteps: {timesteps}).')
+            f'rows (stride: {stride} larger than timesteps: {timesteps}).'
+        )
 
     # stride = 0 and stride=timesteps is the same as a simple reshape
     # to (rows, timesteps, features) (slice=0 is replaced by timesteps)
@@ -175,7 +175,7 @@ def detemporalize(
     *,
     stride: int = 0,
     last_point_only: bool = False,
-    verbose: bool = False
+    verbose: bool = False,
 ) -> np.ndarray:
     """
     Transforms a 3 dimensional array (rows, timesteps, features) into a 2
@@ -291,8 +291,10 @@ def detemporalize(
         data = np.r_[data, lw]
 
     if verbose:
-        print(f'Old shape: {(rows, timesteps, features)}. '
-              f'New shape: {data.shape}.')
+        print(
+            f'Old shape: {(rows, timesteps, features)}. '
+            f'New shape: {data.shape}.'
+        )
 
     return data
 
