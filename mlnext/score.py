@@ -231,6 +231,9 @@ def eval_sigmoid(
 ) -> np.ndarray:
     """Turns a binary-class sigmoid prediction into 0-1 class labels.
 
+    .. deprecated:: 0.4
+        Use :func:`apply_threshold` instead. Will be removed in 0.6.
+
     Args:
         y (np.ndarray): Array with sigmoid probabilities
         invert (bool): Whether to invert the labels. (0->1, 1->0)
@@ -671,17 +674,22 @@ def pr_curve(
     """Computes precision-recall pairs for different probability thresholds for
     binary classification tasks.
 
-    Adapted from https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_curve.html.
+    Adapted from `sklearn.metrics.precision_recall_curve <https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_curve.html>`_.
     Changed the return value to PRCurve which encapsulates not only the
     recall, precision and thresholds but also the tps, fps, tns and fns. Thus,
     we can obtain all necessary parameters that are required for the logging of
-    a pr-curve in tensorboard (https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/pr_curve/README.md).
+    a pr-curve in tensorboard (see `here <https://github.com/tensorflow/tensorboard/blob/master/tensorboard/plugins/pr_curve/README.md>`_).
     Furthermore, we can you use results for further processing.
 
     Args:
         y (np.ndarray): Positive lables either {-1, 1} or {0, 1}.
           Otherwise, pos_label needs to be given.
         y_score (np.ndarray):  Target scores in range [0, 1].
+        y_true (np.ndarray): Same as y.
+
+            .. deprecated:: 0.4
+                Use `y` instead.
+
         pos_label (int, optional):The label of the positive class.
           When pos_label=None, if y is in {-1, 1} or {0, 1},
           pos_label is set to 1, otherwise an error will be raised.
