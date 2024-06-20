@@ -1,5 +1,4 @@
-""" Module for model evaluation.
-"""
+"""Module for model evaluation."""
 import typing as T
 import warnings
 from dataclasses import dataclass
@@ -43,7 +42,7 @@ def l2_norm(
     x: np.ndarray,
     x_hat: np.ndarray,
     *,
-    reduce: bool = True
+    reduce: bool = True,
 ) -> np.ndarray:
     """Calculates the l2-norm (euclidean distance) for x and x_hat.
     If reduce is False, then the l2_norm is calculated feature-wise.
@@ -62,16 +61,16 @@ def l2_norm(
         np.ndarray([0.04, 0.0])
     """
     if reduce:
-        r = np.sqrt(np.sum((np.array(x) - np.array(x_hat))**2, axis=-1))
+        r = np.sqrt(np.sum((np.array(x) - np.array(x_hat)) ** 2, axis=-1))
         return r.reshape(-1, 1)
     else:
-        return np.sqrt((np.array(x) - np.array(x_hat))**2)
+        return np.sqrt((np.array(x) - np.array(x_hat)) ** 2)
 
 
 def norm_log_likelihood(
-        x: np.ndarray,
-        mean: np.ndarray,
-        log_var: np.ndarray
+    x: np.ndarray,
+    mean: np.ndarray,
+    log_var: np.ndarray,
 ) -> np.ndarray:
     """Calculates the negative log likelihood that ``x`` was drawn from a
     normal gaussian distribution defined by ``mean`` and ``log_var``.
@@ -93,8 +92,8 @@ def norm_log_likelihood(
     Returns:
         np.ndarray: Returns the negative log likelihood.
     """
-    a = np.log(2. * np.pi) * np.ones(np.shape(x)) + log_var
-    b = (x - mean)**2 / (np.exp(log_var) + 1e-10)
+    a = np.log(2.0 * np.pi) * np.ones(np.shape(x)) + log_var
+    b = (x - mean) ** 2 / (np.exp(log_var) + 1e-10)
 
     return 0.5 * (a + b)
 
@@ -126,7 +125,7 @@ def kl_divergence(
     mean: np.ndarray,
     log_var: np.ndarray,
     prior_mean: float = 0.0,
-    prior_std: float = 1.0
+    prior_std: float = 1.0,
 ) -> np.ndarray:
     """Calculates the kl divergence kld(q||p) between a normal gaussian ``p``
     (prior_mean, prior_std) and a normal distribution ``q`` parameterized
@@ -178,7 +177,7 @@ def apply_threshold(
     x: np.ndarray,
     *,
     threshold: float = 0.5,
-    pos_label: int = 1
+    pos_label: int = 1,
 ) -> np.ndarray:
     """Applies ``threshold t`` to ``x``. Values that are greater than or equal
     than the ``threshold`` are changed to ``pos_label`` and below to
@@ -222,13 +221,13 @@ def eval_softmax(y: np.ndarray) -> np.ndarray:
     deprecated_in='0.4',
     remove_in='0.6',
     template_mgs='`%(source_name)s` was deprecated in %(deprecated_in)s '
-    'and is removed in %(remove_in)s, use `apply_threshold` instead.'
+    'and is removed in %(remove_in)s, use `apply_threshold` instead.',
 )
 def eval_sigmoid(
     y: np.ndarray,
     *,
     invert: bool = False,
-    threshold: float = 0.5
+    threshold: float = 0.5,
 ) -> np.ndarray:
     """Turns a binary-class sigmoid prediction into 0-1 class labels.
 
@@ -245,9 +244,7 @@ def eval_sigmoid(
         np.ndarray([[0],[1],[1],[0]])
     """
     return apply_threshold(
-        y,
-        threshold=threshold,
-        pos_label=0 if invert else 1
+        y, threshold=threshold, pos_label=0 if invert else 1
     ).reshape(-1, 1)
 
 
@@ -290,13 +287,13 @@ def eval_metrics(y: np.ndarray, y_hat: np.ndarray) -> T.Dict[str, float]:
         'precision': metrics.precision_score,
         'recall': metrics.recall_score,
         'f1': metrics.f1_score,
-        'anomalies': recall_anomalies
+        'anomalies': recall_anomalies,
     }
 
     if y.shape != y_hat.shape:
         warnings.warn(f'Shapes unaligned y {y.shape} and y_hat {y_hat.shape}.')
 
-    (y, y_hat), = truncate((y, y_hat))
+    ((y, y_hat),) = truncate((y, y_hat))
     results = {}
     try:
         for key in scores:
@@ -309,7 +306,7 @@ def eval_metrics(y: np.ndarray, y_hat: np.ndarray) -> T.Dict[str, float]:
 
 def eval_metrics_all(
     y: T.List[np.ndarray],
-    y_hat: T.List[np.ndarray]
+    y_hat: T.List[np.ndarray],
 ) -> T.Dict[str, float]:
     """Calculates combined accuracy, f1, precision, recall and AUC scores for
     multiple arrays. The arrays are shorted to the minimum length of the
@@ -368,6 +365,7 @@ class ConfusionMatrix:
       DA (int): detected anomalies segments by at least one point.
       TA (int): total number of anomaly segments.
     """
+
     TP: int = 0  # True Positives
     FN: int = 0  # False Negatives
     TN: int = 0  # True Negative
@@ -388,7 +386,7 @@ class ConfusionMatrix:
             TN=self.TN + cm.TN,
             FP=self.FP + cm.FP,
             DA=self.DA + cm.DA,
-            TA=self.TA + cm.TA
+            TA=self.TA + cm.TA,
         )
 
     def __str__(self) -> str:
@@ -401,7 +399,7 @@ class ConfusionMatrix:
             '{:<3s} {:^6s} {:^6s}'.format('P\\A', '1', '0'),
             '{:<3s} {:^6.0f} {:^6.0f}'.format('1', self.TP, self.FP),
             '{:<3s} {:^6.0f} {:^6.0f}'.format('0', self.FN, self.TN),
-            *[f'{k}: {v:.4f}' for k, v in self.metrics().items()]
+            *[f'{k}: {v:.4f}' for k, v in self.metrics().items()],
         ]
 
         return '\n'.join(rows)
@@ -413,8 +411,7 @@ class ConfusionMatrix:
         Returns:
             np.ndarray: Returns the accuracy.
         """
-        return ((self.TP + self.TN) /
-                (self.TP + self.TN + self.FN + self.FP))
+        return (self.TP + self.TN) / (self.TP + self.TN + self.FN + self.FP)
 
     @property
     def precision(self) -> float:
@@ -442,8 +439,9 @@ class ConfusionMatrix:
         Returns:
             np.ndarray: Returns the F1-score.
         """
-        return ((2 * self.precision * self.recall) /
-                (self.precision + self.recall))
+        return (2 * self.precision * self.recall) / (
+            self.precision + self.recall
+        )
 
     @property
     def recall_anomalies(self) -> float:
@@ -465,7 +463,7 @@ class ConfusionMatrix:
             'f1': self.f1,
             'recall': self.recall,
             'precision': self.precision,
-            'anomalies': self.recall_anomalies
+            'anomalies': self.recall_anomalies,
         }
 
 
@@ -515,18 +513,36 @@ class PRCurve:
         """
 
         header = (' {:^6s} ' * 12).format(
-            'TH', 'ACC', 'F1', 'PRC', 'RCL', 'ANO',
-            'TP', 'FN', 'TN', 'FP', 'DA', 'TA'
+            'TH',
+            'ACC',
+            'F1',
+            'PRC',
+            'RCL',
+            'ANO',
+            'TP',
+            'FN',
+            'TN',
+            'FP',
+            'DA',
+            'TA',
         )
 
         fmt = ' {:^6.4f} ' * 6 + ' {:^6.0f} ' * 6
         rows = [
             fmt.format(*row)
-            for row in
-            zip(
-                self.thresholds, self.accuracy, self.f1, self.precision,
-                self.recall, self.recall_anomalies,
-                self.tps, self.fns, self.tns, self.fps, self.das, self.tas
+            for row in zip(
+                self.thresholds,
+                self.accuracy,
+                self.f1,
+                self.precision,
+                self.recall,
+                self.recall_anomalies,
+                self.tps,
+                self.fns,
+                self.tns,
+                self.fps,
+                self.das,
+                self.tas,
             )
         ]
         return '\n'.join([header, *rows, f'AUC: {self.auc:.4f}'])
@@ -554,7 +570,7 @@ class PRCurve:
             TN=self.tns[i],
             FP=self.fps[i],
             DA=self.das[i],
-            TA=self.tas[i]
+            TA=self.tas[i],
         )
 
     def __len__(self) -> int:
@@ -584,8 +600,9 @@ class PRCurve:
         Returns:
             np.ndarray: Returns the accuracy.
         """
-        return ((self.tps + self.tns) /
-                (self.tps + self.tns + self.fns + self.fps))
+        return (self.tps + self.tns) / (
+            self.tps + self.tns + self.fns + self.fps
+        )
 
     @property
     def auc(self) -> float:
@@ -605,8 +622,9 @@ class PRCurve:
         Returns:
             np.ndarray: Returns the F1-score.
         """
-        return ((2 * self.precision * self.recall) /
-                (self.precision + self.recall))
+        return (2 * self.precision * self.recall) / (
+            self.precision + self.recall
+        )
 
     @property
     def recall_anomalies(self) -> np.ndarray:
@@ -632,7 +650,7 @@ class PRCurve:
             'false_negative_counts': self.fns,
             'precision': self.precision,
             'recall': self.recall,
-            'num_thresholds': len(self.thresholds)
+            'num_thresholds': len(self.thresholds),
         }
 
 
@@ -648,7 +666,7 @@ def pr_curve(
     *,
     y_true: T.Optional[np.ndarray] = None,
     pos_label: T.Optional[T.Union[str, int]] = None,
-    sample_weight: T.Optional[T.Union[T.List, np.ndarray]] = None
+    sample_weight: T.Optional[T.Union[T.List, np.ndarray]] = None,
 ) -> PRCurve:
     """Computes precision-recall pairs for different probability thresholds for
     binary classification tasks.
@@ -732,22 +750,26 @@ def pr_curve(
     sl = slice(last_ind, None, -1)
 
     das, tas = _recall_anomalies_curve(
-        y,
-        y_score,
-        thresholds=thresholds,
-        pos_label=pos_label
+        y, y_score, thresholds=thresholds, pos_label=pos_label
     )
 
     return PRCurve(
-        tps[sl], fns[sl], tns[sl], fps[sl], das[sl], tas[sl],
-        precision[sl], recall[sl], thresholds[sl]
+        tps[sl],
+        fns[sl],
+        tns[sl],
+        fps[sl],
+        das[sl],
+        tas[sl],
+        precision[sl],
+        recall[sl],
+        thresholds[sl],
     )
 
 
 def point_adjust_metrics(
     *,
     y_hat: np.ndarray,
-    y: np.ndarray
+    y: np.ndarray,
 ) -> pd.DataFrame:
     """Calculates the performance metrics for various ``k`` in [0, 100].
 
@@ -809,7 +831,7 @@ def point_adjust_metrics(
 def auc_point_adjust_metrics(
     *,
     y_hat: np.ndarray,
-    y: np.ndarray
+    y: np.ndarray,
 ) -> T.Dict[str, float]:
     """Calculates the area under the curve for performance metrics with
     point-adjusted predictions for values of ``k`` in [0,100].
@@ -833,10 +855,7 @@ def auc_point_adjust_metrics(
          'auc_roc_auc': 0.9458333333333333}
     """
     df = point_adjust_metrics(y_hat=y_hat, y=y)
-    return {
-        f'auc_{column}': auc(df.index, df[column]) / 100
-        for column in df
-    }
+    return {f'auc_{column}': auc(df.index, df[column]) / 100 for column in df}
 
 
 def _recall_anomalies_curve(
@@ -845,7 +864,7 @@ def _recall_anomalies_curve(
     *,
     thresholds: T.List[float],
     pos_label: T.Optional[T.Union[str, int]] = None,
-    k: float = 0
+    k: float = 0,
 ) -> T.Tuple[np.ndarray, np.ndarray]:
     # determine positive and negative labels
     pos_label = 1 if pos_label is None else pos_label
