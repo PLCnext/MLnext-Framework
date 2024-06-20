@@ -90,7 +90,7 @@ def test_rank_features(error: np.ndarray, y: np.ndarray, exp: T.Tuple):
             [0, 1],
             '1',
             'Received invalid value "1" for reduce. Available functions are: '
-            "['mean', 'max', 'median', 'sum'].",
+            "['mean', 'max', 'sum'].",
         ),
     ],
 )
@@ -110,23 +110,37 @@ def test_rank_features_fails(
 
 
 @pytest.mark.parametrize(
-    'reduce,exp',
+    'reduce,mask,exp',
     [
         (
             'mean',
+            None,
             ([(1, 3), (5, 5)], [[0, 1], [1, 0]], [[0.6, 0.3], [0.8, 0.1]]),
+        ),
+        (
+            'mean',
+            [0, 0, 0, 1, 0, 0],
+            ([(1, 3), (5, 5)], [[1, 0], [0, 1]], [[0.6, 0.5], [0.0, 0.0]]),
         ),
         (
             'max',
-            ([(1, 3), (5, 5)], [[0, 1], [1, 0]], [[0.7, 0.4], [0.8, 0.1]]),
+            None,
+            ([(1, 3), (5, 5)], [[0, 1], [1, 0]], [[0.7, 0.6], [0.8, 0.1]]),
         ),
         (
-            'median',
-            ([(1, 3), (5, 5)], [[0, 1], [1, 0]], [[0.6, 0.3], [0.8, 0.1]]),
+            'max',
+            [0, 0, 0, 1, 0, 0],
+            ([(1, 3), (5, 5)], [[1, 0], [0, 1]], [[0.6, 0.5], [0.0, 0.0]]),
         ),
         (
             'sum',
+            None,
             ([(1, 3), (5, 5)], [[0, 1], [1, 0]], [[1.8, 0.9], [0.8, 0.1]]),
+        ),
+        (
+            'sum',
+            [0, 0, 0, 1, 0, 0],
+            ([(1, 3), (5, 5)], [[1, 0], [0, 1]], [[0.6, 0.5], [0.0, 0.0]]),
         ),
     ],
 )
@@ -134,7 +148,7 @@ def test_rank_features_fails(
     'error,y',
     [
         (
-            [[0.1, 0.6, 0.7, 0.5, 0.5, 0.1], [0.05, 0.2, 0.4, 0.3, 0.7, 0.8]],
+            [[0.1, 0.6, 0.7, 0.5, 0.5, 0.1], [0.05, 0.1, 0.2, 0.6, 0.7, 0.8]],
             [0, 1, 1, 1, 0, 1],
         ),
     ],
@@ -143,13 +157,19 @@ def test_rank_features_reduce(
     error: np.ndarray,
     y: np.ndarray,
     reduce: str,
+    mask: T.Optional[np.ndarray],
     exp: np.ndarray,
 ):
     error = np.array(error).T
     y = np.array(y)
+    mask = np.array(mask).astype('bool') if mask is not None else None
 
-    result = rank_features(error=error, y=y, reduce=reduce)
-
+    result = rank_features(
+        error=error,
+        y=y,
+        reduce=reduce,
+        mask=mask,
+    )
     np.testing.assert_almost_equal(result, exp)
 
 

@@ -1,1 +1,1 @@
-Added parameters ``reduce`` and ``y_hat`` to ``mlnext.rank_features``.
+Added parameters ``reduce`` and ``mask`` to ``mlnext.rank_features``.
