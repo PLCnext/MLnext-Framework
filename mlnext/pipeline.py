@@ -37,21 +37,36 @@ __all__ = [
 
 class ColumnSelector(BaseEstimator, TransformerMixin):
     """Transformer to select a list of columns by their name for further
-    processing.
+    processing. If keys is None, then all columns from the fitted dataframe
+    are kept.
 
     Args:
-        keys (T.List[str]): T.List of columns to extract.
+        keys (list[str] | None): Optional. List of columns to extract or None.
+            If None, then the transformer must be fitted and only the columns
+            present in the fitted dateframe are kept. Default: None.
 
+            .. versionchanged:: 0.5.0
+                Changed default to None. If None, fit columns to keep on data.
     Example:
+        >>> import mlnext
         >>> data = pd.DataFrame({'a': [0], 'b': [0]})
-        >>> ColumnSelector(keys=['a']).transform(data)
+        >>> mlnext.ColumnSelector(keys=['a']).transform(data)
+        pd.DataFrame({'a': [0]})
+
+        >>> data = pd.DataFrame({'a': [0], 'b': [0]})
+        >>> t = mlnext.ColumnSelector().fit(pd.DataFrame({'a': [0]}))
+        >>> t.transform(data)
         pd.DataFrame({'a': [0]})
     """
 
-    def __init__(self, keys: T.List[str]):
+    def __init__(self, keys: T.Optional[T.List[str]] = None):
         self._keys = keys
 
+        if keys is not None:
+            self.keys_ = keys
+
     def fit(self, X: pd.DataFrame, y=None):
+        self.keys_ = X.columns.to_list() if self._keys is None else self._keys
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -64,7 +79,8 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
             pd.DataFrame: Returns a DataFrame only containing the selected
             features.
         """
-        return X.loc[:, self._keys]
+        check_is_fitted(self, 'keys_')
+        return X.loc[:, self.keys_]
 
 
 class ColumnDropper(BaseEstimator, TransformerMixin):
