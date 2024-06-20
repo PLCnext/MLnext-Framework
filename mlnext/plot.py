@@ -209,13 +209,14 @@ def plot_history(
         plt.show()
         return None
 
-@T.overload
-def _check_inputs(x : T.Literal[None]) -> None:
-    ...
 
 @T.overload
-def _check_inputs(x : T.Union[np.ndarray, pd.DataFrame]) -> pd.DataFrame:
-    ...
+def _check_inputs(x: T.Literal[None]) -> None: ...
+
+
+@T.overload
+def _check_inputs(x: T.Union[np.ndarray, pd.DataFrame]) -> pd.DataFrame: ...
+
 
 def _check_inputs(
     x: T.Optional[T.Union[np.ndarray, pd.DataFrame]],
@@ -330,11 +331,11 @@ def plot_signals(
     y: pd.DataFrame = _check_inputs(y)
 
     x_pred, x, y = _truncate_length(x_pred, x, y)
-    segments = _get_segments(x, y) # type: ignore
+    segments = _get_segments(x, y)  # type: ignore
 
     # plot grid n x 2 if more than plot
-    columns = 2 if x.shape[-1] > 1 else 1 # type: ignore
-    rows = -(-x.shape[-1] // columns) # type: ignore
+    columns = 2 if x.shape[-1] > 1 else 1  # type: ignore
+    rows = -(-x.shape[-1] // columns)  # type: ignore
 
     # prepare subplots
     figsize = (7.5 * columns, 2 * rows)
@@ -345,7 +346,7 @@ def plot_signals(
     # iterate over segments
     for s1, s2 in zip(segments[:-1], segments[1:]):
         # draw in color of label for each col
-        for idx, (ax, col) in enumerate(zip(axes, x)): # type: ignore
+        for idx, (ax, col) in enumerate(zip(axes, x)):  # type: ignore
             ax.set_title(col)
 
             idx_x = np.array(range(int(s1), int(s2 + 1)))
@@ -353,8 +354,8 @@ def plot_signals(
             # draw x
             ax.plot(
                 idx_x,
-                x.loc[s1:s2, col], # type: ignore
-                c='C1' if y.iloc[s1, 0] > 0.0 else 'C2', # type: ignore
+                x.loc[s1:s2, col],  # type: ignore
+                c='C1' if y.iloc[s1, 0] > 0.0 else 'C2',  # type: ignore
                 label='x',
             )
 
@@ -455,11 +456,11 @@ def plot_signals_norm(
         std = detemporalize(norm_std, verbose=False)
 
     x_pred, x, y = _truncate_length(x_pred, x, y)
-    segments = _get_segments(x, y) # type: ignore
+    segments = _get_segments(x, y)  # type: ignore
 
     # plot grid n x 2 if more than plot
-    columns = 2 if x.shape[-1] > 1 else 1 # type: ignore
-    rows = -(-x.shape[-1] // columns) # type: ignore
+    columns = 2 if x.shape[-1] > 1 else 1  # type: ignore
+    rows = -(-x.shape[-1] // columns)  # type: ignore
 
     # prepare subplots
     figsize = (7.5 * columns, 2 * rows)
@@ -470,7 +471,7 @@ def plot_signals_norm(
     # iterate over segments
     for s1, s2 in zip(segments[:-1], segments[1:]):
         # draw in color of label for each col
-        for idx, (ax, col) in enumerate(zip(axes, x)): # type: ignore
+        for idx, (ax, col) in enumerate(zip(axes, x)):  # type: ignore
             ax.set_title(col)
 
             idx_x = np.array(range(int(s1), int(s2 + 1)))
@@ -478,8 +479,8 @@ def plot_signals_norm(
             # draw x
             ax.plot(
                 idx_x,
-                x.loc[s1:s2, col], # type: ignore
-                c='C1' if y.iloc[s1, 0] > 0.0 else 'C2', # type: ignore
+                x.loc[s1:s2, col],  # type: ignore
+                c='C1' if y.iloc[s1, 0] > 0.0 else 'C2',  # type: ignore
                 label='x',
             )
 
@@ -597,11 +598,11 @@ def plot_signals_binary(
         bern_mean = detemporalize(bern_mean, verbose=False)
 
     x_pred, x, y = _truncate_length(x_pred, x, y)
-    segments = _get_segments(x, y) # type: ignore
+    segments = _get_segments(x, y)  # type: ignore
 
     # plot grid n x 2 if more than plot
-    columns = 2 if x.shape[-1] > 1 else 1 # type: ignore
-    rows = -(-x.shape[-1] // columns) # type: ignore
+    columns = 2 if x.shape[-1] > 1 else 1  # type: ignore
+    rows = -(-x.shape[-1] // columns)  # type: ignore
 
     # prepare subplots
     figsize = (7.5 * columns, 2 * rows)
@@ -612,7 +613,7 @@ def plot_signals_binary(
     # iterate over segments
     for s1, s2 in zip(segments[:-1], segments[1:]):
         # draw in color of label for each col
-        for idx, (ax, col) in enumerate(zip(axes, x)): # type: ignore
+        for idx, (ax, col) in enumerate(zip(axes, x)):  # type: ignore
             ax.set_title(col)
 
             idx_x = np.array(range(int(s1), int(s2 + 1)))
@@ -620,8 +621,8 @@ def plot_signals_binary(
             # draw x
             ax.plot(
                 idx_x,
-                x.loc[s1:s2, col], # type: ignore
-                c='C1' if y.iloc[s1, 0] > 0.0 else 'C2', # type: ignore
+                x.loc[s1:s2, col],  # type: ignore
+                c='C1' if y.iloc[s1, 0] > 0.0 else 'C2',  # type: ignore
                 label='x',
             )
 
@@ -791,7 +792,11 @@ def plot_rankings(
 
 
 def _create_lc(
-    x: np.ndarray, y: np.ndarray, labels: np.ndarray, cmap, **kwargs
+    x: np.ndarray,
+    y: np.ndarray,
+    labels: np.ndarray,
+    cmap,
+    **kwargs,
 ) -> LineCollection:
     """Creates a LineCollection.
 
@@ -838,7 +843,10 @@ def _fmt(a: T.Iterable) -> T.List[str]:
 
 
 def plot_point_adjust_metrics(
-    y_hat: np.ndarray, y: np.ndarray, *, return_fig: bool = False
+    y_hat: np.ndarray,
+    y: np.ndarray,
+    *,
+    return_fig: bool = False,
 ) -> T.Optional[Figure]:
     """Plots ``point_adjust_metrics``.
 

@@ -354,7 +354,10 @@ class DatetimeTransformer(BaseEstimator, TransformerMixin):
     """
 
     def __init__(
-        self, *, columns: T.List[str], dt_format: T.Optional[str] = None
+        self,
+        *,
+        columns: T.List[str],
+        dt_format: T.Optional[str] = None,
     ):
         super().__init__()
         self._columns = columns
