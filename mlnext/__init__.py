@@ -8,7 +8,7 @@ from .plot import *  # noqa
 from .score import *  # noqa
 from .utils import *  # noqa
 
-__version__ = '0.4.1'
+__version__ = '0.5.0'
 
 __title__ = 'MLnext'
 __description__ = 'Machine learning utilities.'
@@ -16,4 +16,4 @@ __description__ = 'Machine learning utilities.'
 __author__ = 'Phoenix Contact Electronics GmbH'
 __email__ = 'digitalfactorynow@phoenixcontact.com'
 
-__copyright__ = 'Copyright (c) 2022 Phoenix Contact Electronics GmbH'
+__copyright__ = 'Copyright (c) 2024 Phoenix Contact Electronics GmbH'

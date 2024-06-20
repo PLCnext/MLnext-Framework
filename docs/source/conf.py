@@ -93,4 +93,5 @@ autosectionlabel_prefix_document = True
 autosectionlabel_maxdepth = 2
 autosummary_generate = True
 autodoc_inherit_docstrings = False
+autoclass_content = 'both'
 set_type_checking_flag = True

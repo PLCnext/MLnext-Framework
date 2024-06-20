@@ -1,5 +1,4 @@
-""" Module for data visualization.
-"""
+"""Module for data visualization."""
 import typing as T
 from itertools import product
 
@@ -7,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from matplotlib import cycler
+from cycler import cycler
 from matplotlib import rcParams
 from matplotlib.collections import LineCollection
 from matplotlib.colors import LinearSegmentedColormap as LSC
@@ -29,30 +28,40 @@ __all__ = [
     'plot_signals_norm',
     'plot_signals_binary',
     'plot_rankings',
-    'plot_point_adjust_metrics'
+    'plot_point_adjust_metrics',
 ]
 
 
 def setup_plot():
-    """Sets the the global style for plots.
-    """
+    """Sets the the global style for plots."""
     plt.style.use('ggplot')
     rcParams['figure.figsize'] = (16, 5)
     rcParams['lines.markersize'] = 2
 
     # color blind friendly cycle (https://gist.github.com/thriveth/8560036)
-    rcParams['axes.prop_cycle'] = cycler(color=[
-        '#377eb8', '#ff7f00', '#4daf4a', '#f781bf', '#a65628', '#984ea3',
-        '#999999', '#e41a1c', '#dede00'
-    ])
+    rcParams['axes.prop_cycle'] = cycler(
+        color=[
+            '#377eb8',
+            '#ff7f00',
+            '#4daf4a',
+            '#f781bf',
+            '#a65628',
+            '#984ea3',
+            '#999999',
+            '#e41a1c',
+            '#dede00',
+        ]
+    )
 
 
-marker_sizes = RangeDict({
-    range(0, 2499): 4,
-    range(2500, 4999): 3.5,
-    range(5000, 7499): 3,
-    range(7500, 9999): 2.5
-})
+marker_sizes = RangeDict(
+    {
+        range(0, 2499): 4,
+        range(2500, 4999): 3.5,
+        range(5000, 7499): 3,
+        range(7500, 9999): 2.5,
+    }
+)
 
 
 def _adaptive_makersize(num_points: int) -> float:
@@ -69,7 +78,7 @@ def plot_error(
     title: T.Optional[str] = None,
     yscale: str = 'linear',
     path: T.Optional[str] = None,
-    return_fig: bool = False
+    return_fig: bool = False,
 ) -> T.Optional[Figure]:
     """Plots the error given by `x`. Label determines the color of the
     point. An anomaly threshold can be drawn with threshold.
@@ -105,25 +114,30 @@ def plot_error(
            :scale: 50 %
     """
     fig = plt.figure()
-    plt.title(title)
+    plt.title(title or '')
     plt.yscale(yscale)
 
     if y is None:
         y = np.zeros((X.shape[0], 1))
 
     if X.shape[0] != y.shape[0]:
-        raise Warning('Length misaligned: '
-                      f'X ({X.shape[0]}) and y ({y.shape[0]}).')
+        raise Warning(
+            'Length misaligned: ' f'X ({X.shape[0]}) and y ({y.shape[0]}).'
+        )
 
-    y = y[:X.shape[0]]
+    y = y[: X.shape[0]]
 
     plt.xlabel('Sample')
     plt.ylabel('Error')
 
     plt.scatter(
-        range(X.shape[0]), X,
-        c=y, cmap='jet', zorder=2,
-        s=_adaptive_makersize(X.shape[0])**2)
+        range(X.shape[0]),
+        X,
+        c=y,
+        cmap='jet',
+        zorder=2,
+        s=_adaptive_makersize(X.shape[0]) ** 2,
+    )
     plt.plot(range(X.shape[0]), X, linewidth=0.5, zorder=1)
 
     if threshold is not None:
@@ -145,7 +159,7 @@ def plot_history(
     history: T.Dict[str, T.Any],
     filter: T.List[str] = ['loss'],
     path: T.Optional[str] = None,
-    return_fig: bool = False
+    return_fig: bool = False,
 ) -> T.Optional[Figure]:
     """
     Plots the loss in regards to the epoch from the model training history.
@@ -196,8 +210,16 @@ def plot_history(
         return None
 
 
+@T.overload
+def _check_inputs(x: T.Literal[None]) -> None: ...
+
+
+@T.overload
+def _check_inputs(x: T.Union[np.ndarray, pd.DataFrame]) -> pd.DataFrame: ...
+
+
 def _check_inputs(
-    x: T.Optional[T.Union[np.ndarray, pd.DataFrame]]
+    x: T.Optional[T.Union[np.ndarray, pd.DataFrame]],
 ) -> T.Optional[pd.DataFrame]:
     """Transforms `x` into a dataframe.
 
@@ -209,7 +231,7 @@ def _check_inputs(
 
     """
     if x is None:
-        return x
+        return None
 
     if isinstance(x, pd.DataFrame):
         return x.reset_index(drop=True)
@@ -218,7 +240,9 @@ def _check_inputs(
     return pd.DataFrame(x)
 
 
-def _truncate_length(*dfs: T.Optional[pd.DataFrame]) -> T.List[pd.DataFrame]:
+def _truncate_length(
+    *dfs: T.Optional[pd.DataFrame],
+) -> T.List[T.Optional[pd.DataFrame]]:
     """Truncates the length of `dfs` to match the shortest in the list.
 
     Returns:
@@ -241,8 +265,10 @@ def _get_segments(x: pd.DataFrame, y: pd.DataFrame) -> T.List[int]:
         np.ndarray: Returns a list of indices.
     """
     # get transitions of 0-1 and 1-0
-    segments = x.index[(y.iloc[:, -1] > y.shift(1).iloc[:, -1]) |
-                       (y.iloc[:, -1] < y.shift(1).iloc[:, -1])].to_list()
+    segments = x.index[
+        (y.iloc[:, -1] > y.shift(1).iloc[:, -1])
+        | (y.iloc[:, -1] < y.shift(1).iloc[:, -1])
+    ].to_list()
 
     # start and end indexes, last index - 1 because
     # we add +1 when iterating to connect segments
@@ -257,7 +283,7 @@ def plot_signals(
     *,
     x_pred: T.Optional[T.Union[np.ndarray, pd.DataFrame]] = None,
     path: T.Optional[str] = None,
-    return_fig: bool = False
+    return_fig: bool = False,
 ) -> T.Optional[Figure]:
     """Plots the signal `x` in color of the label `y`.
     Optionally, `x_pred` is signal prediction to be plotted.
@@ -290,20 +316,26 @@ def plot_signals(
         .. image:: ../images/plot_signals.png
            :scale: 50 %
     """
+    if y is None:
+        y = pd.DataFrame(
+            np.zeros(
+                (
+                    *x.shape[:-1],
+                    1,
+                )
+            )
+        )
 
     x_pred = _check_inputs(x_pred)
-    x = _check_inputs(x)
-    y = _check_inputs(y)
-
-    if y is None:
-        y = pd.DataFrame(np.zeros((*x.shape[:-1], 1,)))  # type: ignore
+    x: pd.DataFrame = _check_inputs(x)
+    y: pd.DataFrame = _check_inputs(y)
 
     x_pred, x, y = _truncate_length(x_pred, x, y)
-    segments = _get_segments(x, y)
+    segments = _get_segments(x, y)  # type: ignore
 
     # plot grid n x 2 if more than plot
-    columns = 2 if np.shape(x)[-1] > 1 else 1
-    rows = -(-np.shape(x)[-1] // columns)
+    columns = 2 if x.shape[-1] > 1 else 1  # type: ignore
+    rows = -(-x.shape[-1] // columns)  # type: ignore
 
     # prepare subplots
     figsize = (7.5 * columns, 2 * rows)
@@ -314,27 +346,38 @@ def plot_signals(
     # iterate over segments
     for s1, s2 in zip(segments[:-1], segments[1:]):
         # draw in color of label for each col
-        for idx, (ax, col) in enumerate(zip(axes, x)):
+        for idx, (ax, col) in enumerate(zip(axes, x)):  # type: ignore
             ax.set_title(col)
 
             idx_x = np.array(range(int(s1), int(s2 + 1)))
 
             # draw x
-            ax.plot(idx_x,
-                    x.loc[s1:s2, col],
-                    c='C1' if y.iloc[s1, 0] > 0. else 'C2',
-                    label='x')
+            ax.plot(
+                idx_x,
+                x.loc[s1:s2, col],  # type: ignore
+                c='C1' if y.iloc[s1, 0] > 0.0 else 'C2',  # type: ignore
+                label='x',
+            )
 
             # draw x_pred
             if x_pred is not None:
-                ax.plot(idx_x, x_pred.iloc[s1:(s2 + 1), idx],
-                        c='C0',
-                        alpha=0.8, zorder=10, label='x_pred')
+                ax.plot(
+                    idx_x,
+                    x_pred.iloc[s1 : (s2 + 1), idx],
+                    c='C0',
+                    alpha=0.8,
+                    zorder=10,
+                    label='x_pred',
+                )
 
     handles, labels = ax.get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
-    fig.legend(by_label.values(), by_label.keys(),
-               loc='upper center', ncol=len(by_label))
+    fig.legend(
+        by_label.values(),
+        by_label.keys(),
+        loc='upper center',
+        ncol=len(by_label),
+    )
     plt.tight_layout()
     if path is not None:
         plt.savefig(path, dpi=300, bbox_inches='tight', facecolor='white')
@@ -354,7 +397,7 @@ def plot_signals_norm(
     norm_mean: T.Optional[np.ndarray] = None,
     norm_std: T.Optional[np.ndarray] = None,
     path: T.Optional[str] = None,
-    return_fig: bool = False
+    return_fig: bool = False,
 ) -> T.Optional[Figure]:
     """Plots the signal `x` in color of the label `y`. Optionally,
     `x_pred` is signal prediction to be plotted. Additionally, with `norm_mean`
@@ -394,23 +437,30 @@ def plot_signals_norm(
         .. image:: ../images/plot_signals_norm.png
            :scale: 50 %
     """
+    if y is None:
+        y = pd.DataFrame(
+            np.zeros(
+                (
+                    *x.shape[:-1],
+                    1,
+                )
+            )
+        )
+
     x_pred = _check_inputs(x_pred)
     x = _check_inputs(x)
     y = _check_inputs(y)
-
-    if y is None:
-        y = pd.DataFrame(np.zeros((*x.shape[:-1], 1,)))  # type: ignore
 
     if norm_mean is not None and norm_std is not None:
         mean = detemporalize(norm_mean, verbose=False)
         std = detemporalize(norm_std, verbose=False)
 
     x_pred, x, y = _truncate_length(x_pred, x, y)
-    segments = _get_segments(x, y)
+    segments = _get_segments(x, y)  # type: ignore
 
     # plot grid n x 2 if more than plot
-    columns = 2 if np.shape(x)[-1] > 1 else 1
-    rows = -(-np.shape(x)[-1] // columns)
+    columns = 2 if x.shape[-1] > 1 else 1  # type: ignore
+    rows = -(-x.shape[-1] // columns)  # type: ignore
 
     # prepare subplots
     figsize = (7.5 * columns, 2 * rows)
@@ -421,37 +471,57 @@ def plot_signals_norm(
     # iterate over segments
     for s1, s2 in zip(segments[:-1], segments[1:]):
         # draw in color of label for each col
-        for idx, (ax, col) in enumerate(zip(axes, x)):
+        for idx, (ax, col) in enumerate(zip(axes, x)):  # type: ignore
             ax.set_title(col)
 
             idx_x = np.array(range(int(s1), int(s2 + 1)))
 
             # draw x
-            ax.plot(idx_x,
-                    x.loc[s1:s2, col],
-                    c='C1' if y.iloc[s1, 0] > 0. else 'C2',
-                    label='x')
+            ax.plot(
+                idx_x,
+                x.loc[s1:s2, col],  # type: ignore
+                c='C1' if y.iloc[s1, 0] > 0.0 else 'C2',  # type: ignore
+                label='x',
+            )
 
             # draw x_pred
             if x_pred is not None:
-                ax.plot(idx_x,
-                        x_pred.iloc[s1:(s2 + 1), idx],
-                        c='C0',
-                        label='x_pred')
+                ax.plot(
+                    idx_x,
+                    x_pred.iloc[s1 : (s2 + 1), idx],
+                    c='C0',
+                    label='x_pred',
+                )
 
             # plot normal mean and std
             if (mean is not None) & (std is not None):
-                ax.plot(idx_x, mean[s1:(s2 + 1), idx],
-                        color='C5', lw=.8, zorder=3, alpha=0.8, label='mean')
-                ax.fill_between(idx_x,
-                                mean[s1:(s2 + 1), idx] - std[s1:(s2 + 1), idx],
-                                mean[s1:(s2 + 1), idx] + std[s1:(s2 + 1), idx],
-                                alpha=0.5, color='C5', zorder=3, label='std')
+                ax.plot(
+                    idx_x,
+                    mean[s1 : (s2 + 1), idx],
+                    color='C5',
+                    lw=0.8,
+                    zorder=3,
+                    alpha=0.8,
+                    label='mean',
+                )
+                ax.fill_between(
+                    idx_x,
+                    mean[s1 : (s2 + 1), idx] - std[s1 : (s2 + 1), idx],
+                    mean[s1 : (s2 + 1), idx] + std[s1 : (s2 + 1), idx],
+                    alpha=0.5,
+                    color='C5',
+                    zorder=3,
+                    label='std',
+                )
 
     handles, labels = ax.get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
-    fig.legend(by_label.values(), by_label.keys(),
-               loc='upper center', ncol=len(by_label))
+    fig.legend(
+        by_label.values(),
+        by_label.keys(),
+        loc='upper center',
+        ncol=len(by_label),
+    )
 
     plt.tight_layout()
     if path is not None:
@@ -471,7 +541,7 @@ def plot_signals_binary(
     x_pred: T.Optional[T.Union[np.ndarray, pd.DataFrame]] = None,
     bern_mean: T.Optional[np.ndarray] = None,
     path: T.Optional[str] = None,
-    return_fig: bool = False
+    return_fig: bool = False,
 ) -> T.Optional[Figure]:
     """Plots the signal `x` in color of the label `y`. Optionally, `x_pred` is
     signal prediction to be plotted. `x` are the inputs or ground truth.
@@ -510,22 +580,29 @@ def plot_signals_binary(
            :scale: 50 %
     """
 
+    if y is None:
+        y = pd.DataFrame(
+            np.zeros(
+                (
+                    *x.shape[:-1],
+                    1,
+                )
+            )
+        )
+
     x_pred = _check_inputs(x_pred)
     x = _check_inputs(x)
     y = _check_inputs(y)
-
-    if y is None:
-        y = pd.DataFrame(np.zeros((*x.shape[:-1], 1,)))  # type: ignore
 
     if bern_mean is not None:
         bern_mean = detemporalize(bern_mean, verbose=False)
 
     x_pred, x, y = _truncate_length(x_pred, x, y)
-    segments = _get_segments(x, y)
+    segments = _get_segments(x, y)  # type: ignore
 
     # plot grid n x 2 if more than plot
-    columns = 2 if np.shape(x)[-1] > 1 else 1
-    rows = -(-np.shape(x)[-1] // columns)
+    columns = 2 if x.shape[-1] > 1 else 1  # type: ignore
+    rows = -(-x.shape[-1] // columns)  # type: ignore
 
     # prepare subplots
     figsize = (7.5 * columns, 2 * rows)
@@ -536,33 +613,48 @@ def plot_signals_binary(
     # iterate over segments
     for s1, s2 in zip(segments[:-1], segments[1:]):
         # draw in color of label for each col
-        for idx, (ax, col) in enumerate(zip(axes, x)):
+        for idx, (ax, col) in enumerate(zip(axes, x)):  # type: ignore
             ax.set_title(col)
 
             idx_x = np.array(range(int(s1), int(s2 + 1)))
 
             # draw x
-            ax.plot(idx_x,
-                    x.loc[s1:s2, col],
-                    c='C1' if y.iloc[s1, 0] > 0. else 'C2',
-                    label='x')
+            ax.plot(
+                idx_x,
+                x.loc[s1:s2, col],  # type: ignore
+                c='C1' if y.iloc[s1, 0] > 0.0 else 'C2',  # type: ignore
+                label='x',
+            )
 
             # draw x_pred
             if x_pred is not None:
-                ax.plot(idx_x,
-                        x_pred.iloc[s1:(s2 + 1), idx],
-                        c='C0',
-                        label='x_pred')
+                ax.plot(
+                    idx_x,
+                    x_pred.iloc[s1 : (s2 + 1), idx],
+                    c='C0',
+                    label='x_pred',
+                )
 
             # plot bern mean
             if bern_mean is not None:
-                ax.plot(idx_x, bern_mean[s1:(s2 + 1), idx], color='C5',
-                        lw=.8, zorder=3, alpha=0.8, label='bern_mean')
+                ax.plot(
+                    idx_x,
+                    bern_mean[s1 : (s2 + 1), idx],
+                    color='C5',
+                    lw=0.8,
+                    zorder=3,
+                    alpha=0.8,
+                    label='bern_mean',
+                )
 
     handles, labels = ax.get_legend_handles_labels()
     by_label = dict(zip(labels, handles))
-    fig.legend(by_label.values(), by_label.keys(),
-               loc='upper center', ncol=len(by_label))
+    fig.legend(
+        by_label.values(),
+        by_label.keys(),
+        loc='upper center',
+        ncol=len(by_label),
+    )
 
     plt.tight_layout()
     if path is not None:
@@ -583,7 +675,7 @@ def plot_rankings(
     x_pred: np.ndarray,
     k=3,
     context=10,
-    return_figs: bool = False
+    return_figs: bool = False,
 ) -> T.Optional[T.List[Figure]]:
     """Plots the top k features (predictions `x_pred` and ground truth `x`)
     with the biggest error for each anomaly found in the labels `y`. With
@@ -644,14 +736,21 @@ def plot_rankings(
         plt.subplots_adjust(hspace=0.5)
 
         gs = fig.add_gridspec(nrows=rows, ncols=columns)
-        axes = [fig.add_subplot(gs[x, y])
-                for (x, y) in product(range(rows - 1), range(columns))]
+        axes = [
+            fig.add_subplot(gs[x, y])
+            for (x, y) in product(range(rows - 1), range(columns))
+        ]
 
         fig.suptitle(f'Anomaly: {(s, e)}')
-        fig.legend(handles=[Patch(color='C2', label='x'),
-                            Patch(color='C0', label='x_pred')],
-                   ncol=2, loc='upper center',
-                   bbox_to_anchor=(0.5, 0.95))
+        fig.legend(
+            handles=[
+                Patch(color='C2', label='x'),
+                Patch(color='C0', label='x_pred'),
+            ],
+            ncol=2,
+            loc='upper center',
+            bbox_to_anchor=(0.5, 0.95),
+        )
 
         s = max(s - context, 0)
         e = min(e + context + 1, x.shape[0])
@@ -676,9 +775,11 @@ def plot_rankings(
 
         data = [ranks[:15], _fmt(mean_error[:15]), _fmt(error_dist[:15])]
 
-        table = table_ax.table(cellText=data,
-                               rowLabels=['Feature', 'Mean Error', 'Share'],
-                               loc='center')
+        table = table_ax.table(
+            cellText=data,
+            rowLabels=['Feature', 'Mean Error', 'Share'],
+            loc='center',
+        )
         table.auto_set_column_width(col=list(range(len(ranks[:15]))))
 
     plt.tight_layout()
@@ -695,7 +796,7 @@ def _create_lc(
     y: np.ndarray,
     labels: np.ndarray,
     cmap,
-    **kwargs
+    **kwargs,
 ) -> LineCollection:
     """Creates a LineCollection.
 
@@ -745,7 +846,7 @@ def plot_point_adjust_metrics(
     y_hat: np.ndarray,
     y: np.ndarray,
     *,
-    return_fig: bool = False
+    return_fig: bool = False,
 ) -> T.Optional[Figure]:
     """Plots ``point_adjust_metrics``.
 
@@ -771,26 +872,32 @@ def plot_point_adjust_metrics(
     """
 
     df = point_adjust_metrics(y_hat=y_hat, y=y)
-    df = df.reset_index().rename(columns={
-        'index': 'K',
-        **{
-            col: f'{col} (AUC: {auc(df.index, df[col]) / 100:.2f})'
-            for col in df
+    df = df.reset_index().rename(
+        columns={
+            'index': 'K',
+            **{
+                col: f'{col} (AUC: {auc(df.index, df[col]) / 100:.2f})'
+                for col in df
+            },
         }
-    })
+    )
     dfm = df.melt('K', var_name='Metrics', value_name='Score')
 
     with sns.plotting_context('notebook'), sns.axes_style('darkgrid'):
         fig, ax = plt.subplots()
         g = sns.lineplot(
-            x='K', y='Score', hue='Metrics',
-            data=dfm, markers=True, marker='o',
-            ax=ax
+            x='K',
+            y='Score',
+            hue='Metrics',
+            data=dfm,
+            markers=True,
+            marker='o',
+            ax=ax,
         )
         g.set(
             xlim=(0, 100),
             xticks=range(0, 101, 10),
-            xticklabels=range(0, 101, 10)
+            xticklabels=range(0, 101, 10),
         )
 
     return fig if return_fig else None

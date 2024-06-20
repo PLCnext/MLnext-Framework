@@ -1,0 +1,14 @@
+{
+  "esbonio.sphinx.confDir": "",
+  "files.exclude": {
+    "**/.git": true,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/*.egg-info": true,
+    "**/__pycache__": true
+  },
+  "explorerExclude.backup": {}
+}
