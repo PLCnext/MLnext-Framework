@@ -1,0 +1,1 @@
+Fixed type of parameter ``mapper`` in ``ColumnRename``.
