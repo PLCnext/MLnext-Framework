@@ -1,5 +1,4 @@
-""" Module for loading and saving files.
-"""
+"""Module for loading and saving files."""
 import glob
 import json
 import os
@@ -16,11 +15,16 @@ __all__ = [
     'save_config',
     'load',
     'get_files',
-    'get_folders'
+    'get_folders',
 ]
 
 
-def save_json(data: T.Dict[str, T.Any], *, name: str, folder: str = '.'):
+def save_json(
+    data: T.Dict[str, T.Any],
+    *,
+    name: str,
+    folder: str = '.',
+):
     """Saves `data` to a name.json in `folder`.
 
     Args:
@@ -70,7 +74,12 @@ def load_json(path: str) -> T.Dict[str, T.Any]:
     return data
 
 
-def save_yaml(data: T.Dict[str, T.Any], *, name: str, folder: str = '.'):
+def save_yaml(
+    data: T.Dict[str, T.Any],
+    *,
+    name: str,
+    folder: str = '.',
+):
     """Saves `data` to a name.yaml in `folder`.
 
     Args:
@@ -120,7 +129,12 @@ def load_yaml(path: str) -> T.Dict[str, T.Any]:
     return data
 
 
-def save_config(config: BaseModel, *, name: str, folder: str = '.'):
+def save_config(
+    config: BaseModel,
+    *,
+    name: str,
+    folder: str = '.',
+):
     """Saves a `pydantic.BaseModel` to `yaml`.
 
     Args:
@@ -140,10 +154,7 @@ def save_config(config: BaseModel, *, name: str, folder: str = '.'):
     if not os.path.isdir(folder):
         raise ValueError(f'{folder} is not a valid directory.')
 
-    settings = {
-        'exclude_unset': True,
-        'exclude_none': True
-    }
+    settings = {'exclude_unset': True, 'exclude_none': True}
 
     data = yaml.safe_load(config.json(**settings))  # type: ignore
     save_yaml(data=data, folder=folder, name=name)
@@ -171,15 +182,13 @@ def load(path: str) -> T.Dict[str, T.Any]:
     """
     _, ext = os.path.splitext(path)
 
-    exts = {
-        '.json': load_json,
-        '.yaml': load_yaml,
-        '.yml': load_yaml
-    }
+    exts = {'.json': load_json, '.yaml': load_yaml, '.yml': load_yaml}
 
     if ext not in exts:
-        raise ValueError(f'Incompatible extension "{ext}".'
-                         f'Supported extensions: {exts.keys()}.')
+        raise ValueError(
+            f'Incompatible extension "{ext}".'
+            f'Supported extensions: {exts.keys()}.'
+        )
 
     return exts[ext](path)
 
@@ -189,7 +198,7 @@ def get_files(
     *,
     name: str = '*',
     ext: str = '*',
-    absolute: bool = False
+    absolute: bool = False,
 ) -> T.List[str]:
     """T.List all files in `path` with extension `ext`.
 
@@ -235,7 +244,7 @@ def get_folders(
     path: str,
     *,
     filter: str = '',
-    absolute: bool = False
+    absolute: bool = False,
 ) -> T.List[str]:
     """Lists all folders in `folder`.
 
@@ -268,7 +277,10 @@ def get_folders(
     if not os.path.isdir(path):
         raise ValueError(f'Path "{path}" is not a directory.')
 
-    return [name if not absolute else os.path.join(path, name)
-            for name in os.listdir(path)
-            if (os.path.isdir(os.path.join(path, name))
-                and name.startswith(filter))]
+    return [
+        name if not absolute else os.path.join(path, name)
+        for name in os.listdir(path)
+        if (
+            os.path.isdir(os.path.join(path, name)) and name.startswith(filter)
+        )
+    ]

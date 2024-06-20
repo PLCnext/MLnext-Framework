@@ -59,7 +59,10 @@ def find_anomalies(
 
 
 def recall_anomalies(
-    y: np.ndarray, y_hat: np.ndarray, *, k: float = 0
+    y: np.ndarray,
+    y_hat: np.ndarray,
+    *,
+    k: float = 0,
 ) -> float:
     """Calculates the percentage of anomaly segments that are correctly
     detected. The parameter ``k`` [in %] controls how much of a segments needs
@@ -89,7 +92,10 @@ def recall_anomalies(
 
 
 def _recall_anomalies(
-    anomalies: T.List[T.Tuple[int, int]], y_hat: np.ndarray, *, k: float = 0
+    anomalies: T.List[T.Tuple[int, int]],
+    y_hat: np.ndarray,
+    *,
+    k: float = 0,
 ) -> int:
     """Determines the number of detected segments for a given ``k``.
 
@@ -118,7 +124,11 @@ def _recall_anomalies(
 
 
 def rank_features(
-    *, error: np.ndarray, y: np.ndarray
+    *,
+    error: np.ndarray,
+    y: np.ndarray,
+    reduce: T.Literal['mean', 'max', 'median', 'sum'] = 'mean',
+    mask: T.Optional[npt.NDArray[np.bool_]] = None,
 ) -> T.Tuple[T.List[T.Tuple[int, int]], np.ndarray, np.ndarray]:
     """Finds the anomalies in y and calculates the feature-wise error for
     each anomaly. Each feature is ranked accordingly to their mean error
@@ -127,10 +137,21 @@ def rank_features(
     Args:
         error (np.ndarray): Error (2d or 3d).
         y (np.ndarray): Labels (1d).
+        reduce (str): Function used to reduce the error over the segment
+          to a single feature-wise scalar.
+
+          .. versionadded:: 0.5.0
+
+        mask (np.NDArray[np.bool] | None): Mask applied to the error. Only
+          elements where the mask is True are counted for a segment.
+          If there is no valid element for a segment, then the error is 0
+          for all features. See example below.
+
+          .. versionadded:: 0.5.0
 
     Raises:
         ValueError: Raised if length do not align for `error` and `y` or no
-          anomalies were found.
+          anomalies were found in y.
 
     Returns:
         T.Tuple[T.List[T.Tuple[int, int]], np.ndarray]: Returns a tuple of 1.
@@ -142,13 +163,34 @@ def rank_features(
     Example:
         >>> errors = np.array([[0.1, 0.8, 0.3, 0.25], [0.2, 0.4, 0.2, 0.6]]).T
         >>> y = np.array([0, 1, 0, 1])
-        >>> segments, rankings, mean_errors = rank_features(error=errors, y=y)
+        >>> segments, rankings, mean_errors = mlnext.rank_features(
+        ...     error=errors,
+        ...     y=y
+        ... )
         >>> segments
             [(1, 1), (3, 3)]
         >>> rankings
             [[0, 1], [1, 0]]
         >>> mean_errors
             [[0.8, 0.4], [0.6, 0.25]]
+
+        >>> errors = np.array([[0.1, 0.8, 0.3, 0.25], [0.2, 0.4, 0.2, 0.6]]).T
+        >>> y = np.array([1, 0, 1, 1])
+        >>> y_hat = np.array([0, 0, 1, 0])
+        >>> mask = (y & y_hat).astype('bool')
+        >>> segments, rankings, mean_errors = mlnext.rank_features(
+        ...     error=errors,
+        ...     y=y,
+        ...     reduce='sum',
+        ...     mask=mask,
+        ... )
+        >>> segments
+            [(0, 0), (2, 3)]
+        >>> rankings
+            [[0, 1], [0, 1]]
+        >>> mean_errors
+            [[0, 0], [0.3, 0.2]]
+
     """
 
     # 1. finds all anomalies in y
@@ -157,11 +199,19 @@ def rank_features(
 
     error = detemporalize(error, verbose=False)
     y = detemporalize(y, verbose=False)
+    mask = (
+        detemporalize(mask, verbose=False)
+        if mask is not None
+        else y.astype('bool')
+    )
 
     if (e_len := error.shape[0]) != (y_len := y.shape[0]):
         warnings.warn(f'Length misaligned, got {e_len} and {y_len}.')
 
-    ((error, y),) = truncate((error, y))
+    if mask is not None:
+        check_shape(y, mask)
+
+    ((error, y, mask),) = truncate((error, y, mask))
 
     if error.shape[-1] < 2:
         raise ValueError('Expected at least 2 features.')
@@ -174,9 +224,31 @@ def rank_features(
     if len(anomalies) < 1:
         raise ValueError('No anomalies found.')
 
+    # reduction function
+    reduce_functions: dict[str, T.Callable[..., np.ndarray]] = {
+        'mean': np.mean,
+        'max': np.max,
+        'sum': np.sum,
+    }
+    if reduce not in reduce_functions:
+        raise ValueError(
+            f'Received invalid value "{reduce}" for reduce. '
+            f'Available functions are: {list(reduce_functions.keys())}.'
+        )
+
     # calculate mean per feature for each anomaly
     # rank the features according to their mean error for the anomaly
-    errors = np.array([_sort_features(error, a) for a in anomalies])
+    errors = np.array(
+        [
+            _sort_features(
+                error,
+                a,
+                reduce=reduce_functions[reduce],
+                mask=mask,
+            )
+            for a in anomalies
+        ]
+    )
     rankings = np.array(errors[:, :, 0], dtype='int32')
     mean_errors = errors[:, :, 1]
 
@@ -184,22 +256,35 @@ def rank_features(
 
 
 def _sort_features(
-    error: np.ndarray, idx: T.Tuple[int, int]
+    error: np.ndarray,
+    idx: T.Tuple[int, int],
+    reduce: T.Callable[..., np.ndarray],
+    mask: np.ndarray,
 ) -> T.List[T.Tuple[int, float]]:
     """Calculates the mean error per feature for an anomaly.
 
     Args:
         error (np.ndarray): Errors.
         idx (T.List[T.Tuple[int, int]]): Tuple of (start, end) indices of an
-        anomaly.
+          anomaly.
+        reduce (T.Callable[..., np.ndarray]): Function to reduce error over
+          segment to feature-wise scalar.
+        mask (np.ndarray, optional): Elements which are counted for the error
+          calculation.
 
     Returns:
         T.List[T.Tuple[int, float]]: Returns a list of sorted tuples containing
         the index and the mean error for the anomaly.
     """
-
     # calculate error by feature
-    mean_err = np.mean(error[idx[0] : (idx[1] + 1)], axis=0)
+    s = slice(idx[0], idx[1] + 1)
+    mean_err = reduce(
+        error[s],
+        axis=0,
+        where=mask[s].reshape(-1, 1),
+        **({'initial': 0} if reduce != np.mean else {}),
+    )
+    mean_err = np.nan_to_num(mean_err)
 
     # rank error (tuple of (idx, mean_err))
     rank_err = sorted(
@@ -210,7 +295,10 @@ def _sort_features(
 
 
 def apply_point_adjust(
-    *, y_hat: np.ndarray, y: np.ndarray, k: float = 0
+    *,
+    y_hat: np.ndarray,
+    y: np.ndarray,
+    k: float = 0,
 ) -> np.ndarray:
     """Implements the point-adjust approach from
     https://arxiv.org/abs/1802.03903 and its variation from
