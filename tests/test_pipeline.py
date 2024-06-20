@@ -10,9 +10,7 @@ from mlnext import pipeline
 
 
 class TestColumnSelector(TestCase):
-
     def setUp(self):
-
         data = np.arange(8).reshape(-1, 2)
         cols = ['a', 'b']
         self.df = pd.DataFrame(data, columns=cols)
@@ -25,17 +23,23 @@ class TestColumnSelector(TestCase):
 
         pd.testing.assert_frame_equal(result, expected)
 
+    def test_fit_columns(self):
+        t = pipeline.ColumnSelector()
+
+        expected = self.df.loc[:, ['a']]
+        t.fit(pd.DataFrame({'a': [0]}))
+        result = t.transform(self.df)
+
+        pd.testing.assert_frame_equal(result, expected)
+
 
 class TestColumnDropper(TestCase):
-
     def setUp(self):
-
         data = np.arange(8).reshape(-1, 2)
         cols = ['a', 'b']
         self.df = pd.DataFrame(data, columns=cols)
 
     def test_drop_columns(self):
-
         t = pipeline.ColumnDropper(columns=['b'])
 
         expected = self.df.loc[:, ['a']]
@@ -44,7 +48,6 @@ class TestColumnDropper(TestCase):
         pd.testing.assert_frame_equal(result, expected)
 
     def test_drop_columns_verbose(self):
-
         t = pipeline.ColumnDropper(columns=['b'], verbose=True)
 
         expected = self.df.loc[:, ['a']]
@@ -53,7 +56,6 @@ class TestColumnDropper(TestCase):
         pd.testing.assert_frame_equal(result, expected)
 
     def test_drop__missing_columns(self):
-
         t = pipeline.ColumnDropper(columns=['c'])
 
         with self.assertWarns(Warning):
@@ -61,9 +63,7 @@ class TestColumnDropper(TestCase):
 
 
 class TestColumnRename(TestCase):
-
     def test_rename_columns_lambda(self):
-
         t = pipeline.ColumnRename(lambda x: x.split('.')[-1])
         df = pd.DataFrame(columns=['a.b.c', 'd.e.f'])
         expected = pd.DataFrame(columns=['c', 'f'])
@@ -73,7 +73,6 @@ class TestColumnRename(TestCase):
         pd.testing.assert_frame_equal(result, expected)
 
     def test_rename_columns_dict(self):
-
         t = pipeline.ColumnRename({'a.b.c': 'g.h.i'})
         df = pd.DataFrame(columns=['a.b.c', 'd.e.f'])
         expected = pd.DataFrame(columns=['g.h.i', 'd.e.f'])
@@ -84,9 +83,7 @@ class TestColumnRename(TestCase):
 
 
 class TestNaDropper(TestCase):
-
     def test_drop_na(self):
-
         t = pipeline.NaDropper()
         df = pd.DataFrame([1, 0, pd.NA])
         expected = pd.DataFrame([1, 0], dtype=object)
@@ -97,9 +94,7 @@ class TestNaDropper(TestCase):
 
 
 class TestClip(TestCase):
-
     def test_clip(self):
-
         t = pipeline.Clip(lower=0.5, upper=1.5)
         df = pd.DataFrame([[0.1, 0.4, 0.6, 0.8, 1.2, 1.5]])
         expected = pd.DataFrame([[0.5, 0.5, 0.6, 0.8, 1.2, 1.5]])
@@ -112,24 +107,27 @@ class TestClip(TestCase):
     'columns,lower,upper,exp',
     [
         (
-            None, 0.0, 0.5,
-            pd.DataFrame({'a': [0.0, 0.23, 0.5], 'b': [0.25, 0.5, 0.5]})
+            None,
+            0.0,
+            0.5,
+            pd.DataFrame({'a': [0.0, 0.23, 0.5], 'b': [0.25, 0.5, 0.5]}),
         ),
         (
-            ['a'], 0.0, 0.5,
-            pd.DataFrame({'a': [0.0, 0.23, 0.5], 'b': [0.25, 1.24, 0.68]})
+            ['a'],
+            0.0,
+            0.5,
+            pd.DataFrame({'a': [0.0, 0.23, 0.5], 'b': [0.25, 1.24, 0.68]}),
         ),
         (
-            ['b'], 0.0, 0.5,
-            pd.DataFrame({'a': [-0.56, 0.23, 0.67], 'b': [0.25, 0.5, 0.5]})
-        )
-    ]
+            ['b'],
+            0.0,
+            0.5,
+            pd.DataFrame({'a': [-0.56, 0.23, 0.67], 'b': [0.25, 0.5, 0.5]}),
+        ),
+    ],
 )
 def test_clip(
-    columns: T.List[str],
-    lower: float,
-    upper: float,
-    exp: pd.DataFrame
+    columns: T.List[str], lower: float, upper: float, exp: pd.DataFrame
 ):
     df = pd.DataFrame({'a': [-0.56, 0.23, 0.67], 'b': [0.25, 1.24, 0.68]})
     t = pipeline.Clip(columns=columns, upper=upper, lower=lower)
@@ -143,16 +141,15 @@ def test_clip(
     'columns,lower,upper,msg',
     [
         (
-            ['c'], 0.0, 0.5,
-            "Columns ['c'] not found in DataFrame with columns ['a', 'b']."
+            ['c'],
+            0.0,
+            0.5,
+            "Columns ['c'] not found in DataFrame with columns ['a', 'b'].",
         ),
-    ]
+    ],
 )
 def test_clip_raises(
-    columns: T.List[str],
-    lower: float,
-    upper: float,
-    msg: str
+    columns: T.List[str], lower: float, upper: float, msg: str
 ):
     df = pd.DataFrame({'a': [-0.56, 0.23, 0.67], 'b': [0.25, 1.24, 0.68]})
     t = pipeline.Clip(columns=columns, upper=upper, lower=lower)
@@ -167,22 +164,23 @@ def test_clip_raises(
     'columns,dt_format,exp',
     [
         (
-            ['time'], None,
-            pd.DataFrame([[datetime.datetime(2021, 1, 4, 14, 12, 31)]],
-                         columns=['time'])
+            ['time'],
+            None,
+            pd.DataFrame(
+                [[datetime.datetime(2021, 1, 4, 14, 12, 31)]], columns=['time']
+            ),
         ),
         (
-            ['time'], '%Y-%m-%d %H:%M:%S',
-            pd.DataFrame([[datetime.datetime(2021, 1, 4, 14, 12, 31)]],
-                         columns=['time'])
+            ['time'],
+            '%Y-%m-%d %H:%M:%S',
+            pd.DataFrame(
+                [[datetime.datetime(2021, 1, 4, 14, 12, 31)]], columns=['time']
+            ),
         ),
-
-    ]
+    ],
 )
 def test_datetime_transformer(
-    columns: T.List[str],
-    dt_format: T.Optional[str],
-    exp: pd.DataFrame
+    columns: T.List[str], dt_format: T.Optional[str], exp: pd.DataFrame
 ):
     df = pd.DataFrame([['2021-01-04 14:12:31']], columns=['time'])
     t = pipeline.DatetimeTransformer(columns=columns, dt_format=dt_format)
@@ -196,15 +194,14 @@ def test_datetime_transformer(
     'columns,dt_format,msg',
     [
         (
-            ['t'], None,
-            "Columns ['t'] not found in DataFrame with columns ['time']."
+            ['t'],
+            None,
+            "Columns ['t'] not found in DataFrame with columns ['time'].",
         )
-    ]
+    ],
 )
 def test_datetime_transformer_raises(
-    columns: T.List[str],
-    dt_format: T.Optional[str],
-    msg: str
+    columns: T.List[str], dt_format: T.Optional[str], msg: str
 ):
     df = pd.DataFrame([['2021-01-04 14:12:31']], columns=['time'])
     t = pipeline.DatetimeTransformer(columns=columns, dt_format=dt_format)
@@ -221,11 +218,10 @@ def test_datetime_transformer_raises(
         (['a'], pd.DataFrame({'a': [0, 1, 2], 'b': ['3', '4', 0]})),
         (['a', 'b'], pd.DataFrame({'a': [0, 1, 2], 'b': [3, 4, 0]})),
         (None, pd.DataFrame({'a': [0, 1, 2], 'b': [3, 4, 0]})),
-    ]
+    ],
 )
 def test_numeric_transformer(
-    columns: T.Optional[T.List[str]],
-    exp: pd.DataFrame
+    columns: T.Optional[T.List[str]], exp: pd.DataFrame
 ):
     df = pd.DataFrame({'a': [0, '1', 2], 'b': ['3', '4', 0]})
     t = pipeline.NumericTransformer(columns=columns)
@@ -240,13 +236,12 @@ def test_numeric_transformer(
     [
         (
             ['c'],
-            "Columns ['c'] not found in DataFrame with columns ['a', 'b']."
+            "Columns ['c'] not found in DataFrame with columns ['a', 'b'].",
         ),
-    ]
+    ],
 )
 def test_numeric_transformer_raises(
-    columns: T.Optional[T.List[str]],
-    msg: str
+    columns: T.Optional[T.List[str]], msg: str
 ):
     df = pd.DataFrame({'a': [0, '1', 2], 'b': ['3', '4', 0]})
     t = pipeline.NumericTransformer(columns=columns)
@@ -262,40 +257,44 @@ def test_numeric_transformer_raises(
     [
         ('time', '10:00:00', '12:00:00', False, [1, 2, 3]),
         (
-            'time', datetime.time(10, 0, 0), datetime.time(12, 0, 0),
-            False, [1, 2, 3]
+            'time',
+            datetime.time(10, 0, 0),
+            datetime.time(12, 0, 0),
+            False,
+            [1, 2, 3],
         ),
         ('time', '10:00:00', '12:00:00', True, [0, 4]),
         (
-            'time', datetime.time(10, 0, 0), datetime.time(12, 0, 0),
-            True, [0, 4]
+            'time',
+            datetime.time(10, 0, 0),
+            datetime.time(12, 0, 0),
+            True,
+            [0, 4],
         ),
-    ]
+    ],
 )
 def test_timeframe_extractor(
     time_column: str,
     start_time: T.Union[str, datetime.time],
     end_time: T.Union[str, datetime.time],
     invert: bool,
-    exp: T.List[int]
+    exp: T.List[int],
 ):
-
     dates = [
         datetime.datetime(2021, 10, 1, 9, 50, 0),
         datetime.datetime(2021, 10, 1, 10, 0, 0),
         datetime.datetime(2021, 10, 1, 11, 0, 0),
         datetime.datetime(2021, 10, 1, 12, 0, 0),
-        datetime.datetime(2021, 10, 1, 12, 10, 0)
+        datetime.datetime(2021, 10, 1, 12, 10, 0),
     ]
     df = pd.DataFrame(
-        zip(dates, np.arange(len(dates))),
-        columns=['time', 'value']
+        zip(dates, np.arange(len(dates))), columns=['time', 'value']
     )
     t = pipeline.TimeframeExtractor(
         time_column=time_column,
         start_time=start_time,
         end_time=end_time,
-        invert=invert
+        invert=invert,
     )
 
     result = t.fit_transform(df)
@@ -308,40 +307,44 @@ def test_timeframe_extractor(
     [
         ('date', '2021-10-02', '2021-10-04', False, [1, 2, 3]),
         (
-            'date', datetime.date(2021, 10, 2), datetime.date(2021, 10, 4),
-            False, [1, 2, 3]
+            'date',
+            datetime.date(2021, 10, 2),
+            datetime.date(2021, 10, 4),
+            False,
+            [1, 2, 3],
         ),
         ('date', '2021-10-02', '2021-10-04', True, [0, 4]),
         (
-            'date', datetime.date(2021, 10, 2), datetime.date(2021, 10, 4),
-            True, [0, 4]
+            'date',
+            datetime.date(2021, 10, 2),
+            datetime.date(2021, 10, 4),
+            True,
+            [0, 4],
         ),
-    ]
+    ],
 )
 def test_date_extractor(
     date_column: str,
     start_date: T.Union[str, datetime.date],
     end_date: T.Union[str, datetime.date],
     invert: bool,
-    exp: T.List[int]
+    exp: T.List[int],
 ):
-
     dates = [
         datetime.datetime(2021, 10, 1, 9, 50, 0),
         datetime.datetime(2021, 10, 2, 10, 0, 0),
         datetime.datetime(2021, 10, 3, 11, 0, 0),
         datetime.datetime(2021, 10, 4, 12, 0, 0),
-        datetime.datetime(2021, 10, 5, 12, 10, 0)
+        datetime.datetime(2021, 10, 5, 12, 10, 0),
     ]
     df = pd.DataFrame(
-        zip(dates, np.arange(len(dates))),
-        columns=['date', 'value']
+        zip(dates, np.arange(len(dates))), columns=['date', 'value']
     )
     t = pipeline.DateExtractor(
         date_column=date_column,
         start_date=start_date,
         end_date=end_date,
-        invert=invert
+        invert=invert,
     )
 
     result = t.fit_transform(df)
@@ -350,35 +353,36 @@ def test_date_extractor(
 
 
 class TestValueMapper(TestCase):
-
     def test_value_mapper_one_column(self):
-
         t = pipeline.ValueMapper(columns=['b'], classes={2.0: 1.0})
         df = pd.DataFrame(np.ones((3, 2)) * 2, columns=['a', 'b'])
-        expected = pd.DataFrame(zip(np.ones((3, 1)) * 2, np.ones((3, 1))),
-                                columns=['a', 'b'], dtype=np.float64)
+        expected = pd.DataFrame(
+            zip(np.ones((3, 1)) * 2, np.ones((3, 1))),
+            columns=['a', 'b'],
+            dtype=np.float64,
+        )
 
         result = t.fit_transform(df)
 
         pd.testing.assert_frame_equal(result, expected)
 
     def test_value_mapper_all_columns(self):
-
         t = pipeline.ValueMapper(columns=['a', 'b'], classes={2.0: 1.0})
         df = pd.DataFrame(np.ones((3, 2)) * 2, columns=['a', 'b'])
-        expected = pd.DataFrame(np.ones((3, 2)), columns=['a', 'b'],
-                                dtype=np.float64)
+        expected = pd.DataFrame(
+            np.ones((3, 2)), columns=['a', 'b'], dtype=np.float64
+        )
 
         result = t.fit_transform(df)
 
         pd.testing.assert_frame_equal(result, expected)
 
     def test_value_mapper_missing_value(self):
-
         t = pipeline.ValueMapper(columns=['a', 'b'], classes={2.0: 1.0})
         df = pd.DataFrame(np.ones((3, 2)), columns=['a', 'b'])
-        expected = pd.DataFrame(np.ones((3, 2)), columns=['a', 'b'],
-                                dtype=np.float64)
+        expected = pd.DataFrame(
+            np.ones((3, 2)), columns=['a', 'b'], dtype=np.float64
+        )
 
         with self.assertWarns(Warning):
             result = t.fit_transform(df)
@@ -387,15 +391,10 @@ class TestValueMapper(TestCase):
 
 
 class TestSorter(TestCase):
-
     def setUp(self):
-        self.df = pd.DataFrame({
-            'a': [2, 3, 1, 4],
-            'b': ['A', 'D', 'C', 'B']
-        })
+        self.df = pd.DataFrame({'a': [2, 3, 1, 4], 'b': ['A', 'D', 'C', 'B']})
 
     def test_sorter(self):
-
         t = pipeline.Sorter(columns=['a'])
         result = t.fit_transform(self.df)
         expected = self.df.copy().sort_values(by=['a'])
@@ -403,7 +402,6 @@ class TestSorter(TestCase):
         pd.testing.assert_frame_equal(result, expected)
 
     def test_sorter_multi_col(self):
-
         t = pipeline.Sorter(columns=['a', 'b'])
         result = t.fit_transform(self.df)
         expected = self.df.copy().sort_values(by=['a', 'b'])
@@ -418,13 +416,9 @@ class TestSorter(TestCase):
         (1.0, None, [0.0, 1.0, 0.2, 1.0, 1.0, 0.5]),
         (None, 'bfill', [0.0, 1.0, 0.2, 0.5, 0.5, 0.5]),
         (None, 'ffill', [0.0, 1.0, 0.2, 0.2, 0.2, 0.5]),
-    ]
+    ],
 )
-def test_fill(
-    value: T.Optional[T.Any],
-    method: T.Optional[str],
-    exp: T.List
-):
+def test_fill(value: T.Optional[T.Any], method: T.Optional[str], exp: T.List):
     df = pd.DataFrame([0.0, 1.0, 0.2, np.nan, np.nan, 0.5])
     scaler = pipeline.Fill(value=value, method=method)
 
@@ -434,28 +428,35 @@ def test_fill(
 
 
 class TestTimeOffsetTransformer(TestCase):
-
     def test_timeoffset(self):
-
         t = pipeline.TimeOffsetTransformer(
-            time_columns=['t'], timedelta=pd.Timedelta(1, 'h'))
+            time_columns=['t'], timedelta=pd.Timedelta(1, 'h')
+        )
         df = pd.DataFrame({'t': [datetime.datetime(2020, 10, 1, 12, 3, 10)]})
         expected = pd.DataFrame(
-            {'t': [datetime.datetime(2020, 10, 1, 13, 3, 10)]})
+            {'t': [datetime.datetime(2020, 10, 1, 13, 3, 10)]}
+        )
 
         result = t.fit_transform(df)
 
         pd.testing.assert_frame_equal(result, expected)
 
     def test_timeoffset_multi_col(self):
-
         t = pipeline.TimeOffsetTransformer(
-            time_columns=['t'], timedelta=pd.Timedelta(1, 'h'))
-        df = pd.DataFrame({'t': [datetime.datetime(2020, 10, 1, 12, 3, 10)],
-                           'tt': [datetime.datetime(2020, 10, 1, 13, 3, 10)]})
+            time_columns=['t'], timedelta=pd.Timedelta(1, 'h')
+        )
+        df = pd.DataFrame(
+            {
+                't': [datetime.datetime(2020, 10, 1, 12, 3, 10)],
+                'tt': [datetime.datetime(2020, 10, 1, 13, 3, 10)],
+            }
+        )
         expected = pd.DataFrame(
-            {'t': [datetime.datetime(2020, 10, 1, 13, 3, 10)],
-             'tt': [datetime.datetime(2020, 10, 1, 13, 3, 10)]})
+            {
+                't': [datetime.datetime(2020, 10, 1, 13, 3, 10)],
+                'tt': [datetime.datetime(2020, 10, 1, 13, 3, 10)],
+            }
+        )
 
         result = t.fit_transform(df)
 
@@ -463,7 +464,6 @@ class TestTimeOffsetTransformer(TestCase):
 
 
 class TestConditionedDropper(TestCase):
-
     def setUp(self):
         self.data = [0.0, 0.5, 1.0, 1.2]
         self.df = pd.DataFrame({'a': self.data})
@@ -486,28 +486,26 @@ class TestConditionedDropper(TestCase):
 
 
 class TestZeroVarianceDropper(TestCase):
-
     def setUp(self):
-        self.df = pd.DataFrame({'one': np.ones((4,)),
-                                'zeros': np.zeros((4,)),
-                                'mixed': np.arange(4)})
+        self.df = pd.DataFrame(
+            {
+                'one': np.ones((4,)),
+                'zeros': np.zeros((4,)),
+                'mixed': np.arange(4),
+            }
+        )
 
     def test_dropper(self):
         t = pipeline.ZeroVarianceDropper(verbose=True)
-        expected = pd.DataFrame({
-            'mixed': np.arange(4)
-        })
+        expected = pd.DataFrame({'mixed': np.arange(4)})
 
         result = t.fit_transform(self.df)
 
         pd.testing.assert_frame_equal(result, expected)
 
     def test_dropper_fit_higher_variance(self):
-
         t = pipeline.ZeroVarianceDropper()
-        expected = pd.DataFrame({
-            'mixed': np.arange(4)
-        })
+        expected = pd.DataFrame({'mixed': np.arange(4)})
 
         t.fit(self.df)
 
@@ -520,13 +518,16 @@ class TestZeroVarianceDropper(TestCase):
 
 
 class TestSignalSorter(TestCase):
-
     def setUp(self):
-        self.df = pd.DataFrame({'one': np.ones((4,)),
-                                'zeros': np.zeros((4,)),
-                                'mixed': np.arange(4),
-                                'binary': [0, 1, 0, 1],
-                                'cont': [10, 11, 10, 11]})
+        self.df = pd.DataFrame(
+            {
+                'one': np.ones((4,)),
+                'zeros': np.zeros((4,)),
+                'mixed': np.arange(4),
+                'binary': [0, 1, 0, 1],
+                'cont': [10, 11, 10, 11],
+            }
+        )
 
     def test_sorter(self):
         t = pipeline.SignalSorter(verbose=True)
@@ -538,17 +539,24 @@ class TestSignalSorter(TestCase):
 
 
 class TestColumnSorter(TestCase):
-
     def setUp(self):
-        self.df = pd.DataFrame({'one': np.ones((2,)),
-                                'zeros': np.zeros((2,)),
-                                'mixed': np.arange(2),
-                                'binary': [0, 1]})
+        self.df = pd.DataFrame(
+            {
+                'one': np.ones((2,)),
+                'zeros': np.zeros((2,)),
+                'mixed': np.arange(2),
+                'binary': [0, 1],
+            }
+        )
 
-        self.df2 = pd.DataFrame({'mixed': np.arange(2),
-                                 'zeros': np.zeros((2,)),
-                                 'one': np.ones((2,)),
-                                 'binary': [0, 1]})
+        self.df2 = pd.DataFrame(
+            {
+                'mixed': np.arange(2),
+                'zeros': np.zeros((2,)),
+                'one': np.ones((2,)),
+                'binary': [0, 1],
+            }
+        )
 
     def test_sorter(self):
         t = pipeline.ColumnSorter(verbose=True)
@@ -591,18 +599,25 @@ class TestColumnSorter(TestCase):
 
 
 class TestDifferentialCreator(TestCase):
-
     def setUp(self):
         self.df = pd.DataFrame({'test': [0.0, 1.0, 0.2, 0.3, 0.5]})
 
-        self.df_sel = pd.DataFrame({'test': [0.0, 1.0, 0.2, 0.3, 0.5],
-                                    'test2': [0.0, 1.0, 0.2, 0.3, 0.5]})
+        self.df_sel = pd.DataFrame(
+            {
+                'test': [0.0, 1.0, 0.2, 0.3, 0.5],
+                'test2': [0.0, 1.0, 0.2, 0.3, 0.5],
+            }
+        )
 
     def test_creator(self):
         t = pipeline.DifferentialCreator(columns=['test'])
 
-        expected = pd.DataFrame({'test': [0.0, 1.0, 0.2, 0.3, 0.5],
-                                 'test_dif': [0.0, 1.0, -0.8, 0.1, 0.2]})
+        expected = pd.DataFrame(
+            {
+                'test': [0.0, 1.0, 0.2, 0.3, 0.5],
+                'test_dif': [0.0, 1.0, -0.8, 0.1, 0.2],
+            }
+        )
 
         result = t.fit_transform(self.df)
         pd.testing.assert_frame_equal(result, expected)
@@ -610,9 +625,13 @@ class TestDifferentialCreator(TestCase):
     def test_creator_selection(self):
         t = pipeline.DifferentialCreator(columns=['test'])
 
-        expected = pd.DataFrame({'test': [0.0, 1.0, 0.2, 0.3, 0.5],
-                                 'test2': [0.0, 1.0, 0.2, 0.3, 0.5],
-                                 'test_dif': [0.0, 1.0, -0.8, 0.1, 0.2]})
+        expected = pd.DataFrame(
+            {
+                'test': [0.0, 1.0, 0.2, 0.3, 0.5],
+                'test2': [0.0, 1.0, 0.2, 0.3, 0.5],
+                'test_dif': [0.0, 1.0, -0.8, 0.1, 0.2],
+            }
+        )
 
         result = t.fit_transform(self.df_sel)
         pd.testing.assert_frame_equal(result, expected)
@@ -622,34 +641,50 @@ class TestDifferentialCreator(TestCase):
     'feature_range,clip,p,exp',
     [
         (
-            (0, 1.), None, 100,
-            pd.DataFrame({
-                'a': [-3., -2., -1., 0., 1., 2., 3.],
-                'b': [-3., -2., -1., 0., 1., 2., 3.]
-            })
+            (0, 1.0),
+            None,
+            100,
+            pd.DataFrame(
+                {
+                    'a': [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0],
+                    'b': [-3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0],
+                }
+            ),
         ),
         (
-            (0, .5), None, 100,
-            pd.DataFrame({
-                'a': [-1.5, -1., -.5, 0., .5, 1., 1.5],
-                'b': [-1.5, -1., -.5, 0., .5, 1., 1.5]
-            })
+            (0, 0.5),
+            None,
+            100,
+            pd.DataFrame(
+                {
+                    'a': [-1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5],
+                    'b': [-1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5],
+                }
+            ),
         ),
         (
-            (0, .5), (-1, 1.), 100,
-            pd.DataFrame({
-                'a': [-1., -1., -.5, 0., .5, 1., 1.],
-                'b': [-1., -1., -.5, 0., .5, 1., 1.]
-            })
+            (0, 0.5),
+            (-1, 1.0),
+            100,
+            pd.DataFrame(
+                {
+                    'a': [-1.0, -1.0, -0.5, 0.0, 0.5, 1.0, 1.0],
+                    'b': [-1.0, -1.0, -0.5, 0.0, 0.5, 1.0, 1.0],
+                }
+            ),
         ),
         (
-            (0, .5), (0, 1.), 100,
-            pd.DataFrame({
-                'a': [0., 0., 0., 0., .5, 1., 1.],
-                'b': [0., 0., 0., 0., .5, 1., 1.]
-            })
-        )
-    ]
+            (0, 0.5),
+            (0, 1.0),
+            100,
+            pd.DataFrame(
+                {
+                    'a': [0.0, 0.0, 0.0, 0.0, 0.5, 1.0, 1.0],
+                    'b': [0.0, 0.0, 0.0, 0.0, 0.5, 1.0, 1.0],
+                }
+            ),
+        ),
+    ],
 )
 def test_ClippingMinMaxScaler(
     feature_range: T.Tuple[float, float],
@@ -657,19 +692,13 @@ def test_ClippingMinMaxScaler(
     p: float,
     exp: pd.DataFrame,
 ):
-
-    scaler = pipeline.ClippingMinMaxScaler(
-        feature_range,
-        clip=clip,
-        p=p
-    )
+    scaler = pipeline.ClippingMinMaxScaler(feature_range, clip=clip, p=p)
 
     df = pd.DataFrame({'a': [1, 2, 3, 4], 'b': [0, 1, 2, 3]})
     scaler.fit_transform(df)
 
-    df = pd.DataFrame({
-        'a': [-8, -5, -2, 1, 4, 7, 10],
-        'b': [-9, -6, -3, 0, 3, 6, 9]
-    })
+    df = pd.DataFrame(
+        {'a': [-8, -5, -2, 1, 4, 7, 10], 'b': [-9, -6, -3, 0, 3, 6, 9]}
+    )
     result = scaler.transform(df)
     pd.testing.assert_frame_equal(result, exp)
