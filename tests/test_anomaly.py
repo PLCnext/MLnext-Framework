@@ -71,22 +71,40 @@ def test_rank_features(error: np.ndarray, y: np.ndarray, exp: T.Tuple):
 
 
 @pytest.mark.parametrize(
-    'error,y,err_msg',
+    'error,y,reduce,err_msg',
     [
         (
             [[0.1, 0.6, 0.4, 0.5]],
             [0, 1, 1, 1],
+            'mean',
             'Expected at least 2 features.',
         ),
-        ([[0.1, 0.2], [0.1, 0.3]], [0, 0, 0, 0], 'No anomalies found.'),
+        (
+            [[0.1, 0.2], [0.1, 0.3]],
+            [0, 0, 0, 0],
+            'mean',
+            'No anomalies found.',
+        ),
+        (
+            [[0.1, 0.2], [0.1, 0.3]],
+            [0, 1],
+            '1',
+            'Received invalid value "1" for reduce. Available functions are: '
+            "['mean', 'max', 'median', 'sum'].",
+        ),
     ],
 )
-def test_rank_features_fails(error: np.ndarray, y: np.ndarray, err_msg: str):
+def test_rank_features_fails(
+    error: np.ndarray,
+    y: np.ndarray,
+    reduce: str,
+    err_msg: str,
+):
     error = np.array(error).T
     y = np.array(y)
 
     with pytest.raises(ValueError) as exc_info:
-        rank_features(error=error, y=y)
+        rank_features(error=error, y=y, reduce=reduce)
 
     assert exc_info.value.args[0] == err_msg
 
