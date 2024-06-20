@@ -113,7 +113,11 @@ class ColumnRename(BaseEstimator, TransformerMixin):
     """Transformer to rename column with a ``mapper`` function.
 
     Args:
-        mapper (lambda): Mapper rename function.
+        mapper (lambda | dict[str, str]): Mapper rename function or 1-to-1
+          dict mapping of columns.
+
+          .. versionchanged:: 0.5.0
+            Fixed type to indicate support for dict.
 
     Example:
         >>> data = pd.DataFrame({'a.b.c': [0], 'd.e.f': [0]})
@@ -121,7 +125,10 @@ class ColumnRename(BaseEstimator, TransformerMixin):
         pd.DataFrame({'c': [0], 'f': [0]})
     """
 
-    def __init__(self, mapper: T.Callable[[str], str]):
+    def __init__(
+        self,
+        mapper: T.Union[T.Dict[str, str], T.Callable[[str], str]],
+    ):
         self.mapper = mapper
 
     def fit(self, X: pd.DataFrame, y=None):
