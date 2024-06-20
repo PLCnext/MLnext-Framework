@@ -18,7 +18,10 @@ cfgv==3.4.0
     # via pre-commit
 chardet==5.2.0
     # via tox
+click==8.1.7
+    # via towncrier
 colorama==0.4.6
+    # via click
     # via ipython
     # via pytest
     # via tox
@@ -44,6 +47,8 @@ fonttools==4.53.0
     # via matplotlib
 identify==2.5.36
     # via pre-commit
+incremental==22.10.0
+    # via towncrier
 iniconfig==2.0.0
     # via pytest
 ipykernel==6.29.4
@@ -51,6 +56,8 @@ ipython==8.25.0
     # via ipykernel
 jedi==0.19.1
     # via ipython
+jinja2==3.1.4
+    # via towncrier
 joblib==1.4.2
     # via scikit-learn
 jupyter-client==8.6.2
@@ -60,6 +67,8 @@ jupyter-core==5.7.2
     # via jupyter-client
 kiwisolver==1.4.5
     # via matplotlib
+markupsafe==2.1.5
+    # via jinja2
 matplotlib==3.9.0
     # via mlnext
     # via seaborn
@@ -157,6 +166,7 @@ threadpoolctl==3.5.0
 tornado==6.4.1
     # via ipykernel
     # via jupyter-client
+towncrier==23.11.0
 tox==4.15.1
 traitlets==5.14.3
     # via comm

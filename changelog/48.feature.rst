@@ -1,1 +1,0 @@
-Added ``mlnext.utils.convert_sequences`` which converts sequences inside a mapping to a mapping by the index.

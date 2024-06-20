@@ -12,7 +12,48 @@ Changes for the upcoming release can be found in the `"changelog" directory <htt
 
 .. towncrier release notes start
 
-0.4.1 (2023-05-12)
+0.5.0 (2024-06-20)
+------------------
+
+
+
+
+Changes
+^^^^^^^
+
+- Parameter ``value`` is now optional in ``mlnext.pipeline.Fill`` to allow both filling methods.
+  `#46 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/46>`__
+- Fixed documentation of ``mlnext.pipeline``.
+  `#47 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/47>`__
+- Allow ``ColumnSelector`` to be fitted on data if ``keys`` is None.
+  `#50 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/50>`__
+- Fixed type of parameter ``mapper`` in ``ColumnRename``.
+  `#51 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/51>`__
+- Changed build system to hatchling and updated dev internals.
+  `#58 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/58>`__
+
+
+Features
+^^^^^^^^
+
+- Added ``mlnext.utils.convert_sequences`` which converts sequences inside a mapping to a mapping by the index.
+  `#48 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/48>`__
+- Added ``mlnext.anomaly.hit_rate_at_p``.
+  `#53 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/53>`__
+- Add py.typed to indicate mypy/typing support.
+  `#56 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/56>`__
+- Added parameters ``reduce`` and ``mask`` to ``mlnext.rank_features``.
+  `#57 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/57>`__
+
+
+Deprecations
+^^^^^^^^^^^^
+
+- Marked ``mlnext.save_config`` for removal in 0.7.
+  `#59 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/59>`__
+
+
+----0.4.1 (2023-05-12)
 ------------------
 
 

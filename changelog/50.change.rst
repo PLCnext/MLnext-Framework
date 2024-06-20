@@ -1,1 +1,0 @@
-Allow ``ColumnSelector`` to be fitted on data if ``keys`` is None.
