@@ -127,7 +127,7 @@ def rank_features(
     *,
     error: np.ndarray,
     y: np.ndarray,
-    reduce: T.Literal['mean', 'max', 'median', 'sum'] = 'mean',
+    reduce: T.Literal['mean', 'max', 'sum'] = 'mean',
     mask: T.Optional[npt.NDArray[np.bool_]] = None,
 ) -> T.Tuple[T.List[T.Tuple[int, int]], np.ndarray, np.ndarray]:
     """Finds the anomalies in y and calculates the feature-wise error for
