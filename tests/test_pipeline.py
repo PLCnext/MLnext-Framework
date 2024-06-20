@@ -62,11 +62,21 @@ class TestColumnDropper(TestCase):
 
 class TestColumnRename(TestCase):
 
-    def test_rename_columns(self):
+    def test_rename_columns_lambda(self):
 
         t = pipeline.ColumnRename(lambda x: x.split('.')[-1])
         df = pd.DataFrame(columns=['a.b.c', 'd.e.f'])
         expected = pd.DataFrame(columns=['c', 'f'])
+
+        result = t.fit_transform(df)
+
+        pd.testing.assert_frame_equal(result, expected)
+
+    def test_rename_columns_dict(self):
+
+        t = pipeline.ColumnRename({'a.b.c': 'g.h.i'})
+        df = pd.DataFrame(columns=['a.b.c', 'd.e.f'])
+        expected = pd.DataFrame(columns=['g.h.i', 'd.e.f'])
 
         result = t.fit_transform(df)
 
