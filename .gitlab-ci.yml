@@ -52,17 +52,6 @@ description:
   script:
     - tox -e pypi-description
 
-release:
-  stage: deploy
-  before_script:
-    - pip install twine
-  script:
-    - python setup.py sdist bdist_wheel
-    - python -m twine upload --verbose --skip-existing dist/*
-  only:
-    - main
-    - tags
-
 publish_docs:
   stage: deploy
   script:
@@ -78,12 +67,37 @@ publish_docs:
     - main
     - tags
 
-release-public-pypi:
+build:
   stage: deploy
+  artifacts:
+    name: dist
+    paths:
+      - ./dist
+    expire_in: 1h
+  script:
+    - tox -e build
+  only:
+    - main
+    - tags
+
+release-private:
+  stage: deploy
+  needs:
+    - build
   before_script:
     - pip install twine
   script:
-    - python setup.py sdist bdist_wheel
+    - python -m twine upload --verbose --skip-existing dist/*
+  only:
+    - tags
+
+release-public-pypi:
+  stage: deploy
+  needs:
+    - build
+  before_script:
+    - pip install twine
+  script:
     - >
       python
       -m twine upload
