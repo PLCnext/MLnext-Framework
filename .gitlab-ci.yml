@@ -76,6 +76,9 @@ build:
     expire_in: 1h
   script:
     - tox -e build
+  only:
+    - main
+    - tags
 
 release-private:
   stage: deploy
