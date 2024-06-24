@@ -1,5 +1,4 @@
 """Module for data preprocessing."""
-
 import datetime
 import typing as T
 import warnings
@@ -7,12 +6,12 @@ from functools import partial
 
 import numpy as np
 import pandas as pd
+from deprecate import deprecated
 from sklearn.base import BaseEstimator
 from sklearn.base import OneToOneFeatureMixin
 from sklearn.base import TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.validation import FLOAT_DTYPES
-from deprecate import deprecated
 
 __all__ = [
     'ColumnSelector',
