@@ -77,6 +77,7 @@ build:
   script:
     - tox -e build
   only:
+    - pypi-release
     - main
     - tags
 
@@ -97,6 +98,7 @@ release-public-pypi:
     - build
   before_script:
     - pip install twine
+    - pip install --upgrade certifi
   script:
     - >
       python
