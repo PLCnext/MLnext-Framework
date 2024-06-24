@@ -67,6 +67,13 @@ publish_docs:
     - main
     - tags
 
+connection:
+  stage: deploy
+  before_script:
+    - pip install --upgrade requests
+  script:
+    - python -c 'import requests; print(requests.head("http://upload.pypi.org"))'
+
 build:
   stage: deploy
   artifacts:
