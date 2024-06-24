@@ -51,7 +51,8 @@ Deprecations
 
 - Marked ``mlnext.save_config`` for removal in 0.7.
   `#59 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/59>`__
-
+- Deprecated parameter ``keys`` in favor of ``columns`` in ``ColumnSelector``.
+  `#59 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/60>`__
 
 ----
 
