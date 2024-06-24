@@ -1,4 +1,5 @@
 """Module for data preprocessing."""
+
 import datetime
 import typing as T
 import warnings
@@ -11,6 +12,7 @@ from sklearn.base import OneToOneFeatureMixin
 from sklearn.base import TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.validation import FLOAT_DTYPES
+from deprecate import deprecated
 
 __all__ = [
     'ColumnSelector',
@@ -41,16 +43,23 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
     are kept.
 
     Args:
-        keys (list[str] | None): Optional. List of columns to extract or None.
+        columns (list[str] | None): Optional.
+            List of columns to extract or None.
             If None, then the transformer must be fitted and only the columns
             present in the fitted dateframe are kept. Default: None.
 
+        keys (list[str] | None): Same as columns.
+
             .. versionchanged:: 0.5.0
                 Changed default to None. If None, fit columns to keep on data.
+
+            .. deprecated:: 0.5.0
+                Use columns instead.
+
     Example:
         >>> import mlnext
         >>> data = pd.DataFrame({'a': [0], 'b': [0]})
-        >>> mlnext.ColumnSelector(keys=['a']).transform(data)
+        >>> mlnext.ColumnSelector(columns=['a']).transform(data)
         pd.DataFrame({'a': [0]})
 
         >>> data = pd.DataFrame({'a': [0], 'b': [0]})
@@ -59,14 +68,22 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
         pd.DataFrame({'a': [0]})
     """
 
-    def __init__(self, keys: T.Optional[T.List[str]] = None):
-        self._keys = keys
+    @deprecated(
+        True,
+        args_mapping={'keys': 'columns'},
+        deprecated_in='0.5',
+        remove_in='0.7',
+    )
+    def __init__(self, columns: T.Optional[T.List[str]] = None):
+        self._columns = columns
 
-        if keys is not None:
-            self.keys_ = keys
+        if columns is not None:
+            self.columns_ = columns
 
     def fit(self, X: pd.DataFrame, y=None):
-        self.keys_ = X.columns.to_list() if self._keys is None else self._keys
+        self.columns_ = (
+            X.columns.to_list() if self._columns is None else self._columns
+        )
         return self
 
     def transform(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -79,8 +96,8 @@ class ColumnSelector(BaseEstimator, TransformerMixin):
             pd.DataFrame: Returns a DataFrame only containing the selected
             features.
         """
-        check_is_fitted(self, 'keys_')
-        return X.loc[:, self.keys_]
+        check_is_fitted(self, 'columns_')
+        return X.loc[:, self.columns_]
 
 
 class ColumnDropper(BaseEstimator, TransformerMixin):
