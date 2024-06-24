@@ -15,8 +15,16 @@ class TestColumnSelector(TestCase):
         cols = ['a', 'b']
         self.df = pd.DataFrame(data, columns=cols)
 
-    def test_select_columns(self):
+    def test_select_columns_deprecated(self):
         t = pipeline.ColumnSelector(keys=['a'])
+
+        expected = self.df.loc[:, ['a']]
+        result = t.fit_transform(self.df.copy())
+
+        pd.testing.assert_frame_equal(result, expected)
+
+    def test_select_columns(self):
+        t = pipeline.ColumnSelector(columns=['a'])
 
         expected = self.df.loc[:, ['a']]
         result = t.fit_transform(self.df.copy())
