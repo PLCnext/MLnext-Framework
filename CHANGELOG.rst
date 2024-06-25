@@ -23,6 +23,8 @@ Changes
 
 - Remove ``print`` statement from ``check_shape``.
   `#61 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/61>`__
+- Fix package meta information for pypi release.
+  `#62 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/62>`__
 
 
 ----
