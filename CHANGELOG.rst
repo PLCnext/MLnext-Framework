@@ -12,6 +12,21 @@ Changes for the upcoming release can be found in the `"changelog" directory <htt
 
 .. towncrier release notes start
 
+0.5.1 (2024-06-25)
+------------------
+
+
+
+
+Changes
+^^^^^^^
+
+- Remove ``print`` statement from ``check_shape``.
+  `#61 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/61>`__
+
+
+----
+
 0.5.0 (2024-06-20)
 ------------------
 
