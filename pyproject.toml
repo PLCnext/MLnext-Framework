@@ -18,7 +18,24 @@ dependencies = [
 ]
 readme = "README.rst"
 requires-python = ">= 3.8"
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Visualization",
+    "Topic :: Software Development :: Libraries",
+]
+keywords = ["mlnext", "machine", "learning", "utilities"]
 dynamic = ["version"]
+
+[project.urls]
+Repository = "https://github.com/PLCnext/MLnext-Framework"
+Documentation = "https://mlnext-framework.readthedocs.io/en/latest/"
 
 [project.optional-dependencies]
 tests = [
