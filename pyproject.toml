@@ -1,5 +1,5 @@
 [project]
-name = "mlnext"
+name = "mlnext-framework"
 description = "Machine learning utilities."
 authors = [
     { name = "PHOENIX CONTACT Electronics GmbH", email = "digitalfactorynow@phoenixcontact.com" },
