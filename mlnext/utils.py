@@ -85,7 +85,6 @@ def check_shape(
         shape = shapes[0]
 
     for i, shape_ in enumerate(shapes):
-        print(shape_, type(shape_))
         if shape_ != shape:
             raise ValueError(
                 f'Expected shape {shape} but got shape {shape_} for array at '

@@ -1,7 +1,7 @@
 |MLnext| MLnext Framework
 =========================
 
-.. |MLnext| image:: https://media.githubusercontent.com/media/PLCnext/MLnext-Framework/main/docs/source/_static/mlnext.gif
+.. |MLnext| image:: https://raw.githubusercontent.com/PLCnext/MLnext-Framework/main/docs/source/_static/mlnext.png
 
 |pypi| |python| |mypy| |license| |Digital Factory Now| |docs|
 
