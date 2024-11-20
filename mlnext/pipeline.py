@@ -13,6 +13,8 @@ from sklearn.base import TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.validation import FLOAT_DTYPES
 
+from .model import NewFeatureModel
+
 __all__ = [
     'ColumnSelector',
     'ColumnDropper',
@@ -33,6 +35,8 @@ __all__ = [
     'ColumnSorter',
     'DifferentialCreator',
     'ClippingMinMaxScaler',
+    'FeatureCreator',
+    'NewFeatureModel',
 ]
 
 
@@ -1238,5 +1242,126 @@ class ClippingMinMaxScaler(
 
         if self.clip is not None:
             X = np.clip(X, self.clip[0], self.clip[1])
+
+        return X
+
+
+class FeatureCreator(BaseEstimator, TransformerMixin):
+    """Creates new features from existing or calculated features.
+
+    .. versionadded:: 0.6.0
+
+    Arguments:
+        features (list(dict[str, Any] | NewFeatureModel)): List of new
+          features. Expects the dict to match :class:`NewFeatureModel`.
+
+    Example:
+        >>> import pandas as pd
+        >>> from mlnext import FeatureCreator
+        >>> df = pd.DataFrame(
+        ...     {
+        ...         "height": [1, 2, 3],
+        ...         "width": [3, 2, 1],
+        ...         "a": [True, False, True],
+        ...         "b": [True, True, False],
+        ...     }
+        ... )
+
+        >>> t = FeatureCreator(
+        ...     features=[
+        ...         {
+        ...             "name": "area",
+        ...             "features": ["height", "width"],
+        ...             "op": "mul",
+        ...         },
+        ...         {
+        ...             "name": "AandB",
+        ...             "features": ["a", "b"],
+        ...             "op": "and",
+        ...         },
+        ...         {
+        ...             "name": "sum",
+        ...             "features": ["height", "width"],
+        ...             "op": "add",
+        ...             "keep": False,
+        ...         },
+        ...         {
+        ...             "name": "area-sum",
+        ...             "features": ["area", "sum"],
+        ...             "op": "sub",
+        ...         },
+        ...     ]
+        ... )
+        >>> t.transform(df)
+            height	width	a	    b 	 area	AandB	area-sum
+                1	    3	True	True	3	True	-1
+                2	    2	False	True	4	False	0
+                3	    1	True	False	3	False	-1
+    """
+
+    def __init__(
+        self,
+        features: T.List[T.Union[T.Dict[str, T.Any], NewFeatureModel]],
+    ):
+        super().__init__()
+
+        self.features = list(self._parse_inputs(features))
+
+    def _parse_inputs(
+        self,
+        features: T.List[T.Union[T.Dict[str, T.Any], NewFeatureModel]],
+    ) -> T.Iterator[NewFeatureModel]:
+        """Parses features to the correct datatype.
+
+        Args:
+            features (list[dict[str, Any]  |  NewFeatureModel]): Features.
+
+        Raises:
+            ValueError: Raised if a datatype is not accepted.
+
+        Yields:
+            Iterator[NewFeatureModel]: Returns the feature model.
+        """
+        if not isinstance(features, (list, set)):
+            raise ValueError(
+                'Expected features to be of type list or set. '
+                f'Got: {type(features)}.'
+            )
+
+        for idx, feature in enumerate(features):
+            if isinstance(feature, NewFeatureModel):
+                yield feature
+
+            if not isinstance(feature, dict):
+                raise ValueError(
+                    f'Expected feature at index {idx} to be either a dict '
+                    f'or NewFeatureModel. Got: {type(feature)}.'
+                )
+            yield NewFeatureModel(**feature)
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Calculates new featrues based on the given description.
+
+        Args:
+            X (pd.DataFrame): Input data.
+
+        Raises:
+            ValueError: Raised if a feature is missing.
+
+        Returns:
+            pd.DataFrame: Returns the updated dataframe.
+        """
+        X = X.copy()
+
+        for feature in self.features:
+            X[feature.name] = feature.calculate(X)
+
+        drop_features = [
+            feature.name for feature in self.features if not feature.keep
+        ]
+        X = X.drop(drop_features, axis=1)
 
         return X

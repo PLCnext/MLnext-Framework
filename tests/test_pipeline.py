@@ -710,3 +710,111 @@ def test_ClippingMinMaxScaler(
     )
     result = scaler.transform(df)
     pd.testing.assert_frame_equal(result, exp)
+
+
+@pytest.mark.parametrize(
+    'features,data,exp',
+    [
+        (
+            [
+                {
+                    'name': 'area',
+                    'features': ['height', 'width'],
+                    'op': 'mul',
+                },
+                {
+                    'name': 'AandB',
+                    'features': ['a', 'b'],
+                    'op': 'and',
+                },
+                {
+                    'name': 'sum',
+                    'features': ['height', 'width'],
+                    'op': 'add',
+                    'keep': False,
+                },
+                {
+                    'name': 'area-sum',
+                    'features': ['area', 'sum'],
+                    'op': 'sub',
+                },
+            ],
+            pd.DataFrame(
+                {
+                    'height': [1, 2, 3],
+                    'width': [3, 2, 1],
+                    'a': [True, False, True],
+                    'b': [True, True, False],
+                }
+            ),
+            pd.DataFrame(
+                {
+                    'height': [1, 2, 3],
+                    'width': [3, 2, 1],
+                    'a': [True, False, True],
+                    'b': [True, True, False],
+                    'area': [3, 4, 3],
+                    'AandB': [True, False, False],
+                    'area-sum': [-1, 0, -1],
+                }
+            ),
+        )
+    ],
+)
+def test_FeatureCreator(
+    features: T.List[T.Dict[str, T.Any]],
+    data: pd.DataFrame,
+    exp: pd.DataFrame,
+):
+    transformer = pipeline.FeatureCreator(features=features)
+
+    result = transformer.fit_transform(data)
+
+    pd.testing.assert_frame_equal(result, exp)
+
+
+@pytest.mark.parametrize(
+    'features,data,exp',
+    [
+        (
+            1,
+            pd.DataFrame(),
+            f'Expected features to be of type list or set. Got: {type(1)}.',
+        ),
+        (
+            [1],
+            pd.DataFrame(),
+            'Expected feature at index 0 to be either a dict or '
+            f'NewFeatureModel. Got: {type(1)}.',
+        ),
+        (
+            [
+                {
+                    'name': 'areaX',
+                    'features': ['heightX', 'widthX'],
+                    'op': 'mul',
+                },
+            ],
+            pd.DataFrame(
+                {
+                    'height': [1, 2, 3],
+                    'width': [3, 2, 1],
+                    'a': [True, False, True],
+                    'b': [True, True, False],
+                }
+            ),
+            "Missing columns ['heightX', 'widthX'] in input. Available "
+            "columns: ['a', 'b', 'height', 'width'].",
+        ),
+    ],
+)
+def test_FeatureCreator_fails(
+    features: T.List[T.Dict[str, T.Any]],
+    data: pd.DataFrame,
+    exp: str,
+):
+    with pytest.raises(ValueError) as exc_info:
+        transformer = pipeline.FeatureCreator(features=features)
+        transformer.fit_transform(data)
+
+    assert exc_info.value.args[0] == exp
