@@ -1295,7 +1295,7 @@ class FeatureCreator(BaseEstimator, TransformerMixin):
         ...     ]
         ... )
         >>> t.transform(df)
-            height	width	a	    b 	 area	AandB	Area-Sum
+            height	width	a	    b 	 area	AandB	area-sum
                 1	    3	True	True	3	True	-1
                 2	    2	False	True	4	False	0
                 3	    1	True	False	3	False	-1
@@ -1324,6 +1324,12 @@ class FeatureCreator(BaseEstimator, TransformerMixin):
         Yields:
             Iterator[NewFeatureModel]: Returns the feature model.
         """
+        if not isinstance(features, (list, set)):
+            raise ValueError(
+                'Expected features to be of type list or set. '
+                f'Got: {type(features)}.'
+            )
+
         for idx, feature in enumerate(features):
             if isinstance(feature, NewFeatureModel):
                 yield feature
@@ -1353,14 +1359,7 @@ class FeatureCreator(BaseEstimator, TransformerMixin):
         X = X.copy()
 
         for feature in self.features:
-            if len(miss := list(set(feature.features) - set(X.columns))) > 0:
-                raise ValueError(
-                    f'Missing features {miss} in input. Available columns: '
-                    f'{list(X.columns)}.'
-                )
-
-            inputs = X.loc[:, feature.features]
-            X[feature.name] = feature.calculate(inputs)
+            X[feature.name] = feature.calculate(X)
 
         drop_features = [
             feature.name for feature in self.features if not feature.keep

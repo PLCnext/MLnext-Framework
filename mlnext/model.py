@@ -31,7 +31,6 @@ class Operation(str, Enum):
             OperationT: Returns the result of the operation.
         """
         _op = getattr(operator, f'__{self.value}__')
-        print(a, b)
         return _op(a, b)
 
 
@@ -65,6 +64,8 @@ class RelationalOperation(Operation):
 
 
 class NewFeatureModel(BaseModel):
+    """Defines new features for the :class:`FeatureCreator`."""
+
     name: str = Field(
         description='Name of the new feature.',
     )
@@ -87,11 +88,11 @@ class NewFeatureModel(BaseModel):
         'only available as an intermediary feature.',
     )
 
-    def calculate(self, features: pd.DataFrame) -> pd.Series:
+    def calculate(self, data: pd.DataFrame) -> pd.Series:
         """Calculates the new feature from the given features.
 
         Args:
-            features (pd.DataFrame): Given features.
+            data (pd.DataFrame): Given features.
 
         Raises:
             ValueError: Raised if less than 2 features are given.
@@ -99,12 +100,15 @@ class NewFeatureModel(BaseModel):
         Returns:
             pd.Series: Returns the new feature.
         """
+        missing = sorted(list(set(self.features) - set(data.columns)))
+        if len(missing) > 0:
+            raise ValueError(
+                f'Missing columns {missing} in input. '
+                f'Available columns: {sorted(list(data.columns))}.'
+            )
 
-        if len(features.columns) < 2:
-            raise ValueError('Expected at least 2 features.')
-
-        result = features.iloc[:, 0]
-        for _, series in features.iloc[:, 1:].items():
+        result = data.loc[:, self.features[0]]
+        for _, series in data.loc[:, self.features[1:]].items():
             result = self.op(result, series)
 
         return result
