@@ -6,7 +6,6 @@
 #   features: []
 #   all-features: false
 #   with-sources: false
-#   generate-hashes: false
 
 -e file:.
 annotated-types==0.7.0
@@ -73,7 +72,7 @@ kiwisolver==1.4.5
 markupsafe==2.1.5
     # via jinja2
 matplotlib==3.9.0
-    # via mlnext
+    # via mlnext-framework
     # via seaborn
 matplotlib-inline==0.1.7
     # via ipykernel
@@ -88,7 +87,7 @@ nodeenv==1.9.1
 numpy==2.0.0
     # via contourpy
     # via matplotlib
-    # via mlnext
+    # via mlnext-framework
     # via pandas
     # via pandas-stubs
     # via scikit-learn
@@ -102,7 +101,7 @@ packaging==24.1
     # via pytest
     # via tox
 pandas==2.2.2
-    # via mlnext
+    # via mlnext-framework
     # via seaborn
 pandas-stubs==2.2.2.240603
 parso==0.8.4
@@ -124,13 +123,13 @@ psutil==6.0.0
 pure-eval==0.2.2
     # via stack-data
 pydantic==2.7.4
-    # via mlnext
+    # via mlnext-framework
 pydantic-core==2.18.4
     # via pydantic
 pydeprecate==0.3.2
-    # via mlnext
+    # via mlnext-framework
 pydot==2.0.0
-    # via mlnext
+    # via mlnext-framework
 pygments==2.18.0
     # via ipython
 pyparsing==3.1.2
@@ -150,17 +149,17 @@ pytz==2024.1
 pywin32==306
     # via jupyter-core
 pyyaml==6.0.1
-    # via mlnext
+    # via mlnext-framework
     # via pre-commit
 pyzmq==26.0.3
     # via ipykernel
     # via jupyter-client
 scikit-learn==1.5.0
-    # via mlnext
+    # via mlnext-framework
 scipy==1.13.1
     # via scikit-learn
 seaborn==0.13.2
-    # via mlnext
+    # via mlnext-framework
 six==1.16.0
     # via asttokens
     # via python-dateutil
