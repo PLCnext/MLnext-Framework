@@ -79,8 +79,10 @@ class NewFeatureModel(BaseModel):
             min_items=2,  # type: ignore[call-arg]
             description='List of features names.',
         )
-    op: LogicalOperation | NumericalOperation | RelationalOperation = Field(
-        description='Operation to apply to the features.',
+    op: T.Union[LogicalOperation, NumericalOperation, RelationalOperation] = (
+        Field(
+            description='Operation to apply to the features.',
+        )
     )
     keep: bool = Field(
         True,
