@@ -35,7 +35,15 @@ class Operation(str, Enum):
 
 
 class LogicalOperation(Operation):
-    """Defines a logical operation between operands."""
+    """Defines a logical operation between operands.
+
+    Attributes:
+        OR: logical or
+        AND: logical and
+        XOR: XOR operation
+
+    .. versionadded:: 0.6.0
+    """
 
     OR: str = 'or'
     AND: str = 'and'
@@ -43,7 +51,17 @@ class LogicalOperation(Operation):
 
 
 class NumericalOperation(Operation):
-    """Defines a numerical operation between operands."""
+    """Defines a numerical operation between operands.
+
+    Attributes:
+        ADD: Addition
+        SUB: Substraction
+        MUL: Multiplication
+        TRUEDIV: Division (/)
+        FLOORDIV: Integer Division (//)
+
+    .. versionadded:: 0.6.0
+    """
 
     ADD: str = 'add'
     SUB: str = 'sub'
@@ -53,7 +71,18 @@ class NumericalOperation(Operation):
 
 
 class RelationalOperation(Operation):
-    """Defines a comparison between two operands."""
+    """Defines a comparison between two operands.
+
+    Attributes:
+        EQ: Equality
+        NE: Not equal
+        GT: Greater than
+        GE: Greater equal
+        LT: Less than
+        LE: Less equal
+
+    .. versionadded:: 0.6.0
+    """
 
     EQ = 'eq'
     NE = 'ne'
@@ -64,7 +93,18 @@ class RelationalOperation(Operation):
 
 
 class NewFeatureModel(BaseModel):
-    """Defines new features for the :class:`FeatureCreator`."""
+    """Defines new features for the :class:`FeatureCreator`.
+
+    Attributes:
+        name (str): Name of the new feature.
+        features (list[str]): Name of the features to combine.
+        op (LogicalOperation | NumericalOperation | RelationalOperation):
+          Operation to apply to features.
+        keep (bool): Whether to keep feature in the final output.
+          Default: True.
+
+    .. versionadded:: 0.6.0
+    """
 
     name: str = Field(
         description='Name of the new feature.',

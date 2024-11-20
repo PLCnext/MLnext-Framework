@@ -1249,13 +1249,11 @@ class ClippingMinMaxScaler(
 class FeatureCreator(BaseEstimator, TransformerMixin):
     """Creates new features from existing or calculated features.
 
+    .. versionadded:: 0.6.0
+
     Arguments:
         features (list(dict[str, Any] | NewFeatureModel)): List of new
-          features. Expects the dict to match :type:`model.NewFeatureModel`.
-            name (str): Name of the feature.
-            features (list[str]): Name of the features to combine.
-            op (str): Operation to apply (from left to right).
-            keep (bool): Whether to keep the column in the final output.
+          features. Expects the dict to match :class:`NewFeatureModel`.
 
     Example:
         >>> import pandas as pd
