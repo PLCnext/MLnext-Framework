@@ -1479,6 +1479,8 @@ class RelativeTimeEncoder(BaseEstimator, TransformerMixin):
         offset (int): Offset added to the relative time.
         unit (int): Unit of the time difference.
 
+    .. versionadded:: 0.6.1
+
     Example:
         >>> import pandas as pd
         >>> from mlnext import RelativeTimeEncoder

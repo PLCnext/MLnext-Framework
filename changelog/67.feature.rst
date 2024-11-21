@@ -1,1 +1,0 @@
-Add ``RelativeTimeEncoder`` to calculate the relative time based on a timestamp column.
