@@ -1,4 +1,5 @@
 """Module for data preprocessing."""
+
 import datetime
 import typing as T
 import warnings
@@ -37,6 +38,7 @@ __all__ = [
     'ClippingMinMaxScaler',
     'FeatureCreator',
     'NewFeatureModel',
+    'LengthTransformer',
 ]
 
 
@@ -1363,5 +1365,76 @@ class FeatureCreator(BaseEstimator, TransformerMixin):
             feature.name for feature in self.features if not feature.keep
         ]
         X = X.drop(drop_features, axis=1)
+class LengthTransformer(BaseEstimator, TransformerMixin):
+    """Pad or truncate data to an fixed length by either a set length or a
+    fitted length.
+
+    Args:
+        pad_length (int | None): Length to pad the data to. Default: None.
+        fill_value (int): Value to pad data with. Default: 0.
+        truncate (bool): Whether to truncate if the length exceeds pad_length.
+          If False, an error is raised for an input longer than pad_length.
+
+    Example:
+
+    """
+
+    _parameter_constraints: T.Dict[str, list] = {
+        'pad_length': [int, None],
+        'fill_value': [int],
+    }
+
+    def __init__(
+        self,
+        pad_length: T.Union[int, None] = None,
+        fill_value: int = 0,
+        truncate: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self.pad_length = pad_length
+        self.fill_value = fill_value
+        self.truncate = truncate
+
+    def fit(self, X: pd.DataFrame, y=None):
+        """Sets
+
+        Args:
+            X (pd.DataFrame): _description_
+            y (_type_, optional): _description_. Defaults to None.
+
+        Returns:
+            _type_: _description_
+        """
+        if self.pad_length is None:
+            self.pad_length_ = X.shape[0]
+        else:
+            self.pad_length_ = self.pad_length
+
+        return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Pads or truncates `X` to `pad_length_`.
+
+        Args:
+            X (pd.DataFrame): Data.
+
+        Raises:
+            ValueError: Raised if X is longer than pad_length and truncate is
+              False.
+
+        Returns:
+            pd.DataFrame: Returns the new dataframe of length pad_length.
+        """
+
+        check_is_fitted(self, 'pad_length_')
+
+        if X.shape[0] > self.pad_length_ and not self.truncate:
+            raise ValueError(
+                f'Input sequence ({X.shape[0]}) is longer than the one found '
+                'when fit or set.'
+            )
+
+        X = X.reindex(range(self.pad_length_), fill_value=0, axis=0, copy=True)
 
         return X
