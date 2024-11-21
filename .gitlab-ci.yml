@@ -97,7 +97,7 @@ deploy:build:
 deploy:release-private:
   stage: deploy
   needs:
-    - build
+    - deploy:build
   before_script:
     - pip install twine
   script:
@@ -108,7 +108,7 @@ deploy:release-private:
 deploy:release-public-pypi:
   stage: deploy
   needs:
-    - build
+    - deploy:build
   before_script:
     - pip install twine
   script:
