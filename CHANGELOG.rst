@@ -12,6 +12,18 @@ Changes for the upcoming release can be found in the `"changelog" directory <htt
 
 .. towncrier release notes start
 
+0.6.1 (2024-11-21)
+------------------
+
+
+Features
+^^^^^^^^
+
+- Add ``RelativeTimeEncoder`` to calculate the relative time based on a timestamp column.
+  `#67 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/67>`__
+
+
+----
 
 0.6.0 (2024-11-21)
 ------------------
