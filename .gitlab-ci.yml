@@ -8,7 +8,7 @@ stages:
   - docs
   - deploy
 
-default:
+.base:
   image: python:$PYTHON_VERSION
   cache:
       key:
@@ -23,11 +23,13 @@ default:
     - pip install tox
 
 quality:lint:
+  extends: .base
   stage: quality
   script:
     - tox -e lint
 
 test:unittest:
+  extends: .base
   stage: test
   image: python:$PYTHON_VER
   script:
@@ -52,21 +54,25 @@ test:unittest:
         PYTHON_VER: "3.13"
 
 docs:docs:
+  extends: .base
   stage: docs
   script:
     - tox -e docs
 
 docs:changelog:
+  extends: .base
   stage: docs
   script:
     - tox -e changelog
 
 docs:description:
+  extends: .base
   stage: docs
   script:
     - tox -e pypi-description
 
 deploy:publish_docs:
+  extends: .base
   stage: deploy
   script:
     - tox -e docs
@@ -82,6 +88,7 @@ deploy:publish_docs:
     - tags
 
 deploy:build:
+  extends: .base
   stage: deploy
   artifacts:
     name: dist
@@ -95,6 +102,7 @@ deploy:build:
     - tags
 
 deploy:release-private:
+  image: python:$PYTHON_VERSION
   stage: deploy
   needs:
     - deploy:build
@@ -106,6 +114,7 @@ deploy:release-private:
     - tags
 
 deploy:release-public-pypi:
+  image: python:$PYTHON_VERSION
   stage: deploy
   needs:
     - deploy:build
