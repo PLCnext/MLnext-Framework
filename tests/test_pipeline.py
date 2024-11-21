@@ -779,13 +779,13 @@ def test_FeatureCreator(
         (
             1,
             pd.DataFrame(),
-            f'Expected features to be of type list or set. Got: {type(1)}.',
+            f'Expected features to be of type list or set. Got: {int}.',
         ),
         (
             [1],
             pd.DataFrame(),
             'Expected feature at index 0 to be either a dict or '
-            f'NewFeatureModel. Got: {type(1)}.',
+            f'NewFeatureModel. Got: {int}.',
         ),
         (
             [
@@ -905,3 +905,84 @@ def test_LengthTransformer_raises(
         transformer.transform(data)
 
     assert exc_info.value.args[0] == exp
+
+
+UNITS = ['d', 'h', 'min', 's', 'ms']
+
+
+@pytest.mark.parametrize(
+    'timestamp_column,inplace,output_name,offset,unit,exp',
+    [
+        *[
+            (
+                f'time_{unit}',
+                False,
+                'time_r',
+                0.1,
+                unit,
+                pd.DataFrame({'time_r': np.array([0.1, 2.1, 4.1, 6.1, 8.1])}),
+            )
+            for unit in UNITS
+        ],
+        (
+            'time_ms',
+            False,
+            'time_r',
+            0.1,
+            's',
+            pd.DataFrame(
+                {'time_r': np.array([0.100, 0.102, 0.104, 0.106, 0.108])}
+            ),
+        ),
+        (
+            'time_h',
+            False,
+            None,
+            0,
+            'min',
+            pd.DataFrame(
+                {'time_h_relative': np.array([0.0, 120, 240, 360, 480])}
+            ),
+        ),
+        (
+            'time_s',
+            True,
+            None,
+            0,
+            'min',
+            pd.DataFrame(
+                {'time_s': np.array([0.0, 2 / 60, 4 / 60, 6 / 60, 8 / 60])}
+            ),
+        ),
+    ],
+)
+def test_RelativeTimeEncoder(
+    timestamp_column: str,
+    inplace: bool,
+    output_name: T.Optional[str],
+    offset: int,
+    unit: str,
+    exp: pd.DataFrame,
+):
+    data = pd.DataFrame(
+        {
+            f'time_{unit_}': pd.date_range(
+                '2024-10-01 10:00:00',
+                freq=f'2{unit_}',
+                periods=5,
+            )
+            for unit_ in UNITS
+        }
+    )
+
+    encoder = pipeline.RelativeTimeEncoder(
+        timestamp_column=timestamp_column,
+        inplace=inplace,
+        output_name=output_name,
+        offset=offset,
+        unit=unit,
+    )
+
+    result = encoder.fit_transform(data)
+
+    pd.testing.assert_frame_equal(result.loc[:, [exp.columns[0]]], exp)
