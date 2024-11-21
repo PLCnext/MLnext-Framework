@@ -5,7 +5,6 @@ from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
-from deprecate import deprecated
 from sklearn import metrics
 from sklearn.metrics import auc
 from sklearn.metrics._ranking import _binary_clf_curve
@@ -26,7 +25,6 @@ __all__ = [
     'get_threshold',
     'apply_threshold',
     'eval_softmax',
-    'eval_sigmoid',
     'moving_average',
     'eval_metrics',
     'eval_metrics_all',
@@ -55,8 +53,12 @@ def l2_norm(
         np.ndarray: Returns the l2-norm between x and x_hat.
 
     Example:
+        >>> from mlnext import l2_norm
+        >>> import numpy as np
+
         >>> l2_norm(np.array([0.1, 0.2]), np.array([0.14, 0.2]))
         np.ndarray([[0.04]])
+
         >>> l2_norm(np.array([0.1, 0.2]), np.array([0.14, 0.2]), reduce=False)
         np.ndarray([0.04, 0.0])
     """
@@ -91,6 +93,17 @@ def norm_log_likelihood(
 
     Returns:
         np.ndarray: Returns the negative log likelihood.
+
+    Example:
+        >>> import numpy as np
+        >>> from mlnext import norm_log_likelihood
+
+        >>> norm_log_likelihood(
+        >>>     np.array([1, 2, 3]),
+        >>>     mean=np.array([1, 1, 1]),
+        >>>     log_var=np.log(np.array([1, 1, 1])),
+        >>> )
+        array([0.91893853, 1.41893853, 2.91893853])
     """
     a = np.log(2.0 * np.pi) * np.ones(np.shape(x)) + log_var
     b = (x - mean) ** 2 / (np.exp(log_var) + 1e-10)
@@ -113,6 +126,16 @@ def bern_log_likelihood(x: np.ndarray, mean: np.ndarray) -> np.ndarray:
 
     Returns:
         np.ndarray: Returns the negative log likelihood.
+
+    Example:
+        >>> import numpy as np
+        >>> from mlnext import bern_log_likelihood
+
+        >>> bern_log_likelihood(
+        >>>     np.array([1, 0, 1]),
+        >>>     mean=np.array([0.2, 0.1, 0.8]),
+        >>> )
+        array([1.60943791, 0.10536052, 0.22314355])
     """
 
     a = x * np.log(mean + 1e-10)
@@ -139,6 +162,16 @@ def kl_divergence(
 
     Returns:
         np.ndarray: Returns the kl divergence between two normal distributions.
+
+    Example:
+        >>> import numpy as np
+        >>> from mlnext import kl_divergence
+
+        >>> kl_divergence(
+        >>>     mean=np.array([1, 0.8, 0.12]),
+        >>>     log_var=np.log(np.array([0.1, 0.2, 0.8])**2),
+        >>> )
+        array([2.30758509, 1.44943791, 0.05034355])
     """
 
     prior_mean = np.ones(mean.shape) * prior_mean  # type:ignore
@@ -167,6 +200,7 @@ def get_threshold(x: np.ndarray, *, p: float = 100) -> float:
         float: Returns the threshold at the ``perc``-th percentile of x.
 
     Example:
+        >>> from mlnext import get_threshold
         >>> get_threshold(np.ndarray([0.0, 1.0]), p=99)
         0.99
     """
@@ -193,6 +227,7 @@ def apply_threshold(
         np.ndarray: Returns the result of the threshold operation.
 
     Example:
+        >>> from mlnext import apply_threshold
         >>> apply_threshold(np.array([0.1, 0.4, 0.8, 1.0]), threshold=0.5)
         np.ndarray([0, 0, 0, 1, 1])
     """
@@ -210,45 +245,11 @@ def eval_softmax(y: np.ndarray) -> np.ndarray:
         np.ndarray: Returns an array of shape (x, 1) with the class labels.
 
     Example:
+        >>> from mlnext import eval_softmax
         >>> eval_softmax(np.array([[0.1, 0.9], [0.4, 0.6], [0.7, 0.3]]))
         np.ndarray([[1], [1], [0]])
     """
     return np.argmax(y, axis=-1).reshape(-1, 1)
-
-
-@deprecated(
-    None,
-    deprecated_in='0.4',
-    remove_in='0.6',
-    template_mgs='`%(source_name)s` was deprecated in %(deprecated_in)s '
-    'and is removed in %(remove_in)s, use `apply_threshold` instead.',
-)
-def eval_sigmoid(
-    y: np.ndarray,
-    *,
-    invert: bool = False,
-    threshold: float = 0.5,
-) -> np.ndarray:
-    """Turns a binary-class sigmoid prediction into 0-1 class labels.
-
-    .. deprecated:: 0.4
-        Use :func:`apply_threshold` instead. Will be removed in 0.6.
-
-    Args:
-        y (np.ndarray): Array with sigmoid probabilities
-        invert (bool): Whether to invert the labels. (0->1, 1->0)
-        threshold (float): Threshold in [0, 1]. Default: 0.5
-
-    Returns:
-        np.ndarray: Returns the binary class labels.
-
-    Example:
-        >>> eval_sigmoid(y=np.array([0.1, 0.6, 0.8, 0.2]))
-        np.ndarray([[0],[1],[1],[0]])
-    """
-    return apply_threshold(
-        y, threshold=threshold, pos_label=0 if invert else 1
-    ).reshape(-1, 1)
 
 
 def moving_average(x: np.ndarray, step: int = 10, mode='full') -> np.ndarray:
@@ -263,6 +264,7 @@ def moving_average(x: np.ndarray, step: int = 10, mode='full') -> np.ndarray:
         np.ndarray: Returns the moving average.
 
     Example:
+        >>> from mlnext import moving_average
         >>> moving_average(np.array([1, 2, 3, 4]), step=2)
         np.ndarray([0.5, 1.5, 2.5, 3.5, 2.])
     """
@@ -280,6 +282,9 @@ def eval_metrics(y: np.ndarray, y_hat: np.ndarray) -> T.Dict[str, float]:
         T.Dict[str, float]: Returns a dict with all scores.
 
     Example:
+        >>> import numpy as np
+        >>> from mlnext import eval_metrics
+
         >>> y, y_hat = np.ones((10, 1)), np.ones((10, 1))
         >>> eval_metrics(y, y_hat)
         {'accuracy': 1.0, 'precision': 1.0, 'recall': 1.0, 'f1': 1.0,
@@ -324,6 +329,9 @@ def eval_metrics_all(
         T.Dict[str, float]: Returns a dict with all scores.
 
     Example:
+        >>> import numpy as np
+        >>> from mlnext import eval_metrics
+
         >>> y = [np.ones((10, 1)), np.zeros((10, 1))]
         >>> y_hat = [np.ones((10, 1)), np.zeros((10, 1))]
         >>> eval_metrics_all(y, y_hat)
@@ -657,17 +665,10 @@ class PRCurve:
         }
 
 
-@deprecated(
-    True,
-    args_mapping={'y_true': 'y'},
-    deprecated_in='0.4',
-    remove_in='0.6',
-)
 def pr_curve(
     y: np.ndarray,
     y_score: np.ndarray,
     *,
-    y_true: T.Optional[np.ndarray] = None,
     pos_label: T.Optional[T.Union[str, int]] = None,
     sample_weight: T.Optional[T.Union[T.List, np.ndarray]] = None,
 ) -> PRCurve:
@@ -685,17 +686,16 @@ def pr_curve(
         y (np.ndarray): Positive lables either {-1, 1} or {0, 1}.
           Otherwise, pos_label needs to be given.
         y_score (np.ndarray):  Target scores in range [0, 1].
-        y_true (np.ndarray): Same as y.
-
-            .. deprecated:: 0.4
-                Use `y` instead.
-
         pos_label (int, optional):The label of the positive class.
           When pos_label=None, if y is in {-1, 1} or {0, 1},
           pos_label is set to 1, otherwise an error will be raised.
           Defaults to None.
         sample_weight (T.Union[T.List, np.ndarray], optional): Sample weights.
           Defaults to None.
+
+    .. versionchanged:: 0.6.0
+
+        Removed argument ``y_true``. Use ``y`` instead.
 
     Returns:
         PRCurve: Returns a PRCurve container for the results.

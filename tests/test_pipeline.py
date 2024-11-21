@@ -710,3 +710,198 @@ def test_ClippingMinMaxScaler(
     )
     result = scaler.transform(df)
     pd.testing.assert_frame_equal(result, exp)
+
+
+@pytest.mark.parametrize(
+    'features,data,exp',
+    [
+        (
+            [
+                {
+                    'name': 'area',
+                    'features': ['height', 'width'],
+                    'op': 'mul',
+                },
+                {
+                    'name': 'AandB',
+                    'features': ['a', 'b'],
+                    'op': 'and',
+                },
+                {
+                    'name': 'sum',
+                    'features': ['height', 'width'],
+                    'op': 'add',
+                    'keep': False,
+                },
+                {
+                    'name': 'area-sum',
+                    'features': ['area', 'sum'],
+                    'op': 'sub',
+                },
+            ],
+            pd.DataFrame(
+                {
+                    'height': [1, 2, 3],
+                    'width': [3, 2, 1],
+                    'a': [True, False, True],
+                    'b': [True, True, False],
+                }
+            ),
+            pd.DataFrame(
+                {
+                    'height': [1, 2, 3],
+                    'width': [3, 2, 1],
+                    'a': [True, False, True],
+                    'b': [True, True, False],
+                    'area': [3, 4, 3],
+                    'AandB': [True, False, False],
+                    'area-sum': [-1, 0, -1],
+                }
+            ),
+        )
+    ],
+)
+def test_FeatureCreator(
+    features: T.List[T.Dict[str, T.Any]],
+    data: pd.DataFrame,
+    exp: pd.DataFrame,
+):
+    transformer = pipeline.FeatureCreator(features=features)
+
+    result = transformer.fit_transform(data)
+
+    pd.testing.assert_frame_equal(result, exp)
+
+
+@pytest.mark.parametrize(
+    'features,data,exp',
+    [
+        (
+            1,
+            pd.DataFrame(),
+            f'Expected features to be of type list or set. Got: {type(1)}.',
+        ),
+        (
+            [1],
+            pd.DataFrame(),
+            'Expected feature at index 0 to be either a dict or '
+            f'NewFeatureModel. Got: {type(1)}.',
+        ),
+        (
+            [
+                {
+                    'name': 'areaX',
+                    'features': ['heightX', 'widthX'],
+                    'op': 'mul',
+                },
+            ],
+            pd.DataFrame(
+                {
+                    'height': [1, 2, 3],
+                    'width': [3, 2, 1],
+                    'a': [True, False, True],
+                    'b': [True, True, False],
+                }
+            ),
+            "Missing columns ['heightX', 'widthX'] in input. Available "
+            "columns: ['a', 'b', 'height', 'width'].",
+        ),
+    ],
+)
+def test_FeatureCreator_fails(
+    features: T.List[T.Dict[str, T.Any]],
+    data: pd.DataFrame,
+    exp: str,
+):
+    with pytest.raises(ValueError) as exc_info:
+        transformer = pipeline.FeatureCreator(features=features)
+        transformer.fit_transform(data)
+
+    assert exc_info.value.args[0] == exp
+
+
+@pytest.mark.parametrize(
+    'data',
+    [pd.DataFrame({'a': [0, 1, 2], 'b': [1, 2, 3]})],
+)
+@pytest.mark.parametrize(
+    'pad_length,fill_value,truncate,exp',
+    [
+        [
+            5,
+            -1,
+            False,
+            pd.DataFrame({'a': [0, 1, 2, -1, -1], 'b': [1, 2, 3, -1, -1]}),
+        ],
+        [
+            2,
+            0,
+            True,
+            pd.DataFrame({'a': [0, 1], 'b': [1, 2]}),
+        ],
+        [
+            None,
+            0,
+            True,
+            pd.DataFrame({'a': [0, 1, 2, 0], 'b': [1, 2, 3, 0]}),
+        ],
+    ],
+)
+def test_LengthTransformer(
+    pad_length: T.Union[int, None],
+    fill_value: int,
+    truncate: bool,
+    data: pd.DataFrame,
+    exp: pd.DataFrame,
+):
+    transformer = pipeline.LengthTransformer(
+        pad_length=pad_length,
+        fill_value=fill_value,
+        truncate=truncate,
+    )
+    transformer.fit(pd.DataFrame({'c': [0, 1, 2, 3]}))
+
+    result = transformer.transform(data)
+
+    pd.testing.assert_frame_equal(result, exp)
+
+
+@pytest.mark.parametrize(
+    'pad_length,fill_value,truncate,data,exp',
+    [
+        [
+            4,
+            -1,
+            False,
+            pd.DataFrame({'a': [0, 1, 2, 3, 4], 'b': [1, 2, 3, 4, 5]}),
+            'Input sequence (5) is longer than the one found when fit or '
+            'set (4). To avoid this problem set truncate to True.',
+        ],
+        [
+            None,
+            -1,
+            False,
+            pd.DataFrame({'a': [0, 1, 2, 3, 4], 'b': [1, 2, 3, 4, 5]}),
+            'Input sequence (5) is longer than the one found when fit or '
+            'set (4). To avoid this problem set truncate to True.',
+        ],
+    ],
+)
+def test_LengthTransformer_raises(
+    pad_length: T.Union[int, None],
+    fill_value: int,
+    truncate: bool,
+    data: pd.DataFrame,
+    exp: str,
+):
+    transformer = pipeline.LengthTransformer(
+        pad_length=pad_length,
+        fill_value=fill_value,
+        truncate=truncate,
+    )
+    transformer.fit(pd.DataFrame({'c': [0, 1, 2, 3]}))
+
+    with pytest.raises(ValueError) as exc_info:
+        transformer.transform(data)
+
+    assert exc_info.value.args[0] == exp
