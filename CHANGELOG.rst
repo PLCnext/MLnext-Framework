@@ -47,7 +47,7 @@ Deprecations
 ----
 
 
-0.5.1 (2024-11-21)
+0.5.2 (2024-11-21)
 ------------------
 
 
@@ -78,7 +78,9 @@ Deprecations
   `#42 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/42>`__
 
 
-----0.5.1 (2024-06-25)
+----
+
+0.5.1 (2024-06-25)
 ------------------
 
 
