@@ -5,7 +5,6 @@ from dataclasses import dataclass
 
 import numpy as np
 import pandas as pd
-from deprecate import deprecated
 from sklearn import metrics
 from sklearn.metrics import auc
 from sklearn.metrics._ranking import _binary_clf_curve
@@ -666,17 +665,10 @@ class PRCurve:
         }
 
 
-@deprecated(
-    True,
-    args_mapping={'y_true': 'y'},
-    deprecated_in='0.4',
-    remove_in='0.6',
-)
 def pr_curve(
     y: np.ndarray,
     y_score: np.ndarray,
     *,
-    y_true: T.Optional[np.ndarray] = None,
     pos_label: T.Optional[T.Union[str, int]] = None,
     sample_weight: T.Optional[T.Union[T.List, np.ndarray]] = None,
 ) -> PRCurve:
@@ -694,17 +686,16 @@ def pr_curve(
         y (np.ndarray): Positive lables either {-1, 1} or {0, 1}.
           Otherwise, pos_label needs to be given.
         y_score (np.ndarray):  Target scores in range [0, 1].
-        y_true (np.ndarray): Same as y.
-
-            .. deprecated:: 0.4
-                Use `y` instead.
-
         pos_label (int, optional):The label of the positive class.
           When pos_label=None, if y is in {-1, 1} or {0, 1},
           pos_label is set to 1, otherwise an error will be raised.
           Defaults to None.
         sample_weight (T.Union[T.List, np.ndarray], optional): Sample weights.
           Defaults to None.
+
+    .. versionchanged:: 0.6.0
+
+        Removed argument ``y_true``. Use ``y`` instead.
 
     Returns:
         PRCurve: Returns a PRCurve container for the results.
