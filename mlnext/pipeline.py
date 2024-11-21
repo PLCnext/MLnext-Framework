@@ -1,5 +1,4 @@
 """Module for data preprocessing."""
-
 import datetime
 import typing as T
 import warnings

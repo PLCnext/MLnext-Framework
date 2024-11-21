@@ -6,6 +6,7 @@
 #   features: []
 #   all-features: false
 #   with-sources: false
+#   generate-hashes: false
 
 -e file:.
 annotated-types==0.7.0
@@ -241,7 +242,6 @@ tzdata==2024.1
 urllib3==2.2.3
     # via requests
     # via twine
-uv==0.2.13
 virtualenv==20.26.2
     # via pre-commit
     # via tox

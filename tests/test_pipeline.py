@@ -779,13 +779,13 @@ def test_FeatureCreator(
         (
             1,
             pd.DataFrame(),
-            f'Expected features to be of type list or set. Got: {type(1)}.',
+            f'Expected features to be of type list or set. Got: {int}.',
         ),
         (
             [1],
             pd.DataFrame(),
             'Expected feature at index 0 to be either a dict or '
-            f'NewFeatureModel. Got: {type(1)}.',
+            f'NewFeatureModel. Got: {int}.',
         ),
         (
             [
