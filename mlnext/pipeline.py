@@ -1364,6 +1364,9 @@ class FeatureCreator(BaseEstimator, TransformerMixin):
             feature.name for feature in self.features if not feature.keep
         ]
         X = X.drop(drop_features, axis=1)
+
+        return X
+
 class LengthTransformer(BaseEstimator, TransformerMixin):
     """Pad or truncates the input to an fixed length by either a set length
     or a fitted length.

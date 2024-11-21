@@ -816,6 +816,11 @@ def test_FeatureCreator_fails(
     with pytest.raises(ValueError) as exc_info:
         transformer = pipeline.FeatureCreator(features=features)
         transformer.fit_transform(data)
+
+    assert exc_info.value.args[0] == exp
+
+
+@pytest.mark.parametrize(
     'data',
     [pd.DataFrame({'a': [0, 1, 2], 'b': [1, 2, 3]})],
 )
@@ -860,6 +865,7 @@ def test_LengthTransformer(
 
     pd.testing.assert_frame_equal(result, exp)
 
+
 @pytest.mark.parametrize(
     'pad_length,fill_value,truncate,data,exp',
     [
@@ -869,7 +875,7 @@ def test_LengthTransformer(
             False,
             pd.DataFrame({'a': [0, 1, 2, 3, 4], 'b': [1, 2, 3, 4, 5]}),
             'Input sequence (5) is longer than the one found when fit or '
-            'set (4). To avoid this problem set truncate to True.'
+            'set (4). To avoid this problem set truncate to True.',
         ],
         [
             None,
@@ -877,7 +883,7 @@ def test_LengthTransformer(
             False,
             pd.DataFrame({'a': [0, 1, 2, 3, 4], 'b': [1, 2, 3, 4, 5]}),
             'Input sequence (5) is longer than the one found when fit or '
-            'set (4). To avoid this problem set truncate to True.'
+            'set (4). To avoid this problem set truncate to True.',
         ],
     ],
 )
@@ -888,7 +894,6 @@ def test_LengthTransformer_raises(
     data: pd.DataFrame,
     exp: str,
 ):
-
     transformer = pipeline.LengthTransformer(
         pad_length=pad_length,
         fill_value=fill_value,
