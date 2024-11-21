@@ -1,4 +1,5 @@
 """Module for data preprocessing."""
+
 import datetime
 import typing as T
 import warnings
@@ -38,6 +39,7 @@ __all__ = [
     'FeatureCreator',
     'NewFeatureModel',
     'LengthTransformer',
+    'RelativeTimeEncoder',
 ]
 
 
@@ -1478,8 +1480,45 @@ class RelativeTimeEncoder(BaseEstimator, TransformerMixin):
         unit (int): Unit of the time difference.
 
     Example:
+        >>> import pandas as pd
+        >>> from mlnext import RelativeTimeEncoder
 
+        >>> data = pd.DataFrame({'time': pd.date_range('')})
+
+        >>> encoder = pipeline.RelativeTimeEncoder(
+        >>>     timestamp_column='time',
+        >>>     inplace=False,
+        >>>     output_name='time_r',
+        >>>     offset=offset,
+        >>>     unit=unit,
+        >>> )
+
+        >>> data = pd.DataFrame(
+        >>>     {
+        >>>         "time": pd.date_range(
+        >>>             "2024-10-01 10:00:00",
+        >>>             freq=f"2ms",
+        >>>             periods=5,
+        >>>         )
+        >>>     }
+        >>> )
+
+        >>> encoder.fit_transform(data)
+            time	                time_r
+        0	2024-10-01 10:00:00.000	0.100
+        1	2024-10-01 10:00:00.002	0.102
+        2	2024-10-01 10:00:00.004	0.104
+        3	2024-10-01 10:00:00.006	0.106
+        4	2024-10-01 10:00:00.008	0.108
     """
+
+    _unit_convert = {
+        'd': 60 * 60 * 24,
+        'h': 60 * 60,
+        'min': 60,
+        's': 1,
+        'ms': 1 / 1000,
+    }
 
     def __init__(
         self,
@@ -1487,7 +1526,7 @@ class RelativeTimeEncoder(BaseEstimator, TransformerMixin):
         inplace: bool = True,
         output_name: T.Optional[str] = None,
         offset: int = 0,
-        unit: T.Literal['d', 'h', 'm', 's', 'ms', 'us', 'ns'] = 'ms',
+        unit: T.Literal['d', 'h', 'min', 's', 'ms'] = 'ms',
     ):
         super().__init__()
 
@@ -1528,10 +1567,10 @@ class RelativeTimeEncoder(BaseEstimator, TransformerMixin):
         X = X.copy()
 
         column = pd.to_datetime(X.loc[:, self.timestamp_column])
-        relative_time = (
-            (column - column[0]).to_numpy().astype(f'timedelta64[{self.unit}]')
-        )
+        relative_time = (column - column[0]).dt.total_seconds().to_numpy()
 
-        X[self.output_name] = relative_time + self.offset
+        X[self.output_name] = (relative_time) / self._unit_convert[
+            self.unit
+        ] + self.offset
 
         return X
