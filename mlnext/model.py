@@ -116,7 +116,7 @@ class NewFeatureModel(BaseModel):
         )
     else:
         features: T.List[str] = Field(  # type: ignore[no-redef]
-            ...,
+            ...,  # type: ignore[call-overload]
             min_items=2,  # type: ignore[call-arg]
             description='List of features names.',
         )
