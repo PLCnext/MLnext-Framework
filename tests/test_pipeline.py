@@ -818,3 +818,90 @@ def test_FeatureCreator_fails(
         transformer.fit_transform(data)
 
     assert exc_info.value.args[0] == exp
+
+
+@pytest.mark.parametrize(
+    'data',
+    [pd.DataFrame({'a': [0, 1, 2], 'b': [1, 2, 3]})],
+)
+@pytest.mark.parametrize(
+    'pad_length,fill_value,truncate,exp',
+    [
+        [
+            5,
+            -1,
+            False,
+            pd.DataFrame({'a': [0, 1, 2, -1, -1], 'b': [1, 2, 3, -1, -1]}),
+        ],
+        [
+            2,
+            0,
+            True,
+            pd.DataFrame({'a': [0, 1], 'b': [1, 2]}),
+        ],
+        [
+            None,
+            0,
+            True,
+            pd.DataFrame({'a': [0, 1, 2, 0], 'b': [1, 2, 3, 0]}),
+        ],
+    ],
+)
+def test_LengthTransformer(
+    pad_length: T.Union[int, None],
+    fill_value: int,
+    truncate: bool,
+    data: pd.DataFrame,
+    exp: pd.DataFrame,
+):
+    transformer = pipeline.LengthTransformer(
+        pad_length=pad_length,
+        fill_value=fill_value,
+        truncate=truncate,
+    )
+    transformer.fit(pd.DataFrame({'c': [0, 1, 2, 3]}))
+
+    result = transformer.transform(data)
+
+    pd.testing.assert_frame_equal(result, exp)
+
+
+@pytest.mark.parametrize(
+    'pad_length,fill_value,truncate,data,exp',
+    [
+        [
+            4,
+            -1,
+            False,
+            pd.DataFrame({'a': [0, 1, 2, 3, 4], 'b': [1, 2, 3, 4, 5]}),
+            'Input sequence (5) is longer than the one found when fit or '
+            'set (4). To avoid this problem set truncate to True.',
+        ],
+        [
+            None,
+            -1,
+            False,
+            pd.DataFrame({'a': [0, 1, 2, 3, 4], 'b': [1, 2, 3, 4, 5]}),
+            'Input sequence (5) is longer than the one found when fit or '
+            'set (4). To avoid this problem set truncate to True.',
+        ],
+    ],
+)
+def test_LengthTransformer_raises(
+    pad_length: T.Union[int, None],
+    fill_value: int,
+    truncate: bool,
+    data: pd.DataFrame,
+    exp: str,
+):
+    transformer = pipeline.LengthTransformer(
+        pad_length=pad_length,
+        fill_value=fill_value,
+        truncate=truncate,
+    )
+    transformer.fit(pd.DataFrame({'c': [0, 1, 2, 3]}))
+
+    with pytest.raises(ValueError) as exc_info:
+        transformer.transform(data)
+
+    assert exc_info.value.args[0] == exp
