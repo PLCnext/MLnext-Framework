@@ -1,0 +1,1 @@
+Removed ``mlnext.score.eval_sigmoid``. Use ``mlnext.score.apply_threshold`` instead.
