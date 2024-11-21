@@ -1367,6 +1367,7 @@ class FeatureCreator(BaseEstimator, TransformerMixin):
 
         return X
 
+
 class LengthTransformer(BaseEstimator, TransformerMixin):
     """Pad or truncates the input to an fixed length by either a set length
     or a fitted length.
@@ -1459,5 +1460,78 @@ class LengthTransformer(BaseEstimator, TransformerMixin):
             axis=0,
             copy=True,
         )
+
+        return X
+
+
+class RelativeTimeEncoder(BaseEstimator, TransformerMixin):
+    """Calculates the relative time based on a ``timestamp_column``.
+
+    Args:
+        timestamp_column (str): Name of the timestamp column.
+        inplace (bool): Whether to perform the operation inplace and replace
+          the timestamp_column with the relative time.
+        output_name (str): Name of the output column. Inplace must be set to
+          False. If inplace is False and output_name is None, then the new
+          column is the timestamp column with _relative as a suffix.
+        offset (int): Offset added to the relative time.
+        unit (int): Unit of the time difference.
+
+    Example:
+
+    """
+
+    def __init__(
+        self,
+        timestamp_column: str,
+        inplace: bool = True,
+        output_name: T.Optional[str] = None,
+        offset: int = 0,
+        unit: T.Literal['d', 'h', 'm', 's', 'ms', 'us', 'ns'] = 'ms',
+    ):
+        super().__init__()
+
+        self.timestamp_column = timestamp_column
+        self.output_name = (
+            timestamp_column
+            if inplace
+            else (
+                output_name
+                if output_name is not None
+                else f'{timestamp_column}_relative'
+            )
+        )
+        self.offset = offset
+        self.unit = unit
+
+    def fit(self, X: pd.DataFrame, y=None):
+        return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Calculates the relative time for a timestamp column.
+
+        Args:
+            X (pd.DataFrame): Input.
+
+        Raises:
+            ValueError: Raised if the timestamp column was not found.
+
+        Returns:
+            pd.DataFrame: Returns the new dataframe.
+        """
+        if self.timestamp_column not in X.columns:
+            raise ValueError(
+                f'Timestamp column "{self.timestamp_column}" not found in '
+                f'input. Available columns: {list(X.columns)}.'
+            )
+
+        X = X.copy()
+
+        column = pd.to_datetime(X.loc[:, self.timestamp_column])
+        relative_time = (
+            (column - column[0]).to_numpy().astype(f'timedelta64[{self.unit}]')
+        )
+
+        X[self.output_name] = relative_time + self.offset
 
         return X
