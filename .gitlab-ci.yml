@@ -1,19 +1,33 @@
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PYTHON_VERSION: 3.10
+
 stages:
   - quality
   - test
-  - documentation
+  - docs
   - deploy
 
-image: python:3.10
-before_script:
-  - pip install tox
+default:
+  image: python:$PYTHON_VERSION
+  cache:
+      key:
+        files:
+          - pyproject.toml
+        prefix: $CI_JOB_NAME
+      paths:
+        - .cache/pip
+        - .tox
+  interruptible: true
+  before_script:
+    - pip install tox
 
-lint:
+quality:lint:
   stage: quality
   script:
     - tox -e lint
 
-unittest:
+test:unittest:
   stage: test
   image: python:$PYTHON_VER
   script:
@@ -37,22 +51,22 @@ unittest:
       - ENV: py313
         PYTHON_VER: "3.13"
 
-docs:
-  stage: documentation
+docs:docs:
+  stage: docs
   script:
     - tox -e docs
 
-changelog:
-  stage: documentation
+docs:changelog:
+  stage: docs
   script:
     - tox -e changelog
 
-description:
-  stage: documentation
+docs:description:
+  stage: docs
   script:
     - tox -e pypi-description
 
-publish_docs:
+deploy:publish_docs:
   stage: deploy
   script:
     - tox -e docs
@@ -67,7 +81,7 @@ publish_docs:
     - main
     - tags
 
-build:
+deploy:build:
   stage: deploy
   artifacts:
     name: dist
@@ -80,7 +94,7 @@ build:
     - main
     - tags
 
-release-private:
+deploy:release-private:
   stage: deploy
   needs:
     - build
@@ -91,7 +105,7 @@ release-private:
   only:
     - tags
 
-release-public-pypi:
+deploy:release-public-pypi:
   stage: deploy
   needs:
     - build
@@ -111,3 +125,4 @@ release-public-pypi:
   only:
     - pypi-release
     - tags
+  allow_failure: true
