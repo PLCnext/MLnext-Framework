@@ -26,7 +26,6 @@ __all__ = [
     'get_threshold',
     'apply_threshold',
     'eval_softmax',
-    'eval_sigmoid',
     'moving_average',
     'eval_metrics',
     'eval_metrics_all',
@@ -252,41 +251,6 @@ def eval_softmax(y: np.ndarray) -> np.ndarray:
         np.ndarray([[1], [1], [0]])
     """
     return np.argmax(y, axis=-1).reshape(-1, 1)
-
-
-@deprecated(
-    None,
-    deprecated_in='0.4',
-    remove_in='0.6',
-    template_mgs='`%(source_name)s` was deprecated in %(deprecated_in)s '
-    'and is removed in %(remove_in)s, use `apply_threshold` instead.',
-)
-def eval_sigmoid(
-    y: np.ndarray,
-    *,
-    invert: bool = False,
-    threshold: float = 0.5,
-) -> np.ndarray:
-    """Turns a binary-class sigmoid prediction into 0-1 class labels.
-
-    .. deprecated:: 0.4
-        Use :func:`apply_threshold` instead. Will be removed in 0.6.
-
-    Args:
-        y (np.ndarray): Array with sigmoid probabilities
-        invert (bool): Whether to invert the labels. (0->1, 1->0)
-        threshold (float): Threshold in [0, 1]. Default: 0.5
-
-    Returns:
-        np.ndarray: Returns the binary class labels.
-
-    Example:
-        >>> eval_sigmoid(y=np.array([0.1, 0.6, 0.8, 0.2]))
-        np.ndarray([[0],[1],[1],[0]])
-    """
-    return apply_threshold(
-        y, threshold=threshold, pos_label=0 if invert else 1
-    ).reshape(-1, 1)
 
 
 def moving_average(x: np.ndarray, step: int = 10, mode='full') -> np.ndarray:
