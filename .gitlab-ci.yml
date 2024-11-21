@@ -26,8 +26,6 @@ unittest:
         path: build/cobertura.xml
   parallel:
     matrix:
-      - ENV: py38
-        PYTHON_VER: "3.8"
       - ENV: py39
         PYTHON_VER: "3.9"
       - ENV: py310
@@ -36,6 +34,8 @@ unittest:
         PYTHON_VER: "3.11"
       - ENV: py312
         PYTHON_VER: "3.12"
+      - ENV: py313
+        PYTHON_VER: "3.13"
 
 docs:
   stage: documentation
