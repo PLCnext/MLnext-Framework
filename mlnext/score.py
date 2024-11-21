@@ -55,8 +55,12 @@ def l2_norm(
         np.ndarray: Returns the l2-norm between x and x_hat.
 
     Example:
+        >>> from mlnext import l2_norm
+        >>> import numpy as np
+
         >>> l2_norm(np.array([0.1, 0.2]), np.array([0.14, 0.2]))
         np.ndarray([[0.04]])
+
         >>> l2_norm(np.array([0.1, 0.2]), np.array([0.14, 0.2]), reduce=False)
         np.ndarray([0.04, 0.0])
     """
@@ -91,6 +95,17 @@ def norm_log_likelihood(
 
     Returns:
         np.ndarray: Returns the negative log likelihood.
+
+    Example:
+        >>> import numpy as np
+        >>> from mlnext import norm_log_likelihood
+
+        >>> norm_log_likelihood(
+        >>>     np.array([1, 2, 3]),
+        >>>     mean=np.array([1, 1, 1]),
+        >>>     log_var=np.log(np.array([1, 1, 1])),
+        >>> )
+        array([0.91893853, 1.41893853, 2.91893853])
     """
     a = np.log(2.0 * np.pi) * np.ones(np.shape(x)) + log_var
     b = (x - mean) ** 2 / (np.exp(log_var) + 1e-10)
@@ -113,6 +128,16 @@ def bern_log_likelihood(x: np.ndarray, mean: np.ndarray) -> np.ndarray:
 
     Returns:
         np.ndarray: Returns the negative log likelihood.
+
+    Example:
+        >>> import numpy as np
+        >>> from mlnext import bern_log_likelihood
+
+        >>> bern_log_likelihood(
+        >>>     np.array([1, 0, 1]),
+        >>>     mean=np.array([0.2, 0.1, 0.8]),
+        >>> )
+        array([1.60943791, 0.10536052, 0.22314355])
     """
 
     a = x * np.log(mean + 1e-10)
@@ -139,6 +164,16 @@ def kl_divergence(
 
     Returns:
         np.ndarray: Returns the kl divergence between two normal distributions.
+
+    Example:
+        >>> import numpy as np
+        >>> from mlnext import kl_divergence
+
+        >>> kl_divergence(
+        >>>     mean=np.array([1, 0.8, 0.12]),
+        >>>     log_var=np.log(np.array([0.1, 0.2, 0.8])**2),
+        >>> )
+        array([2.30758509, 1.44943791, 0.05034355])
     """
 
     prior_mean = np.ones(mean.shape) * prior_mean  # type:ignore
@@ -167,6 +202,7 @@ def get_threshold(x: np.ndarray, *, p: float = 100) -> float:
         float: Returns the threshold at the ``perc``-th percentile of x.
 
     Example:
+        >>> from mlnext import get_threshold
         >>> get_threshold(np.ndarray([0.0, 1.0]), p=99)
         0.99
     """
@@ -193,6 +229,7 @@ def apply_threshold(
         np.ndarray: Returns the result of the threshold operation.
 
     Example:
+        >>> from mlnext import apply_threshold
         >>> apply_threshold(np.array([0.1, 0.4, 0.8, 1.0]), threshold=0.5)
         np.ndarray([0, 0, 0, 1, 1])
     """
@@ -210,6 +247,7 @@ def eval_softmax(y: np.ndarray) -> np.ndarray:
         np.ndarray: Returns an array of shape (x, 1) with the class labels.
 
     Example:
+        >>> from mlnext import eval_softmax
         >>> eval_softmax(np.array([[0.1, 0.9], [0.4, 0.6], [0.7, 0.3]]))
         np.ndarray([[1], [1], [0]])
     """
@@ -263,6 +301,7 @@ def moving_average(x: np.ndarray, step: int = 10, mode='full') -> np.ndarray:
         np.ndarray: Returns the moving average.
 
     Example:
+        >>> from mlnext import moving_average
         >>> moving_average(np.array([1, 2, 3, 4]), step=2)
         np.ndarray([0.5, 1.5, 2.5, 3.5, 2.])
     """
@@ -280,6 +319,9 @@ def eval_metrics(y: np.ndarray, y_hat: np.ndarray) -> T.Dict[str, float]:
         T.Dict[str, float]: Returns a dict with all scores.
 
     Example:
+        >>> import numpy as np
+        >>> from mlnext import eval_metrics
+
         >>> y, y_hat = np.ones((10, 1)), np.ones((10, 1))
         >>> eval_metrics(y, y_hat)
         {'accuracy': 1.0, 'precision': 1.0, 'recall': 1.0, 'f1': 1.0,
@@ -324,6 +366,9 @@ def eval_metrics_all(
         T.Dict[str, float]: Returns a dict with all scores.
 
     Example:
+        >>> import numpy as np
+        >>> from mlnext import eval_metrics
+
         >>> y = [np.ones((10, 1)), np.zeros((10, 1))]
         >>> y_hat = [np.ones((10, 1)), np.zeros((10, 1))]
         >>> eval_metrics_all(y, y_hat)
