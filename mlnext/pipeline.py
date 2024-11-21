@@ -13,6 +13,8 @@ from sklearn.base import TransformerMixin
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.validation import FLOAT_DTYPES
 
+from .model import NewFeatureModel
+
 __all__ = [
     'ColumnSelector',
     'ColumnDropper',
@@ -33,6 +35,9 @@ __all__ = [
     'ColumnSorter',
     'DifferentialCreator',
     'ClippingMinMaxScaler',
+    'FeatureCreator',
+    'NewFeatureModel',
+    'LengthTransformer',
 ]
 
 
@@ -1238,5 +1243,221 @@ class ClippingMinMaxScaler(
 
         if self.clip is not None:
             X = np.clip(X, self.clip[0], self.clip[1])
+
+        return X
+
+
+class FeatureCreator(BaseEstimator, TransformerMixin):
+    """Creates new features from existing or calculated features.
+
+    .. versionadded:: 0.6.0
+
+    Arguments:
+        features (list(dict[str, Any] | NewFeatureModel)): List of new
+          features. Expects the dict to match :class:`NewFeatureModel`.
+
+    Example:
+        >>> import pandas as pd
+        >>> from mlnext import FeatureCreator
+        >>> df = pd.DataFrame(
+        ...     {
+        ...         "height": [1, 2, 3],
+        ...         "width": [3, 2, 1],
+        ...         "a": [True, False, True],
+        ...         "b": [True, True, False],
+        ...     }
+        ... )
+
+        >>> t = FeatureCreator(
+        ...     features=[
+        ...         {
+        ...             "name": "area",
+        ...             "features": ["height", "width"],
+        ...             "op": "mul",
+        ...         },
+        ...         {
+        ...             "name": "AandB",
+        ...             "features": ["a", "b"],
+        ...             "op": "and",
+        ...         },
+        ...         {
+        ...             "name": "sum",
+        ...             "features": ["height", "width"],
+        ...             "op": "add",
+        ...             "keep": False,
+        ...         },
+        ...         {
+        ...             "name": "area-sum",
+        ...             "features": ["area", "sum"],
+        ...             "op": "sub",
+        ...         },
+        ...     ]
+        ... )
+        >>> t.transform(df)
+            height	width	a	    b 	 area	AandB	area-sum
+                1	    3	True	True	3	True	-1
+                2	    2	False	True	4	False	0
+                3	    1	True	False	3	False	-1
+    """
+
+    def __init__(
+        self,
+        features: T.List[T.Union[T.Dict[str, T.Any], NewFeatureModel]],
+    ):
+        super().__init__()
+
+        self.features = list(self._parse_inputs(features))
+
+    def _parse_inputs(
+        self,
+        features: T.List[T.Union[T.Dict[str, T.Any], NewFeatureModel]],
+    ) -> T.Iterator[NewFeatureModel]:
+        """Parses features to the correct datatype.
+
+        Args:
+            features (list[dict[str, Any]  |  NewFeatureModel]): Features.
+
+        Raises:
+            ValueError: Raised if a datatype is not accepted.
+
+        Yields:
+            Iterator[NewFeatureModel]: Returns the feature model.
+        """
+        if not isinstance(features, (list, set)):
+            raise ValueError(
+                'Expected features to be of type list or set. '
+                f'Got: {type(features)}.'
+            )
+
+        for idx, feature in enumerate(features):
+            if isinstance(feature, NewFeatureModel):
+                yield feature
+
+            if not isinstance(feature, dict):
+                raise ValueError(
+                    f'Expected feature at index {idx} to be either a dict '
+                    f'or NewFeatureModel. Got: {type(feature)}.'
+                )
+            yield NewFeatureModel(**feature)
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Calculates new featrues based on the given description.
+
+        Args:
+            X (pd.DataFrame): Input data.
+
+        Raises:
+            ValueError: Raised if a feature is missing.
+
+        Returns:
+            pd.DataFrame: Returns the updated dataframe.
+        """
+        X = X.copy()
+
+        for feature in self.features:
+            X[feature.name] = feature.calculate(X)
+
+        drop_features = [
+            feature.name for feature in self.features if not feature.keep
+        ]
+        X = X.drop(drop_features, axis=1)
+
+        return X
+
+class LengthTransformer(BaseEstimator, TransformerMixin):
+    """Pad or truncates the input to an fixed length by either a set length
+    or a fitted length.
+
+    Args:
+        pad_length (int | None): Length to pad the data to. Default: None.
+        fill_value (int): Value to pad data with. Default: 0.
+        truncate (bool): Whether to truncate if the length exceeds pad_length.
+          If False, an error is raised for an input longer than pad_length.
+
+    .. versionadded:: 0.6.0
+
+    Example:
+        >>> import pandas as pd
+        >>> from mlnext import LengthTransformer
+
+        >>> df = pd.DataFrame({'a': [0, 1, 2], 'b': [1, 2, 3]})
+        >>> t = LengthTransformer(pad_length=5, fill_value=-1)
+
+        >>> t.fit_transform(df)
+            a	b
+        0	0	1
+        1	1	2
+        2	2	3
+        3  -1  -1
+        4  -1  -1
+    """
+
+    _parameter_constraints: T.Dict[str, list] = {
+        'pad_length': [int, None],
+        'fill_value': [int],
+    }
+
+    def __init__(
+        self,
+        pad_length: T.Union[int, None] = None,
+        fill_value: int = 0,
+        truncate: bool = False,
+    ) -> None:
+        super().__init__()
+
+        self.pad_length = pad_length
+        self.fill_value = fill_value
+        self.truncate = truncate
+
+    def fit(self, X: pd.DataFrame, y=None):
+        """Sets the pad_length to the length of the fitted dataframe
+        (if pad_length is not defined).
+
+        Args:
+            X (pd.DataFrame): Data.
+            y (_type_, optional): Labels (ignored). Defaults to None.
+
+        Returns:
+            LengthTransformer: Returns self.
+        """
+        if self.pad_length is None:
+            self.pad_length_ = X.shape[0]
+        else:
+            self.pad_length_ = self.pad_length
+
+        return self
+
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Pads or truncates `X` to `pad_length_`.
+
+        Args:
+            X (pd.DataFrame): Data.
+
+        Raises:
+            ValueError: Raised if X is longer than pad_length and truncate is
+              False.
+
+        Returns:
+            pd.DataFrame: Returns the new dataframe of length pad_length.
+        """
+
+        check_is_fitted(self, ['pad_length_'])
+
+        if X.shape[0] > self.pad_length_ and not self.truncate:
+            raise ValueError(
+                f'Input sequence ({X.shape[0]}) is longer than the one found '
+                f'when fit or set ({self.pad_length_}). To avoid this problem '
+                'set truncate to True.'
+            )
+
+        X = X.reindex(
+            range(self.pad_length_),
+            fill_value=self.fill_value,
+            axis=0,
+            copy=True,
+        )
 
         return X

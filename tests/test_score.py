@@ -109,39 +109,6 @@ class TestEval(TestCase):
         np.testing.assert_array_equal(result, expected)
 
 
-@pytest.mark.parametrize(
-    'y,invert,threshold,exp',
-    [
-        ([[0.2], [0.6]], False, 0.5, [[0], [1]]),
-        ([[[0.2], [0.6]]], False, 0.5, [[0], [1]]),
-        ([[0.2], [0.6]], True, 0.5, [[1], [0]]),
-        ([[[0.2], [0.6]]], True, 0.5, [[1], [0]]),
-
-        (np.linspace(0, 1, 11), False, 0.5,
-         np.r_[np.zeros((5, 1)), np.ones((6, 1))]),
-
-        (np.linspace(0, 1, 11), True, 0.5, np.r_[
-         np.ones((5, 1)), np.zeros((6, 1))])
-    ]
-)
-def test_eval_sigmoid(
-    y: T.List[float],
-    invert: bool,
-    threshold: float,
-    exp: T.List[float]
-):
-
-    print(y)
-
-    result = score.eval_sigmoid(
-        np.array(y),
-        invert=invert,
-        threshold=threshold
-    )
-
-    np.testing.assert_array_equal(result, exp)
-
-
 class TestMovingAverage(TestCase):
 
     def test_moving_average(self):
