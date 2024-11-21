@@ -1,1 +1,0 @@
-Removed argument ``y_true`` from ``mlnext.score.pr_curve``. Use ``y`` instead.

@@ -12,7 +12,73 @@ Changes for the upcoming release can be found in the `"changelog" directory <htt
 
 .. towncrier release notes start
 
-0.5.1 (2024-06-25)
+
+0.6.0 (2024-11-21)
+------------------
+
+
+Changes
+^^^^^^^
+
+- Added missing examples in ``mlnext.score`` and updated other examples.
+  `#54 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/54>`__
+- Dropped support for python 3.8 and added support for 3.13.
+  `#65 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/65>`__
+
+
+Features
+^^^^^^^^
+
+- Added `FeatureCreator`.
+  `#63 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/63>`__
+- Added ``LengthTransformer`` to pad or truncate inputs to a specific length.
+  `#64 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/64>`__
+
+
+Deprecations
+^^^^^^^^^^^^
+
+- Removed argument ``y_true`` from ``mlnext.score.pr_curve``. Use ``y`` instead.
+  `#41 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/41>`__
+- Removed ``mlnext.score.eval_sigmoid``. Use ``mlnext.score.apply_threshold`` instead.
+  `#42 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/42>`__
+
+
+----
+
+
+0.5.1 (2024-11-21)
+------------------
+
+
+Changes
+^^^^^^^
+
+- Added missing examples in ``mlnext.score`` and updated other examples.
+  `#54 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/54>`__
+- Dropped support for python 3.8 and added support for 3.13.
+  `#65 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/65>`__
+
+
+Features
+^^^^^^^^
+
+- Added `FeatureCreator`.
+  `#63 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/63>`__
+- Added ``LengthTransformer`` to pad or truncate inputs to a specific length.
+  `#64 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/64>`__
+
+
+Deprecations
+^^^^^^^^^^^^
+
+- Removed argument ``y_true`` from ``mlnext.score.pr_curve``. Use ``y`` instead.
+  `#41 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/41>`__
+- Removed ``mlnext.score.eval_sigmoid``. Use ``mlnext.score.apply_threshold`` instead.
+  `#42 <https://gitlab.phoenixcontact.com/vmm-factory-automation/digital-factory/data-collection-storage-evaluation/anomaly-detection/mlnext_framework/-/issues/42>`__
+
+
+----0.5.1 (2024-06-25)
 ------------------
 
 
